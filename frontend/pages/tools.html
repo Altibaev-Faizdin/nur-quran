@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tools — Noor Al-Quran</title>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+<div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+<div class="nebula"></div><canvas id="sc"></canvas>
+<div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+    <li><a href="quran.html">Quran</a></li><li><a href="reciters.html">Reciters</a></li>
+    <li><a href="prayer.html">Prayer Times</a></li><li><a href="tools.html" class="on">Tools</a></li>
+    <li><a href="names.html">99 Names</a></li>
+  </ul>
+</nav>
+<div class="wrap">
+<div class="ph fi"><div class="stag">الأدوات الإسلامية</div><h1 class="st">Islamic <span>Tools</span></h1><div class="sl"></div></div>
+<div class="pbar">
+  <div class="clk"><div class="ct" id="ct">00:00:00</div><div class="cd" id="cd">—</div><div class="ch" id="ch">—</div></div>
+  <div class="pi" id="fi"><span class="pn">Fajr</span><span class="pt" id="ft">—:—</span></div>
+  <div class="pi" id="si"><span class="pn">Sunrise</span><span class="pt" id="srt">—:—</span></div>
+  <div class="pi" id="di"><span class="pn">Dhuhr</span><span class="pt" id="dt">—:—</span></div>
+  <div class="pi" id="ai"><span class="pn">Asr</span><span class="pt" id="at">—:—</span></div>
+  <div class="pi" id="mi"><span class="pn">Maghrib</span><span class="pt" id="mt">—:—</span></div>
+  <div class="pi" id="ii"><span class="pn">Isha</span><span class="pt" id="it">—:—</span></div>
+  <button class="btn bo bsm" onclick="loadPrayer()">📍 My Location</button>
+</div>
+<section class="sec">
+<div class="tg">
+
+  <!-- QIBLA -->
+  <div class="card tc fi">
+    <div class="tic">🕋</div>
+    <h3 class="ttl">Qibla Compass</h3>
+    <p class="tdesc">Find the direction of the Kaaba in Mecca from your location.</p>
+    <div class="cw"><div class="co">
+      <span class="cl clN">N</span><span class="cl clS">S</span><span class="cl clE">E</span><span class="cl clW">W</span>
+      <div class="cn" id="cn"><div class="nn"></div><div class="ns"></div></div>
+      <div class="qa" id="qa"><div style="text-align:center;font-size:8px;color:var(--goldL);margin-top:-13px">🕋</div></div>
+      <div class="cc"></div>
+    </div></div>
+    <button class="btn bo bsm" onclick="getQibla()">Find Qibla</button>
+    <p id="qt" style="margin-top:9px;font-size:.76rem;color:var(--soft)"></p>
+  </div>
+
+  <!-- TASBIH -->
+  <div class="card tc fi">
+    <div class="tic">📿</div>
+    <h3 class="ttl">Tasbih Counter</h3>
+    <p class="tdesc">Digital prayer beads for daily dhikr and remembrance of Allah.</p>
+    <div style="margin:14px 0">
+      <div class="tsc" id="tsc">0</div>
+      <div class="tsl" id="tsl">سُبْحَانَ اللَّهِ</div>
+      <div class="tsp"><div class="tsb" id="tsb" style="width:0%"></div></div>
+      <button class="tst" onclick="tasbihTap()">سبح</button>
+      <button class="tsr" onclick="tasbihReset()">Reset</button>
+    </div>
+    <div class="dbs">
+      <button class="db on" onclick="setDhikr(0)">SubhanAllah ×33</button>
+      <button class="db" onclick="setDhikr(1)">Alhamdulillah ×33</button>
+      <button class="db" onclick="setDhikr(2)">Allahu Akbar ×34</button>
+    </div>
+  </div>
+
+  <!-- DUA -->
+  <div class="card tc fi">
+    <div class="tic">🤲</div>
+    <h3 class="ttl">Daily Dua</h3>
+    <p class="tdesc">Morning and evening supplications from the Sunnah of Prophet ﷺ</p>
+    <div class="duc">
+      <div class="dua" id="dua">اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا</div>
+      <div class="dut" id="dut">"O Allah, by You we enter the morning and by You we enter the evening."</div>
+    </div>
+    <button class="btn bo bsm" onclick="nextDua()">Next Dua ›</button>
+  </div>
+
+  <!-- HIJRI -->
+  <div class="card tc fi">
+    <div class="tic">📅</div>
+    <h3 class="ttl">Hijri Calendar</h3>
+    <p class="tdesc">Today's Islamic date from the Hijri calendar.</p>
+    <div class="hc">
+      <div class="hd" id="hd">—</div>
+      <div class="hm" id="hm">—</div>
+      <div class="har" id="ha">—</div>
+    </div>
+    <p style="font-size:.73rem;color:var(--soft)">🌙 May Allah bless your day</p>
+  </div>
+
+</div>
+</section>
+</div>
+<div class="adhan" id="adhan">
+  <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
+  <div class="adr"><select class="adsel"><option>Mishary Alafasy</option></select><button class="adcl" onclick="closeAdhan()">✕</button></div>
+</div>
+<footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
+<script src="../shared.js"></script>
+</body>
+</html>

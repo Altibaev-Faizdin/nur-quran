@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reciters — Noor Al-Quran</title>
+  <link rel="stylesheet" href="../shared.css">
+</head>
+
+<body>
+  <div class="cur" id="cur"></div>
+  <div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon">
+    <div class="mc">
+      <div class="mcr"></div>
+    </div>
+  </div>
+  <nav>
+    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+    <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html" class="on">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+        </div>
+      </li>
+      <li><a href="names.html">99 Names</a></li>
+      <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+    </ul>
+  </nav>
+  <div class="wrap">
+    <div class="ph fi">
+      <div class="stag">المقرئون</div>
+      <h1 class="st">The <span>Reciters</span></h1>
+      <div class="sl"></div>
+      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">6 World-Renowned Quran Reciters · Click to view full page</p>
+    </div>
+
+    <section class="sec">
+      <div class="rg fi" id="rg"></div>
+
+      <!-- QUICK PLAY SECTION -->
+      <div style="margin-top:60px;max-width:700px;margin-inline:auto;text-align:center" class="fi">
+        <div class="stag" style="display:inline-block;background:rgba(212,160,23,.1);padding:10px 16px;border-radius:20px">Quick Play</div>
+        <h3 class="st" style="font-size:1.4rem;margin-top:14px">Or <span>Play Instantly</span></h3>
+        <div class="sl" style="margin-bottom:28px"></div>
+        <p style="color:var(--soft);font-size:.85rem;margin-bottom:18px;font-style:italic">Select a reciter and surah to play audio immediately</p>
+        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
+          <select id="reciterSel" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:200px">
+            <option value="">Select Reciter...</option>
+          </select>
+          <select id="surahSel" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:250px">
+            <option value="">Loading Surahs...</option>
+          </select>
+          <button class="btn bp" onclick="quickPlay()" style="white-space:nowrap">▶ Play</button>
+        </div>
+        <div id="nowPlaying" style="font-family:'Amiri',serif;font-size:1.1rem;color:var(--goldL);min-height:28px;margin-bottom:14px">
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <!-- AUDIO BAR -->
+  <div class="abar" id="abar">
+    <div class="ainf">
+      <div class="asn" id="asn">—</div>
+      <div class="arc" id="arcn">—</div>
+    </div>
+    <div class="actl">
+      <button class="cb cpl" id="plbtn" onclick="togPlay()">▶</button>
+      <button class="cb csk" onclick="stopSurah()">⏹</button>
+    </div>
+    <div class="prog">
+      <input type="range" id="seekSlider" class="sk-sl" min="0" max="100" value="0" oninput="seekAudio()">
+    </div>
+    <button class="cb csk" onclick="closeAudio()">✕</button>
+  </div>
+  <audio id="aud" ontimeupdate="updP()" onended="onEnd()"></audio>
+
+  <div class="adhan" id="adhan">
+    <div class="adl">
+      <div class="adi">🕌</div>
+      <div>
+        <div class="adn" id="adn">Prayer Time</div>
+        <div class="ads" id="ads">—</div>
+      </div>
+    </div>
+    <div class="adr"><button class="adcl" onclick="closeAdhan()">✕</button></div>
+  </div>
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  </footer>
+
+  <div class="auth" id="authModal">
+    <div class="acard">
+      <button class="aclose" onclick="closeAuth()">✕</button>
+      <div class="ati">Welcome Back</div>
+      <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="filter:invert(1)"> Continue with Apple</div>
+      <div class="sep">or</div>
+      <input type="email" class="ainp" placeholder="Email Address">
+      <input type="password" class="ainp" placeholder="Password">
+      <button class="a-btn" onclick="closeAuth()">Sign In</button>
+      <div class="atg">Don't have an account? <span>Sign Up</span></div>
+    </div>
+  </div>
+
+  <script src="../shared.js"></script>
+  <script>
+    // Initialize reciters page
+    document.addEventListener('DOMContentLoaded',()=>{
+      loadReciters();
+    });
+
+    function togPlay(){togPlayRec();}
+  </script>
+</body>
+
+</html>

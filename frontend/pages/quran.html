@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Quran — Noor Al-Quran</title>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+<div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+<div class="nebula"></div><canvas id="sc"></canvas>
+<div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+    <li><a href="quran.html" class="on">Quran</a></li>
+    <li><a href="reciters.html">Reciters</a></li>
+    <li><a href="prayer.html">Prayer Times</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+      <div class="dropdown-content">
+        <a href="dua.html">Daily Dua</a>
+        <a href="tasbih.html">Tasbih Counter</a>
+        <a href="qibla.html">Qibla Compass</a>
+        <a href="hijri.html">Hijri Calendar</a>
+      </div>
+    </li>
+    <li><a href="names.html">99 Names</a></li>
+    <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+  </ul>
+  <div class="langs">
+    <button class="lb on" onclick="setLang('en',this)">EN</button>
+    <button class="lb" onclick="setLang('ru',this)">RU</button>
+    <button class="lb" onclick="setLang('uz',this)">UZ</button>
+  </div>
+</nav>
+
+<div class="wrap">
+<div class="ph fi"><div class="stag">القرآن الكريم</div><h1 class="st">The Holy <span>Quran</span></h1><div class="sl"></div><p style="color:var(--soft);font-size:.83rem;margin-top:13px;letter-spacing:1px">114 Surahs · Arabic · English · Russian · Uzbek</p></div>
+
+<!-- PRAYER BAR -->
+<div class="pbar">
+  <div class="clk"><div class="ct" id="ct">00:00:00</div><div class="cd" id="cd">—</div><div class="ch" id="ch">—</div></div>
+  <div class="pi" id="fi"><span class="pn">Fajr</span><span class="pt" id="ft">—:—</span></div>
+  <div class="pi" id="si"><span class="pn">Sunrise</span><span class="pt" id="srt">—:—</span></div>
+  <div class="pi" id="di"><span class="pn">Dhuhr</span><span class="pt" id="dt">—:—</span></div>
+  <div class="pi" id="ai"><span class="pn">Asr</span><span class="pt" id="at">—:—</span></div>
+  <div class="pi" id="mi"><span class="pn">Maghrib</span><span class="pt" id="mt">—:—</span></div>
+  <div class="pi" id="ii"><span class="pn">Isha</span><span class="pt" id="it">—:—</span></div>
+  <button class="btn bo bsm" onclick="loadPrayer()">📍 My Location</button>
+</div>
+
+<section class="sec">
+  <div class="sw fi"><input class="si2" id="srch" type="text" placeholder="Search surah by name or number..." oninput="filterS(this.value)"><svg class="sic" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#a8c0e8" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+  <div class="sg fi" id="grid"></div>
+</section>
+</div>
+
+<!-- READER -->
+<div class="reader" id="reader">
+  <button class="rcls" onclick="closeR()">✕</button>
+  <div class="rh">
+    <div class="rhn" id="rn">SURAH —</div>
+    <div class="rhar" id="rar">—</div>
+    <div class="rhen" id="ren">—</div>
+  </div>
+  <div class="rbis" id="rbis">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+  <div class="alist" id="alist"><div class="rload">Select a surah ✨</div></div>
+</div>
+
+<!-- AUDIO BAR -->
+<div class="abar" id="abar">
+  <div class="ainf"><div class="asn" id="asn">—</div><div class="arc" id="arcn">Mishary Alafasy</div></div>
+  <div class="actl">
+    <button class="cb csk" onclick="prevA()">⏮</button>
+    <button class="cb cpl" id="plbtn" onclick="togPlay()">▶</button>
+    <button class="cb csk" onclick="nextA()">⏭</button>
+  </div>
+  <div class="prog"><div class="pb"><div class="pf" id="pf"></div></div></div>
+  <button class="cb csk" onclick="closeAudio()" style="font-size:.85rem">✕</button>
+</div>
+<audio id="aud" ontimeupdate="updProg()" onended="nextA()"></audio>
+
+<!-- ADHAN -->
+<div class="adhan" id="adhan">
+  <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
+  <div class="adr"><select class="adsel"><option>Mishary Alafasy</option></select><button class="adcl" onclick="closeAdhan()">✕</button></div>
+</div>
+
+<footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
+
+<script src="../shared.js"></script>
+<script>
+const ALL=[
+  {n:1,ar:'الفاتحة',en:'Al-Fatihah',t:'Meccan',v:7},
+  {n:2,ar:'البقرة',en:'Al-Baqarah',t:'Medinan',v:286},
+  {n:3,ar:'آل عمران',en:"Ali 'Imran",t:'Medinan',v:200},
+  {n:4,ar:'النساء',en:"An-Nisa'",t:'Medinan',v:176},
+  {n:5,ar:'المائدة',en:"Al-Ma'idah",t:'Medinan',v:120},
+  {n:6,ar:'الأنعام',en:"Al-An'am",t:'Meccan',v:165},
+  {n:7,ar:'الأعراف',en:"Al-A'raf",t:'Meccan',v:206},
+  {n:8,ar:'الأنفال',en:'Al-Anfal',t:'Medinan',v:75},
+  {n:9,ar:'التوبة',en:'At-Tawbah',t:'Medinan',v:129},
+  {n:10,ar:'يونس',en:'Yunus',t:'Meccan',v:109},
+  {n:11,ar:'هود',en:'Hud',t:'Meccan',v:123},
+  {n:12,ar:'يوسف',en:'Yusuf',t:'Meccan',v:111},
+  {n:13,ar:'الرعد',en:"Ar-Ra'd",t:'Medinan',v:43},
+  {n:14,ar:'إبراهيم',en:'Ibrahim',t:'Meccan',v:52},
+  {n:15,ar:'الحجر',en:'Al-Hijr',t:'Meccan',v:99},
+  {n:16,ar:'النحل',en:'An-Nahl',t:'Meccan',v:128},
+  {n:17,ar:'الإسراء',en:"Al-Isra'",t:'Meccan',v:111},
+  {n:18,ar:'الكهف',en:'Al-Kahf',t:'Meccan',v:110},
+  {n:19,ar:'مريم',en:'Maryam',t:'Meccan',v:98},
+  {n:20,ar:'طه',en:'Ta-Ha',t:'Meccan',v:135},
+  {n:21,ar:'الأنبياء',en:"Al-Anbiya'",t:'Meccan',v:112},
+  {n:22,ar:'الحج',en:'Al-Hajj',t:'Medinan',v:78},
+  {n:23,ar:'المؤمنون',en:"Al-Mu'minun",t:'Meccan',v:118},
+  {n:24,ar:'النور',en:'An-Nur',t:'Medinan',v:64},
+  {n:25,ar:'الفرقان',en:'Al-Furqan',t:'Meccan',v:77},
+  {n:26,ar:'الشعراء',en:"Ash-Shu'ara'",t:'Meccan',v:227},
+  {n:27,ar:'النمل',en:'An-Naml',t:'Meccan',v:93},
+  {n:28,ar:'القصص',en:'Al-Qasas',t:'Meccan',v:88},
+  {n:29,ar:'العنكبوت',en:'Al-Ankabut',t:'Meccan',v:69},
+  {n:30,ar:'الروم',en:'Ar-Rum',t:'Meccan',v:60},
+  {n:31,ar:'لقمان',en:'Luqman',t:'Meccan',v:34},
+  {n:32,ar:'السجدة',en:'As-Sajdah',t:'Meccan',v:30},
+  {n:33,ar:'الأحزاب',en:'Al-Ahzab',t:'Medinan',v:73},
+  {n:34,ar:'سبأ',en:"Saba'",t:'Meccan',v:54},
+  {n:35,ar:'فاطر',en:'Fatir',t:'Meccan',v:45},
+  {n:36,ar:'يس',en:'Ya-Sin',t:'Meccan',v:83},
+  {n:37,ar:'الصافات',en:'As-Saffat',t:'Meccan',v:182},
+  {n:38,ar:'ص',en:'Sad',t:'Meccan',v:88},
+  {n:39,ar:'الزمر',en:'Az-Zumar',t:'Meccan',v:75},
+  {n:40,ar:'غافر',en:'Ghafir',t:'Meccan',v:85},
+  {n:41,ar:'فصلت',en:'Fussilat',t:'Meccan',v:54},
+  {n:42,ar:'الشورى',en:'Ash-Shura',t:'Meccan',v:53},
+  {n:43,ar:'الزخرف',en:'Az-Zukhruf',t:'Meccan',v:89},
+  {n:44,ar:'الدخان',en:'Ad-Dukhan',t:'Meccan',v:59},
+  {n:45,ar:'الجاثية',en:'Al-Jathiyah',t:'Meccan',v:37},
+  {n:46,ar:'الأحقاف',en:'Al-Ahqaf',t:'Meccan',v:35},
+  {n:47,ar:'محمد',en:'Muhammad',t:'Medinan',v:38},
+  {n:48,ar:'الفتح',en:'Al-Fath',t:'Medinan',v:29},
+  {n:49,ar:'الحجرات',en:'Al-Hujurat',t:'Medinan',v:18},
+  {n:50,ar:'ق',en:'Qaf',t:'Meccan',v:45},
+  {n:51,ar:'الذاريات',en:'Adh-Dhariyat',t:'Meccan',v:60},
+  {n:52,ar:'الطور',en:'At-Tur',t:'Meccan',v:49},
+  {n:53,ar:'النجم',en:'An-Najm',t:'Meccan',v:62},
+  {n:54,ar:'القمر',en:'Al-Qamar',t:'Meccan',v:55},
+  {n:55,ar:'الرحمن',en:'Ar-Rahman',t:'Medinan',v:78},
+  {n:56,ar:'الواقعة',en:"Al-Waqi'ah",t:'Meccan',v:96},
+  {n:57,ar:'الحديد',en:'Al-Hadid',t:'Medinan',v:29},
+  {n:58,ar:'المجادلة',en:'Al-Mujadila',t:'Medinan',v:22},
+  {n:59,ar:'الحشر',en:'Al-Hashr',t:'Medinan',v:24},
+  {n:60,ar:'الممتحنة',en:'Al-Mumtahanah',t:'Medinan',v:13},
+  {n:61,ar:'الصف',en:'As-Saf',t:'Medinan',v:14},
+  {n:62,ar:'الجمعة',en:"Al-Jumu'ah",t:'Medinan',v:11},
+  {n:63,ar:'المنافقون',en:'Al-Munafiqun',t:'Medinan',v:11},
+  {n:64,ar:'التغابن',en:'At-Taghabun',t:'Medinan',v:18},
+  {n:65,ar:'الطلاق',en:'At-Talaq',t:'Medinan',v:12},
+  {n:66,ar:'التحريم',en:'At-Tahrim',t:'Medinan',v:12},
+  {n:67,ar:'الملك',en:'Al-Mulk',t:'Meccan',v:30},
+  {n:68,ar:'القلم',en:'Al-Qalam',t:'Meccan',v:52},
+  {n:69,ar:'الحاقة',en:'Al-Haqqah',t:'Meccan',v:52},
+  {n:70,ar:'المعارج',en:"Al-Ma'arij",t:'Meccan',v:44},
+  {n:71,ar:'نوح',en:'Nuh',t:'Meccan',v:28},
+  {n:72,ar:'الجن',en:'Al-Jinn',t:'Meccan',v:28},
+  {n:73,ar:'المزمل',en:'Al-Muzzammil',t:'Meccan',v:20},
+  {n:74,ar:'المدثر',en:'Al-Muddaththir',t:'Meccan',v:56},
+  {n:75,ar:'القيامة',en:'Al-Qiyamah',t:'Meccan',v:40},
+  {n:76,ar:'الإنسان',en:'Al-Insan',t:'Medinan',v:31},
+  {n:77,ar:'المرسلات',en:'Al-Mursalat',t:'Meccan',v:50},
+  {n:78,ar:'النبأ',en:"An-Naba'",t:'Meccan',v:40},
+  {n:79,ar:'النازعات',en:"An-Nazi'at",t:'Meccan',v:46},
+  {n:80,ar:'عبس',en:'Abasa',t:'Meccan',v:42},
+  {n:81,ar:'التكوير',en:'At-Takwir',t:'Meccan',v:29},
+  {n:82,ar:'الانفطار',en:'Al-Infitar',t:'Meccan',v:19},
+  {n:83,ar:'المطففين',en:'Al-Mutaffifin',t:'Meccan',v:36},
+  {n:84,ar:'الانشقاق',en:'Al-Inshiqaq',t:'Meccan',v:25},
+  {n:85,ar:'البروج',en:'Al-Buruj',t:'Meccan',v:22},
+  {n:86,ar:'الطارق',en:'At-Tariq',t:'Meccan',v:17},
+  {n:87,ar:'الأعلى',en:"Al-A'la",t:'Meccan',v:19},
+  {n:88,ar:'الغاشية',en:'Al-Ghashiyah',t:'Meccan',v:26},
+  {n:89,ar:'الفجر',en:'Al-Fajr',t:'Meccan',v:30},
+  {n:90,ar:'البلد',en:'Al-Balad',t:'Meccan',v:20},
+  {n:91,ar:'الشمس',en:'Ash-Shams',t:'Meccan',v:15},
+  {n:92,ar:'الليل',en:'Al-Layl',t:'Meccan',v:21},
+  {n:93,ar:'الضحى',en:'Ad-Duha',t:'Meccan',v:11},
+  {n:94,ar:'الشرح',en:'Ash-Sharh',t:'Meccan',v:8},
+  {n:95,ar:'التين',en:'At-Tin',t:'Meccan',v:8},
+  {n:96,ar:'العلق',en:"Al-'Alaq",t:'Meccan',v:19},
+  {n:97,ar:'القدر',en:'Al-Qadr',t:'Meccan',v:5},
+  {n:98,ar:'البينة',en:'Al-Bayyinah',t:'Medinan',v:8},
+  {n:99,ar:'الزلزلة',en:'Az-Zalzalah',t:'Medinan',v:8},
+  {n:100,ar:'العاديات',en:"Al-'Adiyat",t:'Meccan',v:11},
+  {n:101,ar:'القارعة',en:"Al-Qari'ah",t:'Meccan',v:11},
+  {n:102,ar:'التكاثر',en:'At-Takathur',t:'Meccan',v:8},
+  {n:103,ar:'العصر',en:"Al-'Asr",t:'Meccan',v:3},
+  {n:104,ar:'الهمزة',en:'Al-Humazah',t:'Meccan',v:9},
+  {n:105,ar:'الفيل',en:'Al-Fil',t:'Meccan',v:5},
+  {n:106,ar:'قريش',en:'Quraysh',t:'Meccan',v:4},
+  {n:107,ar:'الماعون',en:"Al-Ma'un",t:'Meccan',v:7},
+  {n:108,ar:'الكوثر',en:'Al-Kawthar',t:'Meccan',v:3},
+  {n:109,ar:'الكافرون',en:'Al-Kafirun',t:'Meccan',v:6},
+  {n:110,ar:'النصر',en:'An-Nasr',t:'Medinan',v:3},
+  {n:111,ar:'المسد',en:'Al-Masad',t:'Meccan',v:5},
+  {n:112,ar:'الإخلاص',en:'Al-Ikhlas',t:'Meccan',v:4},
+  {n:113,ar:'الفلق',en:'Al-Falaq',t:'Meccan',v:5},
+  {n:114,ar:'الناس',en:'An-Nas',t:'Meccan',v:6},
+];
+
+let CUR=null,CAY=1,PLAYING=false,CLANG='en';
+
+function renderS(list){
+  document.getElementById('grid').innerHTML=list.map(s=>`
+    <div class="si" onclick="openS(${s.n})">
+      <div class="snum">${s.n}</div>
+      <div class="sinf">
+        <div class="sar">${s.ar}</div>
+        <div class="sen">${s.en}</div>
+        <div class="sv">${s.v} verses</div>
+      </div>
+      <span class="bm ${s.t==='Meccan'?'mec':'med'}">${s.t}</span>
+    </div>`).join('');
+}
+renderS(ALL);
+
+function filterS(q){renderS(ALL.filter(s=>s.en.toLowerCase().includes(q.toLowerCase())||s.ar.includes(q)||String(s.n).includes(q)));}
+
+async function openS(n){
+  const s=ALL.find(x=>x.n===n);if(!s)return;
+  CUR=s;CAY=1;
+  set('rn','SURAH '+n);set('rar',s.ar);set('ren',s.en);
+  document.getElementById('rbis').style.display=n===9?'none':'block';
+  document.getElementById('reader').classList.add('open');
+  document.getElementById('abar').classList.add('show');
+  set('asn',s.ar+' — '+s.en);
+  document.getElementById('alist').innerHTML='<div class="rload">Loading verses... 🌙</div>';
+
+  const emap={en:'en.asad',ru:'ru.kuliev',uz:'uz.sodik'};
+  const ed=emap[CLANG]||'en.asad';
+  try{
+    const r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,${ed}`);
+    const d=await r.json();
+    if(d.code===200){
+      const ar=d.data[0].ayahs,tr=d.data[1].ayahs;
+      document.getElementById('alist').innerHTML=ar.map((a,i)=>`
+        <div class="ac" id="ay${a.numberInSurah}">
+          <div class="at">
+            <span class="anum">${a.numberInSurah}</span>
+            <div class="aact">
+              <button class="abtn" onclick="playAyah(${n},${a.numberInSurah})" title="Play">▶️</button>
+              <button class="abtn" onclick="bookmark(${n},${a.numberInSurah})" title="Bookmark">🔖</button>
+            </div>
+          </div>
+          <div class="aarb">${a.text}</div>
+          <div class="aen">${tr[i].text}</div>
+        </div>`).join('');
+    }
+  }catch(e){document.getElementById('alist').innerHTML='<div class="rload" style="color:#e05050">⚠️ Check internet connection</div>';}
+}
+
+function closeR(){document.getElementById('reader').classList.remove('open');}
+
+function playAyah(s,a){
+  CAY=a;
+  const num=ALL.slice(0,s-1).reduce((acc,x)=>acc+x.v,0)+a;
+  document.getElementById('aud').src=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
+  document.getElementById('aud').play();
+  PLAYING=true;set('plbtn','⏸');
+  document.getElementById('ay'+a)?.scrollIntoView({behavior:'smooth',block:'center'});
+}
+function togPlay(){const a=document.getElementById('aud');if(PLAYING){a.pause();PLAYING=false;set('plbtn','▶');}else{a.play();PLAYING=true;set('plbtn','⏸');}}
+function nextA(){if(CUR)playAyah(CUR.n,Math.min(CAY+1,CUR.v));}
+function prevA(){if(CUR&&CAY>1)playAyah(CUR.n,CAY-1);}
+function updProg(){const a=document.getElementById('aud');if(a.duration)document.getElementById('pf').style.width=(a.currentTime/a.duration*100)+'%';}
+function closeAudio(){document.getElementById('abar').classList.remove('show');document.getElementById('aud').pause();PLAYING=false;}
+
+function bookmark(s,a){
+  fetch('http://localhost:8000/api/bookmarks/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({surah_number:s,ayah_number:a})})
+  .catch(()=>{});
+  const btn=document.querySelector(`#ay${a} .abtn:last-child`);
+  if(btn){btn.textContent='✅';setTimeout(()=>btn.textContent='🔖',2000);}
+}
+
+document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);});
+</script>
+</body>
+</html>

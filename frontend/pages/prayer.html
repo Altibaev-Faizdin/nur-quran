@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Prayer Times — Noor Al-Quran</title>
+<link rel="stylesheet" href="../shared.css">
+<style>
+.prayer-big-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;max-width:900px;margin:0 auto}
+.pbig{padding:32px 20px;text-align:center;position:relative;overflow:hidden}
+.pbig::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(212,160,23,.07),transparent 70%);opacity:0;transition:var(--r)}
+.pbig:hover::before,.pbig.now::before{opacity:1}
+.pbig.now{border-color:rgba(212,160,23,.6)!important;box-shadow:0 0 30px rgba(212,160,23,.18)}
+.pbig.now::after{content:'NOW';position:absolute;top:12px;right:12px;font-size:.6rem;letter-spacing:2px;color:var(--goldL);background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:10px}
+.pi-icon{font-size:2.2rem;margin-bottom:12px}
+.pi-name{font-family:'Cinzel Decorative',serif;font-size:.85rem;color:var(--soft);letter-spacing:2px;margin-bottom:8px}
+.pi-time{font-size:2.2rem;color:var(--goldL);font-weight:300;letter-spacing:3px;font-variant-numeric:tabular-nums}
+.pi-ar{font-family:'Amiri',serif;font-size:1rem;color:var(--soft);margin-top:6px}
+.pi-left{font-size:.72rem;color:var(--soft);margin-top:8px}
+</style>
+</head>
+<body>
+<div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+<div class="nebula"></div><canvas id="sc"></canvas>
+<div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+    <li><a href="quran.html">Quran</a></li>
+    <li><a href="reciters.html">Reciters</a></li>
+    <li><a href="prayer.html" class="on">Prayer Times</a></li>
+    <li class="dropdown">
+      <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+      <div class="dropdown-content">
+        <a href="dua.html">Daily Dua</a>
+        <a href="tasbih.html">Tasbih Counter</a>
+        <a href="qibla.html">Qibla Compass</a>
+        <a href="hijri.html">Hijri Calendar</a>
+      </div>
+    </li>
+    <li><a href="names.html">99 Names</a></li>
+    <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+  </ul>
+</nav>
+<div class="wrap">
+<div class="ph fi">
+  <div class="stag">أوقات الصلاة</div>
+  <h1 class="st">Prayer <span>Times</span></h1>
+  <div class="sl"></div>
+  <p style="color:var(--soft);font-size:.82rem;margin-top:12px" id="locLabel">Click button to load your prayer times</p>
+</div>
+
+<!-- BIG CLOCK -->
+<div style="text-align:center;padding:36px 24px;border-bottom:1px solid rgba(212,160,23,.1)">
+  <div style="font-size:4rem;color:var(--white);font-weight:200;letter-spacing:6px;font-variant-numeric:tabular-nums" id="bigClock">00:00:00</div>
+  <div style="font-size:.75rem;color:var(--soft);letter-spacing:3px;margin-top:6px" id="bigDate">—</div>
+  <div style="font-family:'Amiri',serif;font-size:1rem;color:var(--gold);margin-top:4px" id="bigHijri">—</div>
+  <button class="btn bp" style="margin-top:20px" onclick="loadPrayerBig()">📍 Get My Prayer Times</button>
+</div>
+
+<section class="sec">
+<div class="prayer-big-grid fi" id="pbgrid">
+  <div class="card pbig" id="pb-fajr">    <div class="pi-icon">🌙</div><div class="pi-name">FAJR</div><div class="pi-time" id="bft">—:—</div><div class="pi-ar">الفجر</div><div class="pi-left" id="bfl">—</div></div>
+  <div class="card pbig" id="pb-sunrise"><div class="pi-icon">🌅</div><div class="pi-name">SUNRISE</div><div class="pi-time" id="bst">—:—</div><div class="pi-ar">الشروق</div><div class="pi-left" id="bsl">—</div></div>
+  <div class="card pbig" id="pb-dhuhr">  <div class="pi-icon">☀️</div><div class="pi-name">DHUHR</div><div class="pi-time" id="bdt">—:—</div><div class="pi-ar">الظهر</div><div class="pi-left" id="bdl">—</div></div>
+  <div class="card pbig" id="pb-asr">    <div class="pi-icon">🌤️</div><div class="pi-name">ASR</div><div class="pi-time" id="bat">—:—</div><div class="pi-ar">العصر</div><div class="pi-left" id="bal">—</div></div>
+  <div class="card pbig" id="pb-maghrib"><div class="pi-icon">🌇</div><div class="pi-name">MAGHRIB</div><div class="pi-time" id="bmt">—:—</div><div class="pi-ar">المغرب</div><div class="pi-left" id="bml">—</div></div>
+  <div class="card pbig" id="pb-isha">   <div class="pi-icon">🌃</div><div class="pi-name">ISHA</div><div class="pi-time" id="bit">—:—</div><div class="pi-ar">العشاء</div><div class="pi-left" id="bil">—</div></div>
+</div>
+</section>
+</div>
+
+<div class="adhan" id="adhan">
+  <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
+  <div class="adr"><button class="adcl" onclick="closeAdhan()">✕</button></div>
+</div>
+<footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
+
+<script src="../shared.js"></script>
+<script>
+// Big clock for this page
+(function(){
+  const D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  function upd(){
+    const n=new Date();
+    const h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');
+    set('bigClock',`${h}:${m}:${s}`);
+    set('bigDate',`${D[n.getDay()]}, ${M[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`);
+    const hj=toHijri(n);
+    set('bigHijri',`${hj.day} ${HM[hj.month]} ${hj.year} AH`);
+  }
+  setInterval(upd,1000);upd();
+})();
+
+function loadPrayerBig(){
+  const fetchBig = (la, lo) => {
+    fetch(`https://api.aladhan.com/v1/timings?latitude=${la}&longitude=${lo}&method=2`)
+      .then(r=>r.json()).then(d=>{
+        const t=d.data.timings;
+        set('bft',t.Fajr);set('bst',t.Sunrise);set('bdt',t.Dhuhr);
+        set('bat',t.Asr);set('bmt',t.Maghrib);set('bit',t.Isha);
+        // Also update prayer bar
+        set('ft',t.Fajr);set('srt',t.Sunrise);set('dt',t.Dhuhr);
+        set('at',t.Asr);set('mt',t.Maghrib);set('it',t.Isha);
+        // Highlight now
+        const now=new Date(),cur=now.getHours()*60+now.getMinutes();
+        const tm=s=>{const[h,m]=s.split(':').map(Number);return h*60+m;};
+        const ps=[{id:'pb-fajr',m:tm(t.Fajr)},{id:'pb-sunrise',m:tm(t.Sunrise)},{id:'pb-dhuhr',m:tm(t.Dhuhr)},{id:'pb-asr',m:tm(t.Asr)},{id:'pb-maghrib',m:tm(t.Maghrib)},{id:'pb-isha',m:tm(t.Isha)}];
+        ps.forEach(p=>{const e=document.getElementById(p.id);if(e)e.classList.remove('now');});
+        for(let i=ps.length-1;i>=0;i--){if(cur>=ps[i].m){const e=document.getElementById(ps[i].id);if(e){e.classList.add('now');break;}}}
+        // Time left
+        const city=d.data.meta.timezone||'';
+        set('locLabel',`📍 Location found · ${city}`);
+        schedulePrayer(t);
+      }).catch(()=>set('locLabel','⚠️ Could not load times'));
+  };
+
+  const fb = () => {
+    set('locLabel','Using IP Location Fallback...');
+    fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>fetchBig(d.latitude, d.longitude)).catch(()=>set('locLabel','⚠️ Location access denied'));
+  };
+
+  if(!navigator.geolocation) return fb();
+  navigator.geolocation.getCurrentPosition(pos => fetchBig(pos.coords.latitude, pos.coords.longitude), fb);
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Qibla Compass - Noor Al-Quran</title>
+  <link rel="stylesheet" href="../shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {background:linear-gradient(135deg, #0a0a0a 0%, #1a1517 100%);color:var(--text);font-family:'Lato',sans-serif;line-height:1.6}
+    .container {max-width:1200px;margin:0 auto;padding:20px}
+    .compass-section {display:grid;grid-template-columns:1fr;gap:30px;align-items:start}
+    @media(min-width:768px){.compass-section{grid-template-columns:2fr 1fr}}
+    .compass-container {background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(30,144,255,0.05));border:2px solid var(--gold);border-radius:16px;padding:40px;text-align:center}
+    svg {width:100%;height:auto;max-width:400px;margin:0 auto 30px;display:block;filter:drop-shadow(0 0 30px rgba(212,175,55,0.3))}
+    .compass-text {font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold);margin:20px 0}
+    .bearing-display {font-size:3rem;font-weight:bold;color:var(--blue);margin:15px 0}
+    .bearing-label {color:var(--soft);font-size:0.9rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
+    .info-card {background:rgba(212,175,55,0.05);border:2px solid var(--gold);border-radius:12px;padding:20px;margin:15px 0}
+    .info-title {color:var(--gold);font-weight:bold;margin-bottom:8px}
+    .info-value {color:var(--soft);font-size:0.95rem}
+    .button-group {display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;justify-content:center}
+    .btn-action {background:var(--blue);border:none;color:#fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:0.95rem;font-weight:bold;transition:all 0.2s ease}
+    .btn-action:hover {background:#0084cc;transform:translateY(-2px)}
+    .btn-action.primary {background:var(--gold);color:#000}
+    .btn-action.primary:hover {background:var(--goldL)}
+    .stats-widget {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:25px}
+    .stat-item {margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(30,144,255,0.2)}
+    .stat-item:last-child {border-bottom:none}
+    .stat-label {font-size:0.85rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
+    .stat-value {font-size:1.8rem;font-weight:bold;color:var(--blue)}
+    .stat-unit {font-size:0.8rem;color:var(--soft);margin-left:5px}
+    .status-indicator {display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;animation:pulse 2s infinite}
+    .status-active {background:#4ade80;box-shadow:0 0 10px rgba(74,222,128,0.5)}
+    .status-waiting {background:#facc15;box-shadow:0 0 10px rgba(250,204,21,0.5)}
+    .status-error {background:#ef4444}
+    @keyframes pulse {0%,100%{opacity:1}50%{opacity:0.5}}
+    .error-message {background:rgba(239,68,68,0.1);border:2px solid #ef4444;color:#fca5a5;padding:15px;border-radius:8px;margin:15px 0;display:none}
+    .loading-spinner {animation:spin 2s linear infinite;display:inline-block}
+    @keyframes spin {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+    .info-grid {display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
+    .section-title {font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);margin:40px 0 20px;text-align:center;border-bottom:2px solid var(--gold);padding-bottom:15px}
+    @media(max-width:768px){
+      .bearing-display {font-size:2.5rem}
+      .compass-section {grid-template-columns:1fr}
+      .info-grid {grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="cur" id="cur"></div>
+  <div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon">
+    <div class="mc"><div class="mcr"></div></div>
+  </div>
+
+  <nav>
+    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+    <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+        </div>
+      </li>
+      <li><a href="names.html">99 Names</a></li>
+      <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+    </ul>
+  </nav>
+
+  <div class="wrap">
+    <div class="ph fi">
+      <div class="stag">البوصلة</div>
+      <h1 class="st">Qibla <span>Compass</span></h1>
+      <div class="sl"></div>
+      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">Find the direction toward the Kaaba in Mecca</p>
+    </div>
+
+    <section class="sec" style="padding-bottom:60px">
+      <div class="container">
+        <div class="compass-section">
+          <!-- Main Compass -->
+          <div class="compass-container">
+            <svg id="compassSvg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
+              <!-- Outer circle -->
+              <circle cx="200" cy="200" r="190" fill="none" stroke="url(#compassGradient)" stroke-width="2" opacity="0.5"/>
+              <!-- Cardinal directions -->
+              <text x="200" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="var(--gold)">N</text>
+              <text x="365" y="205" text-anchor="middle" font-size="20" fill="var(--soft)">E</text>
+              <text x="200" y="375" text-anchor="middle" font-size="24" font-weight="bold" fill="var(--soft)">S</text>
+              <text x="35" y="205" text-anchor="middle" font-size="20" fill="var(--soft)">W</text>
+              <!-- Direction markers -->
+              <g id="cardinalMarkers">
+                <line x1="200" y1="20" x2="200" y2="50" stroke="var(--gold)" stroke-width="3"/>
+                <line x1="380" y1="200" x2="350" y2="200" stroke="var(--soft)" stroke-width="2"/>
+                <line x1="200" y1="380" x2="200" y2="350" stroke="var(--soft)" stroke-width="2"/>
+                <line x1="20" y1="200" x2="50" y2="200" stroke="var(--soft)" stroke-width="2"/>
+              </g>
+              <!-- Degree markings -->
+              <g id="degreeMarks" fill="none" stroke="var(--soft)" stroke-width="1" opacity="0.3">
+                <circle cx="200" cy="200" r="170"/>
+              </g>
+              <!-- Center circle -->
+              <circle cx="200" cy="200" r="15" fill="var(--gold)"/>
+              <!-- Qibla needle -->
+              <g id="needle" transform="translate(200, 200) rotate(0)">
+                <polygon points="0,-100 -8,-20 0,-10 8,-20" fill="var(--gold)" opacity="0.9"/>
+                <polygon points="0,100 -6,20 0,10 6,20" fill="var(--blue)" opacity="0.6"/>
+              </g>
+              <defs>
+                <linearGradient id="compassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:var(--gold);stop-opacity:0.5"/>
+                  <stop offset="100%" style="stop-color:var(--blue);stop-opacity:0.5"/>
+                </linearGradient>
+              </defs>
+            </svg>
+
+            <div class="bearing-label">Qibla Direction</div>
+            <div class="bearing-display" id="bearingDisplay">--°</div>
+            
+            <div class="info-card">
+              <div class="info-title">Current Status</div>
+              <div class="info-value">
+                <span class="status-indicator status-waiting"></span>
+                <span id="statusText">Enable location access</span>
+              </div>
+            </div>
+
+            <div class="button-group">
+              <button class="btn-action primary" onclick="getLocation()">📍 Find My Location</button>
+              <button class="btn-action" onclick="useManualLocation()">🗺️ Enter Manually</button>
+            </div>
+
+            <div class="error-message" id="errorMessage"></div>
+
+            <div class="info-card">
+              <div class="info-title">Location Information</div>
+              <div class="info-grid">
+                <div>
+                  <div class="info-label" style="font-size:0.8rem;color:var(--soft)">Latitude</div>
+                  <div class="info-value" id="latDisplay" style="color:var(--blue)">--</div>
+                </div>
+                <div>
+                  <div class="info-label" style="font-size:0.8rem;color:var(--soft)">Longitude</div>
+                  <div class="info-value" id="lonDisplay" style="color:var(--blue)">--</div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Sidebar -->
+          <div class="stats-widget">
+            <h3 style="color:var(--blue);margin-bottom:20px;font-weight:bold">🕋 Mecca Information</h3>
+            
+            <div class="stat-item">
+              <div class="stat-label">Kaaba Coordinates</div>
+              <div class="stat-value" style="font-size:1.1rem">21.43°N<br>39.82°E</div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-label">Distance to Mecca</div>
+              <div><span class="stat-value" id="distanceDisplay">--</span><span class="stat-unit">km</span></div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-label">Your Location</div>
+              <div class="info-value" id="locationNameDisplay" style="color:var(--blue)">Not set</div>
+            </div>
+
+            <div class="stat-item">
+              <div class="stat-label">Device Heading</div>
+              <div><span class="stat-value" id="headingDisplay">--</span><span class="stat-unit">°</span></div>
+            </div>
+
+            <button class="btn-action" style="width:100%;margin-top:15px" onclick="shareLocation()">📤 Share Location</button>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  </footer>
+
+  <div class="auth" id="authModal">
+    <div class="acard">
+      <button class="aclose" onclick="closeAuth()">✕</button>
+      <div class="ati">Welcome Back</div>
+      <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="filter:invert(1)"> Continue with Apple</div>
+      <div class="sep">or</div>
+      <input type="email" class="ainp" placeholder="Email Address">
+      <input type="password" class="ainp" placeholder="Password">
+      <button class="a-btn" onclick="closeAuth()">Sign In</button>
+      <div class="atg">Don't have an account? <span>Sign Up</span></div>
+    </div>
+  </div>
+
+  <script src="../shared.js"></script>
+  <script>
+    const MECCA = {lat:21.4225,lon:39.8262};
+    let userLat, userLon, userHeading=0;
+
+    function degreesToRadians(degrees){return degrees * (Math.PI/180);}
+    function radiansToDegrees(radians){return radians * (180/Math.PI);}
+
+    function calculateQiblaBearing(lat1,lon1){
+      const lat1Rad=degreesToRadians(lat1);
+      const lat2Rad=degreesToRadians(MECCA.lat);
+      const dLon=degreesToRadians(MECCA.lon-lon1);
+      
+      const y=Math.sin(dLon)*Math.cos(lat2Rad);
+      const x=Math.cos(lat1Rad)*Math.sin(lat2Rad)-Math.sin(lat1Rad)*Math.cos(lat2Rad)*Math.cos(dLon);
+      const bearing=radiansToDegrees(Math.atan2(y,x));
+      return (bearing+360)%360;
+    }
+
+    function calculateDistance(lat1,lon1){
+      const R=6371; // Earth's radius in km
+      const dLat=degreesToRadians(MECCA.lat-lat1);
+      const dLon=degreesToRadians(MECCA.lon-lon1);
+      const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(degreesToRadians(lat1))*Math.cos(degreesToRadians(MECCA.lat))*Math.sin(dLon/2)*Math.sin(dLon/2);
+      const c=2*Math.asin(Math.sqrt(a));
+      return Math.round(R*c);
+    }
+
+    function updateCompass(bearing){
+      document.getElementById('needle').setAttribute('transform',`translate(200, 200) rotate(${bearing})`);
+      document.getElementById('bearingDisplay').textContent=Math.round(bearing)+'°';
+    }
+
+    function getLocation(){
+      document.getElementById('statusText').textContent='Getting location...';
+      document.querySelector('.status-indicator').className='status-indicator status-waiting';
+      const err=document.getElementById('errorMessage');
+      err.style.display='none';
+      
+      if(!navigator.geolocation){
+        err.textContent='Geolocation not supported by your browser';
+        err.style.display='block';
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(pos=>{
+        userLat=pos.coords.latitude;
+        userLon=pos.coords.longitude;
+        updateDisplay();
+        document.getElementById('statusText').textContent='✓ Location found';
+        document.querySelector('.status-indicator').className='status-indicator status-active';
+      },err=>{
+        document.getElementById('errorMessage').textContent='Error: '+err.message;
+        document.getElementById('errorMessage').style.display='block';
+        document.getElementById('statusText').textContent='Location error';
+        document.querySelector('.status-indicator').className='status-indicator status-error';
+      });
+    }
+
+    function updateDisplay(){
+      if(!userLat||!userLon)return;
+      const bearing=calculateQiblaBearing(userLat,userLon);
+      const distance=calculateDistance(userLat,userLon);
+      updateCompass(bearing);
+      document.getElementById('latDisplay').textContent=userLat.toFixed(4)+'°';
+      document.getElementById('lonDisplay').textContent=userLon.toFixed(4)+'°';
+      document.getElementById('distanceDisplay').textContent=distance;
+    }
+
+    function useManualLocation(){
+      const lat=prompt('Enter latitude (-90 to 90):');
+      if(lat===null)return;
+      const lon=prompt('Enter longitude (-180 to 180):');
+      if(lon===null)return;
+      userLat=parseFloat(lat);
+      userLon=parseFloat(lon);
+      if(isNaN(userLat)||isNaN(userLon)){alert('Invalid coordinates');return;}
+      updateDisplay();
+      document.getElementById('statusText').textContent='✓ Manual location set';
+      document.querySelector('.status-indicator').className='status-indicator status-active';
+    }
+
+    function shareLocation(){
+      if(!userLat||!userLon){alert('Please get your location first');return;}
+      const text=`I'm at ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°. Qibla direction: ${Math.round(calculateQiblaBearing(userLat,userLon))}°`;
+      if(navigator.share){
+        navigator.share({title:'My Qibla Direction',text:text}).catch(e=>console.log(e));
+      }else{
+        navigator.clipboard.writeText(text);
+        alert('Copied to clipboard!');
+      }
+    }
+
+    // Check for device orientation API
+    if(window.DeviceOrientationEvent){
+      window.addEventListener('deviceorientation',e=>{
+        if(e.alpha!==null)userHeading=e.alpha;
+        document.getElementById('headingDisplay').textContent=Math.round(userHeading);
+      });
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{
+      getLocation();
+    });
+  </script>
+</body>
+</html>

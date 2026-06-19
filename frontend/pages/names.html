@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>99 Names — Noor Al-Quran</title>
+<link rel="stylesheet" href="../shared.css">
+</head>
+<body>
+<div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+<div class="nebula"></div><canvas id="sc"></canvas>
+<div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+        </div>
+      </li>
+      <li><a href="names.html" class="on">99 Names</a></li>
+      <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+    </ul>
+</nav>
+<div class="wrap">
+<div class="ph fi"><div class="stag">أسماء الله الحسنى</div><h1 class="st">99 Names of <span>Allah</span></h1><div class="sl"></div><p style="color:var(--soft);font-size:.82rem;margin-top:12px">Asmaul Husna · Arabic · English · Russian</p></div>
+<section class="sec">
+<div class="ng fi" id="ng"></div>
+</section>
+</div>
+<footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
+<script src="../shared.js"></script>
+<script>
+const NAMES=[
+  [1,'الرَّحْمَن','Ar-Rahman','The Most Gracious','Милостивый'],
+  [2,'الرَّحِيم','Ar-Rahim','The Most Merciful','Милосердный'],
+  [3,'الْمَلِك','Al-Malik','The King','Царь'],
+  [4,'الْقُدُّوس','Al-Quddus','The Most Holy','Пресвятой'],
+  [5,'السَّلَام','As-Salam','The Source of Peace','Мир'],
+  [6,'الْمُؤْمِن',"Al-Mu'min",'The Guardian of Faith','Дарующий безопасность'],
+  [7,'الْمُهَيْمِن','Al-Muhaymin','The Protector','Хранитель'],
+  [8,'الْعَزِيز','Al-Aziz','The Mighty','Могущественный'],
+  [9,'الْجَبَّار','Al-Jabbar','The Compeller','Принуждающий'],
+  [10,'الْمُتَكَبِّر','Al-Mutakabbir','The Majestic','Величественный'],
+  [11,'الْخَالِق','Al-Khaliq','The Creator','Творец'],
+  [12,'الْبَارِئ',"Al-Bari'",'The Evolver','Создатель'],
+  [13,'الْمُصَوِّر','Al-Musawwir','The Fashioner','Придающий форму'],
+  [14,'الْغَفَّار','Al-Ghaffar','The Forgiver','Всепрощающий'],
+  [15,'الْقَهَّار','Al-Qahhar','The Subduer','Всепобеждающий'],
+  [16,'الْوَهَّاب','Al-Wahhab','The Bestower','Дарующий'],
+  [17,'الرَّزَّاق','Ar-Razzaq','The Provider','Кормилец'],
+  [18,'الْفَتَّاح','Al-Fattah','The Opener','Открывающий'],
+  [19,'الْعَلِيم','Al-Alim','The All-Knowing','Всезнающий'],
+  [20,'الْقَابِض','Al-Qabid','The Constrictor','Сжимающий'],
+  [21,'الْبَاسِط',"Al-Basit",'The Expander','Расширяющий'],
+  [22,'الْخَافِض','Al-Khafid','The Abaser','Унижающий'],
+  [23,'الرَّافِع',"Ar-Rafi'",'The Exalter','Возвышающий'],
+  [24,'الْمُعِز',"Al-Mu'izz",'The Bestower of Honor','Чествующий'],
+  [25,'الْمُذِل','Al-Mudhill','The Humiliator','Унижающий'],
+  [26,'السَّمِيع',"As-Sami'",'The All-Hearing','Всеслышащий'],
+  [27,'الْبَصِير','Al-Basir','The All-Seeing','Всевидящий'],
+  [28,'الْحَكَم','Al-Hakam','The Judge','Судья'],
+  [29,'الْعَدْل','Al-Adl','The Just','Справедливый'],
+  [30,'اللَّطِيف','Al-Latif','The Subtle One','Тонкий'],
+  [31,'الْخَبِير','Al-Khabir','The All-Aware','Осведомлённый'],
+  [32,'الْحَلِيم','Al-Halim','The Forbearing','Терпеливый'],
+  [33,'الْعَظِيم','Al-Azim','The Magnificent','Величайший'],
+  [34,'الْغَفُور','Al-Ghafur','The Forgiving','Прощающий'],
+  [35,'الشَّكُور','Ash-Shakur','The Appreciative','Благодарный'],
+  [36,'الْعَلِيّ',"Al-Ali'",'The Most High','Высочайший'],
+  [37,'الْكَبِير','Al-Kabir','The Most Great','Великий'],
+  [38,'الْحَفِيظ','Al-Hafiz','The Preserver','Хранящий'],
+  [39,'الْمُقِيت','Al-Muqit','The Nourisher','Питающий'],
+  [40,'الْحَسِيب','Al-Hasib','The Reckoner','Считающий'],
+  [41,'الْجَلِيل','Al-Jalil','The Majestic','Величественный'],
+  [42,'الْكَرِيم','Al-Karim','The Generous','Щедрый'],
+  [43,'الرَّقِيب','Ar-Raqib','The Watchful','Наблюдающий'],
+  [44,'الْمُجِيب','Al-Mujib','The Responsive','Отвечающий'],
+  [45,'الْوَاسِع',"Al-Wasi'",'The All-Encompassing','Необъятный'],
+  [46,'الْحَكِيم','Al-Hakim','The Wise','Мудрый'],
+  [47,'الْوَدُود','Al-Wadud','The Loving','Любящий'],
+  [48,'الْمَجِيد','Al-Majid','The Most Glorious','Славный'],
+  [49,'الْبَاعِث',"Al-Ba'ith",'The Resurrector','Воскрешающий'],
+  [50,'الشَّهِيد','Ash-Shahid','The Witness','Свидетель'],
+  [51,'الْحَقّ','Al-Haqq','The Truth','Истина'],
+  [52,'الْوَكِيل','Al-Wakil','The Trustee','Попечитель'],
+  [53,'الْقَوِيّ','Al-Qawi','The Most Strong','Сильный'],
+  [54,'الْمَتِين','Al-Matin','The Firm','Твёрдый'],
+  [55,'الْوَلِيّ','Al-Wali','The Protecting Friend','Покровитель'],
+  [56,'الْحَمِيد','Al-Hamid','The Praiseworthy','Достохвальный'],
+  [57,'الْمُحْصِي','Al-Muhsi','The Counter','Исчисляющий'],
+  [58,'الْمُبْدِئ',"Al-Mubdi'",'The Originator','Начинающий'],
+  [59,'الْمُعِيد',"Al-Mu'id",'The Restorer','Возобновляющий'],
+  [60,'الْمُحْيِي','Al-Muhyi','The Giver of Life','Дающий жизнь'],
+  [61,'الْمُمِيت','Al-Mumit','The Taker of Life','Умерщвляющий'],
+  [62,'الْحَيّ','Al-Hayy','The Ever-Living','Вечно живой'],
+  [63,'الْقَيُّوم','Al-Qayyum','The Self-Subsisting','Самодостаточный'],
+  [64,'الْوَاجِد','Al-Wajid','The Finder','Находящий'],
+  [65,'الْمَاجِد','Al-Majid','The Noble','Благородный'],
+  [66,'الْوَاحِد','Al-Wahid','The One','Единый'],
+  [67,'الأَحَد','Al-Ahad','The Unique','Единственный'],
+  [68,'الصَّمَد','As-Samad','The Eternal','Вечный'],
+  [69,'الْقَادِر','Al-Qadir','The Capable','Могущий'],
+  [70,'الْمُقْتَدِر','Al-Muqtadir','The Powerful','Всесильный'],
+  [71,'الْمُقَدِّم','Al-Muqaddim','The Expediter','Выдвигающий вперёд'],
+  [72,'الْمُؤَخِّر',"Al-Mu'akhkhir",'The Delayer','Откладывающий'],
+  [73,'الأَوَّل','Al-Awwal','The First','Первый'],
+  [74,'الآخِر','Al-Akhir','The Last','Последний'],
+  [75,'الظَّاهِر','Az-Zahir','The Manifest','Явный'],
+  [76,'الْبَاطِن','Al-Batin','The Hidden','Скрытый'],
+  [77,'الْوَالِي','Al-Wali','The Governor','Правитель'],
+  [78,'الْمُتَعَالِي',"Al-Muta'ali",'The Most Exalted','Превознесённый'],
+  [79,'الْبَرّ','Al-Barr','The Source of Goodness','Благой'],
+  [80,'التَّوَّاب','At-Tawwab','The Ever-Returning','Принимающий покаяние'],
+  [81,'الْمُنْتَقِم','Al-Muntaqim','The Avenger','Мститель'],
+  [82,'الْعَفُوّ','Al-Afuww','The Pardoner','Прощающий'],
+  [83,'الرَّؤُوف',"Ar-Ra'uf",'The Compassionate','Сострадательный'],
+  [84,'مَالِكُ الْمُلْك','Malik-ul-Mulk','Owner of All Sovereignty','Владыка царства'],
+  [85,'ذُو الْجَلَالِ','Dhul-Jalali','Lord of Majesty','Обладатель величия'],
+  [86,'الْمُقْسِط','Al-Muqsit','The Equitable','Справедливый'],
+  [87,'الْجَامِع',"Al-Jami'",'The Gatherer','Собирающий'],
+  [88,'الْغَنِيّ','Al-Ghani','The Self-Sufficient','Богатый'],
+  [89,'الْمُغْنِي','Al-Mughni','The Enricher','Обогащающий'],
+  [90,'الْمَانِع',"Al-Mani'",'The Preventer','Удерживающий'],
+  [91,'الضَّارّ','Ad-Darr','The Distresser','Причиняющий вред'],
+  [92,'النَّافِع',"An-Nafi'",'The Benefiter','Приносящий пользу'],
+  [93,'النُّور','An-Nur','The Light','Свет'],
+  [94,'الْهَادِي','Al-Hadi','The Guide','Ведущий правым путём'],
+  [95,'الْبَدِيع',"Al-Badi'",'The Incomparable','Несравненный'],
+  [96,'الْبَاقِي','Al-Baqi','The Everlasting','Вечный'],
+  [97,'الْوَارِث','Al-Warith','The Inheritor','Наследующий'],
+  [98,'الرَّشِيد','Ar-Rashid','The Guide to Right Path','Ведущий верным путём'],
+  [99,'الصَّبُور','As-Sabur','The Patient','Терпеливый'],
+];
+
+document.getElementById('ng').innerHTML=NAMES.map(n=>`
+  <div class="card nc">
+    <div class="nn2">${String(n[0]).padStart(2,'0')}</div>
+    <div class="na">${n[1]}</div>
+    <div class="nt">${n[2]}</div>
+    <div class="nm">${n[3]}</div>
+    <div class="nm" style="color:rgba(168,192,232,.45);margin-top:2px">${n[4]}</div>
+  </div>`).join('');
+</script>
+
+<div class="auth" id="authModal">
+  <div class="acard">
+    <button class="aclose" onclick="closeAuth()">✕</button>
+    <div class="ati">Welcome Back</div>
+    <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
+    <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
+    <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="filter:invert(1)"> Continue with Apple</div>
+    <div class="sep">or</div>
+    <input type="email" class="ainp" placeholder="Email Address">
+    <input type="password" class="ainp" placeholder="Password">
+    <button class="a-btn" onclick="closeAuth()">Sign In</button>
+    <div class="atg">Don't have an account? <span>Sign Up</span></div>
+  </div>
+</div>
+
+</body>
+</html>

@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Tasbih Counter - Noor Al-Quran</title>
+  <link rel="stylesheet" href="../shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    * {margin:0;padding:0;box-sizing:border-box}
+    body {background:linear-gradient(135deg, #0a0a0a 0%, #1a1517 100%);color:var(--text);font-family:'Lato',sans-serif;line-height:1.6}
+    .container {max-width:1200px;margin:0 auto;padding:20px}
+    .counter-container {display:grid;grid-template-columns:1fr;gap:30px;align-items:start}
+    @media(min-width:768px){.counter-container{grid-template-columns:2fr 1fr}}
+    .main-counter {background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(30,144,255,0.05));border:2px solid var(--gold);border-radius:16px;padding:40px;text-align:center;position:relative;overflow:hidden}
+    .main-counter::before {content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(212,175,55,0.1) 1px,transparent 1px);background-size:40px 40px;animation:moveGrid 20s linear infinite}
+    @keyframes moveGrid {from{transform:translate(0,0)}to{transform:translate(40px,40px)}}
+    .counter-display {font-size:6rem;font-weight:bold;color:var(--gold);font-family:'Cinzel Decorative',cursive;margin:30px 0;position:relative;z-index:1;text-shadow:0 0 20px rgba(212,175,55,0.3)}
+    .dhikr-label {font-family:'Amiri Quran',serif;font-size:1.5rem;color:var(--gold);margin:20px 0;position:relative;z-index:1}
+    .dhikr-english {font-size:1.1rem;color:var(--soft);margin-bottom:10px;position:relative;z-index:1}
+    .progress-bar {height:8px;background:rgba(212,175,55,0.1);border-radius:10px;margin:20px 0 30px;overflow:hidden;position:relative;z-index:1}
+    .progress-fill {height:100%;background:linear-gradient(90deg,var(--gold),var(--blue));transition:width 0.3s ease}
+    .tap-button {width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;color:#000;font-size:2rem;font-weight:bold;cursor:pointer;transition:all 0.2s ease;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,175,55,0.4);position:relative;z-index:1}
+    .tap-button:hover {transform:scale(1.1);box-shadow:0 12px 48px rgba(212,175,55,0.6)}
+    .tap-button:active {transform:scale(0.95)}
+    .button-group {display:flex;gap:10px;margin:20px 0;position:relative;z-index:1;flex-wrap:wrap;justify-content:center}
+    .btn-action {background:var(--blue);border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:bold;transition:all 0.2s ease}
+    .btn-action:hover {background:#0084cc;transform:translateY(-2px)}
+    .btn-action.danger {background:#e74c3c}
+    .btn-action.danger:hover {background:#c0392b}
+    .dhikr-selection {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:25px;position:relative;z-index:1}
+    .dhikr-option {background:rgba(212,175,55,0.05);border:2px solid var(--gold);color:var(--gold);padding:12px 16px;border-radius:8px;cursor:pointer;transition:all 0.3s ease;font-weight:600;margin-bottom:10px;text-align:center;font-size:0.9rem}
+    .dhikr-option:hover {background:var(--gold);color:#000;transform:translateX(5px)}
+    .dhikr-option.active {background:var(--gold);color:#000;box-shadow:0 4px 12px rgba(212,175,55,0.4)}
+    .stats-widget {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:20px;position:relative;z-index:1}
+    .stat-item {margin-bottom:15px;padding-bottom:15px;border-bottom:1px solid rgba(30,144,255,0.2)}
+    .stat-item:last-child {border-bottom:none}
+    .stat-label {font-size:0.85rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px}
+    .stat-value {font-size:1.5rem;font-weight:bold;color:var(--blue);margin-top:5px}
+    .preset-buttons {display:grid;gap:10px}
+    .section-title {font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);margin:40px 0 20px;text-align:center;border-bottom:2px solid var(--gold);padding-bottom:15px}
+    @media(max-width:768px){
+      .counter-display {font-size:4rem}
+      .tap-button {width:120px;height:120px;font-size:1.8rem}
+      .counter-container {grid-template-columns:1fr}
+    }
+  </style>
+</head>
+<body>
+  <div class="cur" id="cur"></div>
+  <div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon">
+    <div class="mc"><div class="mcr"></div></div>
+  </div>
+
+  <nav>
+    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+    <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+        </div>
+      </li>
+      <li><a href="names.html">99 Names</a></li>
+      <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+    </ul>
+  </nav>
+
+  <div class="wrap">
+    <div class="ph fi">
+      <div class="stag">سبحة</div>
+      <h1 class="st">Tasbih <span>Counter</span></h1>
+      <div class="sl"></div>
+      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">Digital prayer beads for remembrance of Allah</p>
+    </div>
+
+    <section class="sec" style="padding-bottom:60px">
+      <div class="container">
+        <div class="counter-container">
+          <!-- Main Counter -->
+          <div class="main-counter">
+            <div class="counter-display" id="counterDisplay">0</div>
+            <div class="dhikr-arabic" id="dhikrAr" style="font-family:'Amiri Quran',serif;font-size:1.8rem;color:var(--gold);margin:15px 0;direction:rtl">سُبْحَانَ اللَّهِ</div>
+            <div class="dhikr-english" id="dhikrEn">Subhan'Allah</div>
+            
+            <div class="progress-bar">
+              <div class="progress-fill" id="progressFill" style="width:0%"></div>
+            </div>
+            
+            <button class="tap-button" onclick="incrementCounter()">📿</button>
+            
+            <div class="button-group">
+              <button class="btn-action" onclick="decrementCounter()">← Previous</button>
+              <button class="btn-action danger" onclick="resetCounter()">🔄 Reset</button>
+              <button class="btn-action" onclick="incrementCounter()">Next →</button>
+            </div>
+
+            <p style="color:var(--soft);font-size:0.9rem;margin-top:20px;text-align:center">
+              Goal: <span style="color:var(--gold);font-weight:bold" id="goalDisplay">33</span> | 
+              <span id="percentDisplay" style="color:var(--blue)">0%</span> Complete
+            </p>
+          </div>
+
+          <!-- Sidebar Stats & Options -->
+          <div>
+            <!-- Dhikr Selection -->
+            <div class="dhikr-selection">
+              <h3 style="color:var(--gold);margin-bottom:15px;font-weight:bold">Choose Dhikr</h3>
+              <div class="preset-buttons">
+                <button class="dhikr-option active" onclick="selectDhikr(0)">🌅 Subhan'Allah<br><small>×33</small></button>
+                <button class="dhikr-option" onclick="selectDhikr(1)">🙏 Alhamdulillah<br><small>×33</small></button>
+                <button class="dhikr-option" onclick="selectDhikr(2)">⭐ Allahu Akbar<br><small>×34</small></button>
+                <button class="dhikr-option" onclick="selectDhikr(3)">🌙 La ilaha illallah<br><small>×33</small></button>
+                <button class="dhikr-option" onclick="selectDhikr(4)">✨ Durood Shareef<br><small>×10</small></button>
+              </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="stats-widget" style="margin-top:20px">
+              <h3 style="color:var(--blue);margin-bottom:15px;font-weight:bold">Statistics</h3>
+              <div class="stat-item">
+                <div class="stat-label">Total Today</div>
+                <div class="stat-value" id="statsToday">0</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Sessions</div>
+                <div class="stat-value" id="statsSessions">0</div>
+              </div>
+              <div class="stat-item">
+                <div class="stat-label">Best Streak</div>
+                <div class="stat-value" id="statsBestStreak">0</div>
+              </div>
+              <button class="btn-action" style="width:100%;margin-top:15px" onclick="saveDhikrSession()">💾 Save Session</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  </footer>
+
+  <div class="auth" id="authModal">
+    <div class="acard">
+      <button class="aclose" onclick="closeAuth()">✕</button>
+      <div class="ati">Welcome Back</div>
+      <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="filter:invert(1)"> Continue with Apple</div>
+      <div class="sep">or</div>
+      <input type="email" class="ainp" placeholder="Email Address">
+      <input type="password" class="ainp" placeholder="Password">
+      <button class="a-btn" onclick="closeAuth()">Sign In</button>
+      <div class="atg">Don't have an account? <span>Sign Up</span></div>
+    </div>
+  </div>
+
+  <script src="../shared.js"></script>
+  <script>
+    const DHIKRS = [
+      {ar:'سُبْحَانَ اللَّهِ',en:'Subhan\'Allah (Glory be to Allah)',goal:33},
+      {ar:'الْحَمْدُ لِلَّهِ',en:'Alhamdulillah (All praise be to Allah)',goal:33},
+      {ar:'اللَّهُ أَكْبَر',en:'Allahu Akbar (Allah is the Greatest)',goal:34},
+      {ar:'لَا إِلَهَ إِلَّا اللَّهُ',en:'La ilaha illallah (There is no god but Allah)',goal:33},
+      {ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ',en:'Durood Shareef (Blessings upon the Prophet)',goal:10}
+    ];
+
+    let currentDhikr=0;
+    let counter=0;
+    let totalToday=0;
+    let sessions=0;
+    let bestStreak=0;
+
+    function selectDhikr(idx){
+      currentDhikr=idx;
+      counter=0;
+      document.querySelectorAll('.dhikr-option').forEach((btn,i)=>btn.classList.toggle('active',i===idx));
+      updateDisplay();
+    }
+
+    function incrementCounter(){
+      counter++;
+      updateDisplay();
+      playSound();
+    }
+
+    function decrementCounter(){
+      if(counter>0)counter--;
+      updateDisplay();
+    }
+
+    function resetCounter(){
+      if(confirm('Reset the counter?')){
+        counter=0;
+        updateDisplay();
+      }
+    }
+
+    function updateDisplay(){
+      const d=DHIKRS[currentDhikr];
+      document.getElementById('counterDisplay').textContent=counter;
+      document.getElementById('dhikrAr').textContent=d.ar;
+      document.getElementById('dhikrEn').textContent=d.en;
+      document.getElementById('goalDisplay').textContent=d.goal;
+      const percent=Math.min(100,Math.round((counter/d.goal)*100));
+      document.getElementById('progressFill').style.width=percent+'%';
+      document.getElementById('percentDisplay').textContent=percent+'%';
+      document.getElementById('statsToday').textContent=(totalToday+counter);
+    }
+
+    function saveDhikrSession(){
+      if(counter===0)return alert('Counter is empty!');
+      totalToday+=counter;
+      sessions++;
+      if(counter>bestStreak)bestStreak=counter;
+      counter=0;
+      updateDisplay();
+      alert('✅ Session saved! '+totalToday+' total today.');
+    }
+
+    function playSound(){
+      // Create simple beep using Web Audio API
+      try{
+        const audioContext=new(window.AudioContext||window.webkitAudioContext)();
+        const oscillator=audioContext.createOscillator();
+        const gain=audioContext.createGain();
+        oscillator.connect(gain);
+        gain.connect(audioContext.destination);
+        oscillator.frequency.value=800;
+        oscillator.type='sine';
+        gain.gain.setValueAtTime(0.3,audioContext.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime+0.1);
+        oscillator.start(audioContext.currentTime);
+        oscillator.stop(audioContext.currentTime+0.1);
+      }catch(e){}
+    }
+
+    document.addEventListener('DOMContentLoaded',()=>{updateDisplay();});
+
+    // Keyboard shortcuts
+    document.addEventListener('keydown',(e)=>{
+      if(e.code==='Space'){e.preventDefault();incrementCounter();}
+      if(e.code==='Backspace')resetCounter();
+    });
+  </script>
+</body>
+</html>
