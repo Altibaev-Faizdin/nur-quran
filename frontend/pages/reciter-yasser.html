@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Abd Ar-Razzaq Al-Arfaj — Noor Al-Quran</title>
-  <meta name="description" content="Listen to Abd Ar-Razzaq Al-Arfaj's full Quran recitation — all 114 Surahs with a premium audio player.">
+  <title>Yasser Al-Dosari — Noor Al-Quran</title>
+  <meta name="description" content="Listen to Yasser Al-Dosari's full Quran recitation — all 114 Surahs with a premium audio player.">
   <link rel="stylesheet" href="../shared.css">
   <style>
     .reciter-hero{background:linear-gradient(135deg,rgba(13,38,128,.85),rgba(26,58,143,.65));padding:70px 24px;text-align:center;border-bottom:1px solid rgba(212,160,23,.2)}
@@ -62,6 +62,29 @@
     .surah-btn.active .surah-name{color:var(--silver)}
     .playing-badge{display:none;font-size:.55rem;background:var(--gold);color:#000;padding:1px 6px;border-radius:8px;margin-top:2px;font-weight:700}
     .surah-btn.active .playing-badge{display:inline-block}
+
+    /* ── Ayah Panel ── */
+    .ayah-panel{max-width:780px;margin:0 auto 60px;padding:0 24px}
+    .ayah-panel-header{font-family:'Cinzel Decorative',serif;font-size:.8rem;color:var(--soft);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;text-align:center}
+    .ayah-list-wrap{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px}
+    .ayah-list-wrap::-webkit-scrollbar{width:4px}
+    .ayah-list-wrap::-webkit-scrollbar-thumb{background:rgba(212,160,23,.3);border-radius:2px}
+    .ayah-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+    .ayah-item:hover{border-color:rgba(212,160,23,.4);background:rgba(13,38,128,.65)}
+    .ayah-item.active{border-color:var(--gold);background:rgba(212,160,23,.1);box-shadow:0 0 20px rgba(212,160,23,.2)}
+    .ayah-item.active::before{content:'\25B6';position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--goldL);font-size:.7rem;opacity:.8}
+    .ayah-num{min-width:32px;height:32px;border-radius:50%;background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.3);color:var(--goldL);font-size:.78rem;font-weight:700;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-family:'Lato',sans-serif}
+    .ayah-item.active .ayah-num{background:var(--gold);color:#000}
+    .ayah-content{flex:1;text-align:right;direction:rtl}
+    .ayah-arab{font-family:'Amiri Quran',serif;font-size:1.35rem;line-height:2.2;color:var(--white);direction:rtl}
+    .ayah-item.active .ayah-arab{color:var(--goldG)}
+    .ayah-trans{font-size:.75rem;color:var(--soft);line-height:1.6;text-align:left;direction:ltr;margin-top:6px;font-style:italic}
+    .ayah-play-btn{background:transparent;border:none;color:var(--soft);cursor:pointer;font-size:.9rem;padding:4px 8px;border-radius:6px;transition:.2s;flex-shrink:0;margin-top:2px}
+    .ayah-play-btn:hover{color:var(--goldL);background:rgba(212,160,23,.1)}
+    .ayah-loading{display:flex;align-items:center;justify-content:center;gap:12px;padding:40px;color:var(--soft);font-size:.85rem}
+    .ayah-spinner{width:24px;height:24px;border:2px solid rgba(212,160,23,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+    .ayah-error{padding:30px;text-align:center;color:#e07070;font-size:.85rem}
+    @keyframes spin{to{transform:rotate(360deg)}}
   </style>
 </head>
 <body>
@@ -91,9 +114,9 @@
 
   <div class="wrap" style="padding-top:0">
     <div class="reciter-hero fi">
-      <div style="background:url('https://tvquran.com/uploads/photo/87.jpg');background-size:cover;background-position:center" class="reciter-photo"></div>
-      <div class="reciter-name">Abd Ar-Razzaq Al-Arfaj</div>
-      <div class="reciter-ar">عبد الرزاق العرفج</div>
+      <div style="background:url('https://tvquran.com/uploads/photo/92.jpg');background-size:cover;background-position:center" class="reciter-photo"></div>
+      <div class="reciter-name">Yasser Al-Dosari</div>
+      <div class="reciter-ar">ياسر الدوسري</div>
       <div class="reciter-info">
         <div class="info-item"><div class="info-label">Style</div><div class="info-value">Murattal</div></div>
         <div class="info-item"><div class="info-label">Country</div><div class="info-value">Saudi Arabia 🇸🇦</div></div>
@@ -105,8 +128,8 @@
     <div class="reciter-bio fi">
       <h2>About This Reciter</h2>
       <div class="sl" style="margin:20px auto"></div>
-      <p class="bio-en">Sheikh Abd Ar-Razzaq Al-Arfaj is a distinguished Saudi Quran reciter known for his clear and melodious recitation style. His pure voice and perfect Tajweed make his recitation beloved by listeners worldwide.</p>
-      <p class="bio-ru">Шейх Абд Ар-Раззак аль-Арфадж — выдающийся саудовский чтец Корана, известный своим ясным и мелодичным стилем чтения. Его чистый голос и совершенное изучение Таджвида делают его чтение возлюбленным слушателями по всему миру.</p>
+      <p class="bio-en">Sheikh Yasser Al-Dosari is the Imam of Masjid Al-Haram in Makkah, celebrated for his deeply emotional and powerful recitation.</p>
+      <p class="bio-ru">Шейх Сауд аль-Джума’а — выдающийся саудовский чтец Корана, известный своим чистым, мелодичным голосом и точным соблюдением Таджвида. Его чтение несёт глубокую духовную тяжесть, которая трогает сердца слушателей по всему миру.</p>
     </div>
 
     <section class="sec" style="padding-top:0">
@@ -121,6 +144,7 @@
           <div class="player-surah-hint">NOW PLAYING</div>
           <div class="player-surah-name" id="playerSurahName">Select a Surah Below ↓</div>
           <div class="player-surah-ar" id="playerSurahAr"></div>
+          <div class="player-ayah-info" id="playerAyahInfo" style="font-size:.8rem;color:var(--soft);margin-bottom:20px;min-height:1.2rem;font-family:'Lato',sans-serif"></div>
           <div class="play-btn-wrap">
             <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" title="Previous Surah" disabled>◀◀</button>
             <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" title="Play / Pause">▶</button>
@@ -134,11 +158,24 @@
             <span class="vol-icon" onclick="toggleMute()" id="volIcon">🔊</span>
             <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" oninput="setVolume()" aria-label="Volume">
           </div>
+          <div class="vol-row" style="margin-top:8px">
+            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Lato',sans-serif;transition:.2s">1×</button>
+            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:.2s">⟳</button>
+          </div>
           <div class="ctrl-row" style="margin-top:18px">
             <button class="ctrl-btn ctrl-stop" onclick="stopReciter()">⏹ Stop</button>
             <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()">✕ Close Bar</button>
           </div>
         </div>
+      </div>
+
+
+      <!-- ── AYAH LIST ── -->
+      <div class="ayah-panel fi">
+        <div class="ayah-panel-header">
+          <span id="ayahPanelTitle">Verses will appear here</span>
+        </div>
+        <div class="ayah-list-wrap" id="ayahList"></div>
       </div>
 
       <div class="surahs-section fi">
@@ -152,7 +189,7 @@
     <div style="display:flex;align-items:center;padding:14px 20px;gap:14px;flex-wrap:wrap">
       <div style="flex:1;min-width:180px">
         <div id="asn" style="font-family:'Cinzel Decorative',serif;font-size:.8rem;font-weight:700;color:var(--goldL);margin-bottom:3px">Surah</div>
-        <div id="arcn" style="font-size:.78rem;color:var(--silver)">Abd Ar-Razzaq Al-Arfaj</div>
+        <div id="arcn" style="font-size:.78rem;color:var(--silver)">Yasser Al-Dosari</div>
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <button id="plbtn" onclick="togPlayReciter()" style="background:var(--gold);color:#000;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;font-weight:700">▶</button>
@@ -168,43 +205,15 @@
       <span id="timeNow">0:00</span><span id="timeDur">0:00</span>
     </div>
   </div>
-  <audio id="aud" ontimeupdate="updateProgress()" onloadedmetadata="onAudioMeta()" onended="onAudioEnded()" onerror="onAudioError()"></audio>
+  <audio id="aud"></audio>
 
   <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
 
   <script src="../shared.js"></script>
   <script>
-    const RECITER_ID = 'arfaj';
-    const RECITER_SERVER = 'https://server6.mp3quran.net/arfaj/';
+    const RECITER_ID = 'yasser_dosari';
+    const RECITER_SERVER = 'https://server11.mp3quran.net/yasser/';
   </script>
   <script src="../reciter-player.js"></script>
-  <script>
-    // Grid initialization -- reciter-player.js will handle player functions
-    const SURAHS = [
-      {n:1,ar:'الفاتحة',en:'Al-Fatihah'},{n:2,ar:'البقرة',en:'Al-Baqarah'},{n:3,ar:'آل عمران',en:"Ali 'Imran"},{n:4,ar:'النساء',en:"An-Nisa'"},{n:5,ar:'المائدة',en:"Al-Ma'idah"},
-      {n:6,ar:'الأنعام',en:"Al-An'am"},{n:7,ar:'الأعراف',en:"Al-A'raf"},{n:8,ar:'الأنفال',en:'Al-Anfal'},{n:9,ar:'التوبة',en:'At-Tawbah'},{n:10,ar:'يونس',en:'Yunus'},
-      {n:11,ar:'هود',en:'Hud'},{n:12,ar:'يوسف',en:'Yusuf'},{n:13,ar:'الرعد',en:"Ar-Ra'd"},{n:14,ar:'إبراهيم',en:'Ibrahim'},{n:15,ar:'الحجر',en:'Al-Hijr'},
-      {n:16,ar:'النحل',en:'An-Nahl'},{n:17,ar:'الإسراء',en:"Al-Isra'"},{n:18,ar:'الكهف',en:'Al-Kahf'},{n:19,ar:'مريم',en:'Maryam'},{n:20,ar:'طه',en:'Ta-Ha'},
-      {n:21,ar:'الأنبياء',en:"Al-Anbiya'"},{n:22,ar:'الحج',en:'Al-Hajj'},{n:23,ar:'المؤمنون',en:"Al-Mu'minun"},{n:24,ar:'النور',en:'An-Nur'},{n:25,ar:'الفرقان',en:'Al-Furqan'},
-      {n:26,ar:'الشعراء',en:"Ash-Shu'ara'"},{n:27,ar:'النمل',en:'An-Naml'},{n:28,ar:'القصص',en:'Al-Qasas'},{n:29,ar:'العنكبوت',en:'Al-Ankabut'},{n:30,ar:'الروم',en:'Ar-Rum'},
-      {n:31,ar:'لقمان',en:'Luqman'},{n:32,ar:'السجدة',en:'As-Sajdah'},{n:33,ar:'الأحزاب',en:'Al-Ahzab'},{n:34,ar:'سبأ',en:"Saba'"},{n:35,ar:'فاطر',en:'Fatir'},
-      {n:36,ar:'يس',en:'Ya-Sin'},{n:37,ar:'الصافات',en:'As-Saffat'},{n:38,ar:'ص',en:'Sad'},{n:39,ar:'الزمر',en:'Az-Zumar'},{n:40,ar:'غافر',en:'Ghafir'},
-      {n:41,ar:'فصلت',en:'Fussilat'},{n:42,ar:'الشورى',en:'Ash-Shura'},{n:43,ar:'الزخرف',en:'Az-Zukhruf'},{n:44,ar:'الدخان',en:'Ad-Dukhan'},{n:45,ar:'الجاثية',en:'Al-Jathiyah'},
-      {n:46,ar:'الأحقاف',en:'Al-Ahqaf'},{n:47,ar:'محمد',en:'Muhammad'},{n:48,ar:'الفتح',en:'Al-Fath'},{n:49,ar:'الحجرات',en:'Al-Hujurat'},{n:50,ar:'ق',en:'Qaf'},
-      {n:51,ar:'الذاريات',en:'Adh-Dhariyat'},{n:52,ar:'الطور',en:'At-Tur'},{n:53,ar:'النجم',en:'An-Najm'},{n:54,ar:'القمر',en:'Al-Qamar'},{n:55,ar:'الرحمن',en:'Ar-Rahman'},
-      {n:56,ar:'الواقعة',en:"Al-Waqi'ah"},{n:57,ar:'الحديد',en:'Al-Hadid'},{n:58,ar:'المجادلة',en:'Al-Mujadila'},{n:59,ar:'الحشر',en:'Al-Hashr'},{n:60,ar:'الممتحنة',en:'Al-Mumtahanah'},
-      {n:61,ar:'الصف',en:'As-Saf'},{n:62,ar:'الجمعة',en:"Al-Jumu'ah"},{n:63,ar:'المنافقون',en:'Al-Munafiqun'},{n:64,ar:'التغابن',en:'At-Taghabun'},{n:65,ar:'الطلاق',en:'At-Talaq'},
-      {n:66,ar:'التحريم',en:'At-Tahrim'},{n:67,ar:'الملك',en:'Al-Mulk'},{n:68,ar:'القلم',en:'Al-Qalam'},{n:69,ar:'الحاقة',en:'Al-Haqqah'},{n:70,ar:'المعارج',en:"Al-Ma'arij"},
-      {n:71,ar:'نوح',en:'Nuh'},{n:72,ar:'الجن',en:'Al-Jinn'},{n:73,ar:'المزمل',en:'Al-Muzzammil'},{n:74,ar:'المدثر',en:'Al-Muddaththir'},{n:75,ar:'القيامة',en:'Al-Qiyamah'},
-      {n:76,ar:'الإنسان',en:'Al-Insan'},{n:77,ar:'المرسلات',en:'Al-Mursalat'},{n:78,ar:'النبأ',en:"An-Naba'"},{n:79,ar:'النازعات',en:"An-Nazi'at"},{n:80,ar:'عبس',en:'Abasa'},
-      {n:81,ar:'التكوير',en:'At-Takwir'},{n:82,ar:'الانفطار',en:'Al-Infitar'},{n:83,ar:'المطففين',en:'Al-Mutaffifin'},{n:84,ar:'الانشقاق',en:'Al-Inshiqaq'},{n:85,ar:'البروج',en:'Al-Buruj'},
-      {n:86,ar:'الطارق',en:'At-Tariq'},{n:87,ar:'الأعلى',en:"Al-A'la"},{n:88,ar:'الغاشية',en:'Al-Ghashiyah'},{n:89,ar:'الفجر',en:'Al-Fajr'},{n:90,ar:'البلد',en:'Al-Balad'},
-      {n:91,ar:'الشمس',en:'Ash-Shams'},{n:92,ar:'الليل',en:'Al-Layl'},{n:93,ar:'الضحى',en:'Ad-Duha'},{n:94,ar:'الشرح',en:'Ash-Sharh'},{n:95,ar:'التين',en:'At-Tin'},
-      {n:96,ar:'العلق',en:"Al-'Alaq"},{n:97,ar:'القدر',en:'Al-Qadr'},{n:98,ar:'البينة',en:'Al-Bayyinah'},{n:99,ar:'الزلزلة',en:'Az-Zalzalah'},{n:100,ar:'العاديات',en:"Al-'Adiyat"},
-      {n:101,ar:'القارعة',en:"Al-Qari'ah"},{n:102,ar:'التكاثر',en:'At-Takathur'},{n:103,ar:'العصر',en:"Al-'Asr"},{n:104,ar:'الهمزة',en:'Al-Humazah'},{n:105,ar:'الفيل',en:'Al-Fil'},
-      {n:106,ar:'قريش',en:'Quraysh'},{n:107,ar:'الماعون',en:"Al-Ma'un"},{n:108,ar:'الكوثر',en:'Al-Kawthar'},{n:109,ar:'الكافرون',en:'Al-Kafirun'},{n:110,ar:'النصر',en:'An-Nasr'},
-      {n:111,ar:'المسد',en:'Al-Masad'},{n:112,ar:'الإخلاص',en:'Al-Ikhlas'},{n:113,ar:'الفلق',en:'Al-Falaq'},{n:114,ar:'الناس',en:'An-Nas'}
-    ];
-  </script>
 </body>
 </html>

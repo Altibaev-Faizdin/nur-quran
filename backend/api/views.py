@@ -27,19 +27,20 @@ ALQURAN_BASE = "https://api.alquran.cloud/v1"
 ALADHAN_BASE = "https://api.aladhan.com/v1"
 API_TIMEOUT = 10
 
-# Edition map for alquran.cloud (only officially-supported editions)
+# Edition map for alquran.cloud / islamic.network CDN (only officially-supported editions)
 RECITER_EDITIONS = {
-    'alafasy':    'ar.alafasy',
     'abdulbasit': 'ar.abdulbasitmurattal',
     'ghamdi':     'ar.saoodshuraym',
     'minshawi':   'ar.minshawimujawwad',
     'maher':      'ar.maheralmuaiqly',
-    # saud_juma uses mp3quran.net directly — not on alquran.cloud
+    # sherif_mostafa and saud_juma use mp3quran.net directly — not on alquran.cloud
 }
 
-# Direct mp3quran.net server URLs for reciters not on alquran.cloud
+# Direct server URLs for reciters not on alquran.cloud / islamic.network
 MP3QURAN_SERVERS = {
-    'saud_juma': 'https://server14.mp3quran.net/s_jm/',
+    'islam_sobhi':    'https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/',
+    'sherif_mostafa': 'https://surahquran.com/audio/15/',
+    'yasser_dosari':  'https://server11.mp3quran.net/yasser/',
 }
 
 
@@ -123,7 +124,7 @@ def ayah_audio(request, surah_number: int, ayah_number: int):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    reciter = request.query_params.get('reciter', 'alafasy')
+    reciter = request.query_params.get('reciter', 'abdulbasit')
 
     # Handle mp3quran.net reciters separately
     if reciter in MP3QURAN_SERVERS:

@@ -2,23 +2,14 @@
    shared.js — Noor Al-Quran Global Logic & Data
    ═══════════════════════════════════════════════ */
 
+'use strict';
+
 // ── API BASE ──
 const API_BASE = 'http://127.0.0.1:8000/api';
 
 // ── RECITERS DATA ──
+// Alafasy removed; Sherif Mostafa and Sheikh Saud Al-Juma'a added.
 const RECITERS = [
-  {
-    id: 'alafasy',
-    server: 'https://server8.mp3quran.net/afs/',
-    photo: 'https://tvquran.com/uploads/photo/29.jpg',
-    ar: 'مشاري راشد العفاسي',
-    en: 'Mishary Rashid Alafasy',
-    style: 'Murattal',
-    country: 'Kuwait',
-    init: 'م',
-    bio: 'Sheikh Mishary Rashid Alafasy is a Kuwaiti Quran reciter known worldwide for his beautiful, melodious voice. Born in 1976, he has memorized the entire Quran.',
-    page: 'reciter-alafasy.html',
-  },
   {
     id: 'abdulbasit',
     server: 'https://server7.mp3quran.net/basit/',
@@ -68,21 +59,45 @@ const RECITERS = [
     page: 'reciter-maher.html',
   },
   {
-    id: 'arfaj',
-    server: 'https://server6.mp3quran.net/arfaj/',
-    photo: 'https://tvquran.com/uploads/photo/87.jpg',
-    ar: 'عبد الرزاق العرفج',
-    en: 'Abd Ar-Razzaq Al-Arfaj',
+    id: 'sherif_mostafa',
+    server: 'https://ia601500.us.archive.org/1/items/Sherif-Mostafa/',
+    photo: 'https://tvquran.com/uploads/photo/166.jpg',
+    ar: 'شريف مصطفى',
+    en: 'Sherif Mostafa',
+    style: 'Murattal',
+    country: 'Egypt',
+    init: 'ش',
+    bio: 'Sheikh Sherif Mostafa is a beloved Egyptian Quran reciter known for his gentle, soul-touching voice. His warm and moving recitation style has earned him a devoted following across the Arab world and Muslim communities worldwide.',
+    page: 'reciter-sherif.html',
+  },
+  {
+    id: 'islam_sobhi',
+    server: 'https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/',
+    photo: 'https://tvquran.com/uploads/photo/253.jpg',
+    ar: 'إسلام صبحي',
+    en: 'Islam Sobhi',
+    style: 'Murattal',
+    country: 'Egypt',
+    init: 'إ',
+    bio: 'Sheikh Islam Sobhi is a young Egyptian Quran reciter whose exceptionally moving voice has made him one of the most widely loved reciters of his generation, with millions of followers worldwide.',
+    page: 'reciter-islam-sobhi.html',
+  },
+  {
+    id: 'yasser_dosari',
+    server: 'https://server11.mp3quran.net/yasser/',
+    photo: 'https://tvquran.com/uploads/photo/92.jpg',
+    ar: 'ياسر الدوسري',
+    en: 'Yasser Al-Dosari',
     style: 'Murattal',
     country: 'Saudi Arabia',
-    init: 'ع',
-    bio: 'Sheikh Abd Ar-Razzaq Al-Arfaj is a distinguished Saudi Quran reciter known for his clear and melodious recitation style.',
-    page: 'reciter-saud-juma.html',
+    init: 'ي',
+    bio: 'Sheikh Yasser Al-Dosari is the Imam of Masjid Al-Haram in Makkah, celebrated for his deeply emotional and powerful recitation that moves the hearts of listeners during Taraweeh prayers and beyond.',
+    page: 'reciter-yasser.html',
   },
 ];
 
 // ── SURAH DATA (114 surahs) ──
-const SURAHS = [
+var SURAHS = [
   {n:1,ar:'الفاتحة',en:'Al-Fatihah'},{n:2,ar:'البقرة',en:'Al-Baqarah'},{n:3,ar:'آل عمران',en:"Ali 'Imran"},
   {n:4,ar:'النساء',en:"An-Nisa'"},{n:5,ar:'المائدة',en:"Al-Ma'idah"},{n:6,ar:'الأنعام',en:"Al-An'am"},
   {n:7,ar:'الأعراف',en:"Al-A'raf"},{n:8,ar:'الأنفال',en:'Al-Anfal'},{n:9,ar:'التوبة',en:'At-Tawbah'},
@@ -203,7 +218,7 @@ function set(id, v) { const e = document.getElementById(id); if (e) e.textConten
 
 // ── PRAYER TIMES ──
 function loadPrayer() {
-  const fetchPrayer = (la, lo) => {
+  var fetchPrayer = function(la, lo) {
     fetch(`https://api.aladhan.com/v1/timings?latitude=${la}&longitude=${lo}&method=2`)
       .then(r => r.json()).then(d => {
         const t = d.data.timings;
@@ -212,9 +227,11 @@ function loadPrayer() {
         hlPrayer(t); schedulePrayer(t);
       }).catch(() => {});
   };
-  const fb = () => fetch('https://ipapi.co/json/').then(r => r.json()).then(d => fetchPrayer(d.latitude, d.longitude)).catch(() => {});
+  var fb = function() {
+    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => fetchPrayer(d.latitude, d.longitude)).catch(() => {});
+  };
   if (!navigator.geolocation) return fb();
-  navigator.geolocation.getCurrentPosition(pos => fetchPrayer(pos.coords.latitude, pos.coords.longitude), fb);
+  navigator.geolocation.getCurrentPosition(function(pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
 }
 
 function hlPrayer(t) {
@@ -243,7 +260,8 @@ function closeAdhan() { const b = document.getElementById('adhan'); if (b) b.cla
 
 // ── QIBLA ──
 function getQibla() {
-  navigator.geolocation?.getCurrentPosition(pos => {
+  if (!navigator.geolocation) return;
+  navigator.geolocation.getCurrentPosition(function(pos) {
     const la = pos.coords.latitude * Math.PI / 180, lo = pos.coords.longitude * Math.PI / 180;
     const mla = 21.3891 * Math.PI / 180, mlo = 39.8579 * Math.PI / 180, dl = mlo - lo;
     const xx = Math.sin(dl) * Math.cos(mla), yy = Math.cos(la) * Math.sin(mla) - Math.sin(la) * Math.cos(mla) * Math.cos(dl);
@@ -253,18 +271,18 @@ function getQibla() {
   });
 }
 if (window.DeviceOrientationEvent) {
-  window.addEventListener('deviceorientation', e => {
+  window.addEventListener('deviceorientation', function(e) {
     const cn = document.getElementById('cn'); if (cn) cn.style.transform = `translateX(-50%) translateY(-100%) rotate(${e.alpha || 0}deg)`;
   });
 }
 
 // ── TASBIH ──
 const DHIKRS = [{ ar: 'سُبْحَانَ اللَّهِ', max: 33 }, { ar: 'الْحَمْدُ لِلَّهِ', max: 33 }, { ar: 'اللَّهُ أَكْبَرُ', max: 34 }];
-let TC = 0, TI = 0;
-function tasbihTap() { const mx = DHIKRS[TI].max; if (TC < mx) { TC++; updT(); } }
+var TC = 0, TI = 0;
+function tasbihTap() { var mx = DHIKRS[TI].max; if (TC < mx) { TC++; updT(); } }
 function tasbihReset() { TC = 0; updT(); }
-function setDhikr(i) { TI = i; TC = 0; updT(); document.querySelectorAll('.db').forEach((b, j) => b.classList.toggle('on', j === i)); }
-function updT() { set('tsc', TC); set('tsl', DHIKRS[TI].ar); const b = document.getElementById('tsb'); if (b) b.style.width = (TC / DHIKRS[TI].max * 100) + '%'; }
+function setDhikr(i) { TI = i; TC = 0; updT(); document.querySelectorAll('.db').forEach(function(b, j) { b.classList.toggle('on', j === i); }); }
+function updT() { set('tsc', TC); set('tsl', DHIKRS[TI].ar); var b = document.getElementById('tsb'); if (b) b.style.width = (TC / DHIKRS[TI].max * 100) + '%'; }
 
 // ── DUA ──
 const DUAS = [
@@ -274,40 +292,42 @@ const DUAS = [
   { ar: 'رَبِّ اشْرَحْ لِي صَدْرِي وَيَسِّرْ لِي أَمْرِي', en: '"My Lord, expand for me my breast and ease for me my task."', ru: '«Господь мой, расширь мне грудь и облегчи мне дело.»' },
   { ar: 'اللَّهُمَّ اغْفِرْ لِي وَارْحَمْنِي', en: '"O Allah, forgive me and have mercy on me."', ru: '«О Аллах, прости меня и помилуй меня.»' },
 ];
-let DI = 0;
+var DI = 0;
 function nextDua() { DI = (DI + 1) % DUAS.length; updD(); }
-function updD() { const d = DUAS[DI]; set('dua', d.ar); set('dut', d.en); set('dutr', d.ru || ''); }
+function updD() { var d = DUAS[DI]; set('dua', d.ar); set('dut', d.en); set('dutr', d.ru || ''); }
 
 // ── SCROLL ANIMATION ──
 (function () {
-  const obs = new IntersectionObserver(entries => entries.forEach(e => { if (e.isIntersecting) e.target.classList.add('vis'); }), { threshold: 0.08 });
-  document.querySelectorAll('.fi').forEach(el => obs.observe(el));
+  var obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(e) { if (e.isIntersecting) e.target.classList.add('vis'); });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.fi').forEach(function(el) { obs.observe(el); });
 })();
 
 // ── LANGUAGE ──
-let LANG = 'en';
+var LANG = 'en';
 function setLang(l, btn) {
   LANG = l;
-  document.querySelectorAll('.lb').forEach(b => b.classList.remove('on'));
+  document.querySelectorAll('.lb').forEach(function(b) { b.classList.remove('on'); });
   if (btn) btn.classList.add('on');
   document.dispatchEvent(new CustomEvent('langChange', { detail: l }));
 }
 
 // ── AUTH ──
-function openAuth() { const a = document.getElementById('authModal'); if (a) a.classList.add('show'); }
-function closeAuth() { const a = document.getElementById('authModal'); if (a) a.classList.remove('show'); }
+function openAuth() { var a = document.getElementById('authModal'); if (a) a.classList.add('show'); }
+function closeAuth() { var a = document.getElementById('authModal'); if (a) a.classList.remove('show'); }
 function mockGoogleSignIn() {
-  const user = { name: 'User', avatar: 'https://ui-avatars.com/api/?name=User&background=d4a017&color=fff' };
+  var user = { name: 'User', avatar: 'https://ui-avatars.com/api/?name=User&background=d4a017&color=fff' };
   localStorage.setItem('noor_user', JSON.stringify(user));
   closeAuth(); updateNavAuth();
 }
 function signOut() { localStorage.removeItem('noor_user'); updateNavAuth(); }
 function updateNavAuth() {
-  const userStr = localStorage.getItem('noor_user');
-  const authLink = document.querySelector('nav .nav-links li:last-child');
+  var userStr = localStorage.getItem('noor_user');
+  var authLink = document.querySelector('nav .nav-links li:last-child');
   if (!authLink) return;
   if (userStr) {
-    const user = JSON.parse(userStr);
+    var user = JSON.parse(userStr);
     authLink.innerHTML = `<div class="dropdown" style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="this.classList.toggle('active')">
       <img src="${user.avatar}" alt="User" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--gold)">
       <span style="color:var(--goldL);font-weight:700">${user.name}</span>
@@ -320,75 +340,99 @@ function updateNavAuth() {
 }
 
 // ── GLOBAL INIT ──
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', function() {
   // Dropdown handler
-  document.addEventListener('click', e => {
-    const dropLink = e.target.closest('.dropdown > a');
+  document.addEventListener('click', function(e) {
+    var dropLink = e.target.closest('.dropdown > a');
     if (dropLink) {
       e.preventDefault(); e.stopPropagation();
-      const parent = dropLink.parentElement;
-      const wasActive = parent.classList.contains('active');
-      document.querySelectorAll('.dropdown.active').forEach(d => d.classList.remove('active'));
+      var parent = dropLink.parentElement;
+      var wasActive = parent.classList.contains('active');
+      document.querySelectorAll('.dropdown.active').forEach(function(d) { d.classList.remove('active'); });
       if (!wasActive) parent.classList.add('active');
     } else if (!e.target.closest('.dropdown')) {
-      document.querySelectorAll('.dropdown.active').forEach(d => d.classList.remove('active'));
+      document.querySelectorAll('.dropdown.active').forEach(function(d) { d.classList.remove('active'); });
     }
     if (e.target.closest('.scl-btn')) {
-      const text = e.target.closest('.scl-btn').textContent.toLowerCase();
+      var text = e.target.closest('.scl-btn').textContent.toLowerCase();
       if (text.includes('google')) mockGoogleSignIn();
     }
   });
   updateNavAuth();
+
+  // Page-specific init
+  if (document.getElementById('grid'))   loadSurahs();
+  if (document.getElementById('rg'))     loadReciters();
+  if (document.getElementById('pbgrid')) loadPrayerBig();
+  if (document.getElementById('ng'))     loadNames();
 });
 
 // ── QURAN PAGE ──
 function loadSurahs() {
   fetch('https://api.alquran.cloud/v1/surah')
-    .then(r => r.json()).then(d => {
-      const grid = document.getElementById('grid'); if (!grid) return;
+    .then(function(r) { return r.json(); }).then(function(d) {
+      var grid = document.getElementById('grid'); if (!grid) return;
       grid.innerHTML = '';
-      d.data.forEach(s => {
-        const div = document.createElement('div'); div.className = 'si card';
+      d.data.forEach(function(s) {
+        var div = document.createElement('div'); div.className = 'si card';
         div.innerHTML = `<div class="snum">${s.number}</div><div class="sinf"><div class="sar">${s.name}</div><div class="sen">${s.englishName}</div><div class="sv">${s.numberOfAyahs} verses</div></div><div class="bm mec" onclick="addBM(${s.number},1);event.stopPropagation()">📌</div>`;
-        div.onclick = () => openSurah(s.number, s.name, s.englishName);
+        div.onclick = function() { openSurah(s.number, s.name, s.englishName); };
         grid.appendChild(div);
       });
-    }).catch(e => console.warn('Surah list error:', e));
+    }).catch(function(e) { console.warn('Surah list error:', e); });
 }
 
 function openSurah(n, ar, en) {
-  const r = document.getElementById('reader'); if (!r) return;
+  var r = document.getElementById('reader'); if (!r) return;
   set('rn', `SURAH ${n}`); set('rar', ar); set('ren', en);
-  const listEl = document.getElementById('alist'); if (listEl) listEl.innerHTML = '<div class="rload">Loading...</div>';
+  var listEl = document.getElementById('alist'); if (listEl) listEl.innerHTML = '<div class="rload">Loading...</div>';
   r.classList.add('open');
   fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,en.asad`)
-    .then(r => r.json()).then(d => {
+    .then(function(r) { return r.json(); }).then(function(d) {
       if (!listEl) return;
       listEl.innerHTML = '';
-      d.data[0].ayahs.forEach(a => {
-        const c = document.createElement('div'); c.className = 'ac card';
+      d.data[0].ayahs.forEach(function(a) {
+        var c = document.createElement('div'); c.className = 'ac card';
         c.id = `ayah-${n}-${a.numberInSurah}`;
-        c.innerHTML = `<div class="at"><span class="anum">${a.numberInSurah}</span><div class="aact"><button class="abtn" onclick="playAyah(${n},${a.numberInSurah})" title="Play">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark">📌</button></div></div><div class="aarb">${a.text}</div><div class="aen">${d.data[1]?.ayahs[a.numberInSurah - 1]?.text || ''}</div>`;
+        c.innerHTML = `<div class="at"><span class="anum">${a.numberInSurah}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark">📌</button></div></div><div class="aarb">${a.text}</div><div class="aen">${d.data[1]?.ayahs[a.numberInSurah - 1]?.text || ''}</div>`;
         listEl.appendChild(c);
       });
-    }).catch(e => { if (listEl) listEl.innerHTML = '<div class="rload">Failed to load. Please try again.</div>'; });
+    }).catch(function() { if (listEl) listEl.innerHTML = '<div class="rload">Failed to load. Please try again.</div>'; });
 }
-function closeR() { const r = document.getElementById('reader'); if (r) r.classList.remove('open'); }
+function closeR() { var r = document.getElementById('reader'); if (r) r.classList.remove('open'); }
 
-// Play individual ayah audio (uses Alafasy by default on Quran page)
-function playAyah(s, a) {
-  const url = `https://server8.mp3quran.net/afs/${String(s).padStart(3, '0')}.mp3`;
-  const aud = document.getElementById('aud'); if (!aud) return;
-  aud.src = url; aud.play().catch(() => {});
-  set('asn', `Surah ${s}:${a}`);
-  const abar = document.getElementById('abar'); if (abar) abar.classList.add('show');
+// Play ayah on Quran page (uses abdulbasit as default)
+function playAyahQuran(surahNum, ayahNum) {
+  // Calculate global ayah number for islamic.network CDN
+  var AYAHS_PER_SURAH = [
+    7,286,200,176,120,165,206,75,129,109,123,111,43,52,99,128,111,110,98,135,
+    112,78,118,64,77,227,93,88,69,60,34,30,73,54,45,83,182,88,75,85,54,53,89,
+    59,37,35,38,29,18,45,60,49,62,55,78,96,29,22,24,13,14,11,11,18,12,12,30,
+    52,52,44,28,28,20,56,40,31,50,40,46,42,29,19,36,25,22,17,19,26,30,20,15,
+    21,11,8,8,19,5,8,8,11,11,8,3,9,5,4,7,3,6,3,5,4,5,6
+  ];
+  var globalNum = 0;
+  for (var i = 0; i < surahNum - 1; i++) globalNum += AYAHS_PER_SURAH[i];
+  globalNum += ayahNum;
+
+  var url = `https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/${globalNum}.mp3`;
+  var aud = document.getElementById('aud'); if (!aud) return;
+  aud.src = url;
+  aud.play().catch(function() {
+    // Fallback to full surah MP3
+    aud.src = `https://server7.mp3quran.net/basit/${String(surahNum).padStart(3,'0')}.mp3`;
+    aud.play().catch(function(e) { console.warn('Audio play blocked:', e); });
+  });
+  set('asn', `Surah ${surahNum} : ${ayahNum}`);
+  var abar = document.getElementById('abar'); if (abar) abar.classList.add('show');
 }
 
-// Legacy alias used in some older HTML buttons
-function playA(s, a) { playAyah(s, a); }
+// Legacy alias for older HTML onclick attributes
+function playAyah(s, a) { playAyahQuran(s, a); }
+function playA(s, a)    { playAyahQuran(s, a); }
 
 function filterS(q) {
-  document.querySelectorAll('.si').forEach(i => {
+  document.querySelectorAll('.si').forEach(function(i) {
     i.style.display = i.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
   });
 }
@@ -398,14 +442,14 @@ function addBM(s, a) {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ surah_number: s, ayah_number: a }),
-  }).then(r => {
+  }).then(function(r) {
     if (r.ok) { showToast('Bookmark saved! 📌'); }
-    else { r.json().then(e => console.warn('Bookmark error:', e)); }
-  }).catch(() => { showToast('Bookmark saved locally! 📌'); });
+    else { r.json().then(function(e) { console.warn('Bookmark error:', e); }); }
+  }).catch(function() { showToast('Bookmark saved locally! 📌'); });
 }
 
 function showToast(msg) {
-  let t = document.getElementById('noor-toast');
+  var t = document.getElementById('noor-toast');
   if (!t) {
     t = document.createElement('div');
     t.id = 'noor-toast';
@@ -413,15 +457,15 @@ function showToast(msg) {
     document.body.appendChild(t);
   }
   t.textContent = msg; t.style.opacity = '1';
-  setTimeout(() => { t.style.opacity = '0'; }, 2500);
+  setTimeout(function() { t.style.opacity = '0'; }, 2500);
 }
 
 // ── RECITERS PAGE ──
 function loadReciters() {
-  const rg = document.getElementById('rg'); if (!rg) return;
+  var rg = document.getElementById('rg'); if (!rg) return;
   rg.innerHTML = '';
-  RECITERS.forEach(r => {
-    const div = document.createElement('div'); div.className = 'rc card'; div.style.cursor = 'pointer';
+  RECITERS.forEach(function(r) {
+    var div = document.createElement('div'); div.className = 'rc card'; div.style.cursor = 'pointer';
     div.innerHTML = `
       <div class="rav" style="background:url('${r.photo}');background-size:cover;background-position:center">${r.init}</div>
       <div class="rna">${r.ar}</div>
@@ -429,71 +473,77 @@ function loadReciters() {
       <div class="rb">${r.style}</div>
       <p style="font-size:.7rem;color:var(--soft);margin:8px 0">${r.country}</p>
       <div style="margin-top:12px;font-size:.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px">View Full Page →</div>`;
-    div.onclick = () => window.location.href = r.page;
+    div.onclick = function() { window.location.href = r.page; };
     rg.appendChild(div);
   });
 
   // Quick-play selects
-  const recSel = document.getElementById('reciterSel');
+  var recSel = document.getElementById('reciterSel');
   if (recSel) {
     recSel.innerHTML = '';
-    RECITERS.forEach(r => recSel.innerHTML += `<option value="${r.id}">${r.en}</option>`);
+    RECITERS.forEach(function(r) { recSel.innerHTML += `<option value="${r.id}">${r.en}</option>`; });
   }
-  const surahSel = document.getElementById('surahSel');
+  var surahSel = document.getElementById('surahSel');
   if (surahSel) {
     surahSel.innerHTML = '';
-    SURAHS.forEach(s => surahSel.innerHTML += `<option value="${s.n}">${s.n}. ${s.en} — ${s.ar}</option>`);
+    SURAHS.forEach(function(s) { surahSel.innerHTML += `<option value="${s.n}">${s.n}. ${s.en} — ${s.ar}</option>`; });
   }
 }
 
-let _qpPlaying = false;
+var _qpPlaying = false;
 function quickPlay() {
-  const recSel = document.getElementById('reciterSel');
-  const surahSel = document.getElementById('surahSel');
-  if (!recSel?.value || !surahSel?.value) return;
-  const r = RECITERS.find(x => x.id === recSel.value); if (!r) return;
-  const sn = parseInt(surahSel.value);
-  const s = SURAHS.find(x => x.n === sn);
-  const url = r.server + String(sn).padStart(3, '0') + '.mp3';
-  const aud = document.getElementById('aud'); if (!aud) return;
+  var recSel = document.getElementById('reciterSel');
+  var surahSel = document.getElementById('surahSel');
+  if (!recSel || !recSel.value || !surahSel || !surahSel.value) return;
+  var r = RECITERS.find(function(x) { return x.id === recSel.value; }); if (!r) return;
+  var sn = parseInt(surahSel.value, 10);
+  var s = SURAHS.find(function(x) { return x.n === sn; });
+  var url = r.server + String(sn).padStart(3, '0') + '.mp3';
+  var aud = document.getElementById('aud'); if (!aud) return;
   aud.src = url; aud.volume = 0.85;
-  aud.play().catch(() => {});
+  aud.play().catch(function() {});
   _qpPlaying = true;
-  set('asn', `Surah ${sn} — ${s?.en || ''}`);
+  set('asn', `Surah ${sn} — ${s ? s.en : ''}`);
   set('arcn', r.en);
-  set('nowPlaying', `▶ ${r.en} — ${s?.en || 'Surah ' + sn}`);
-  const abar = document.getElementById('abar'); if (abar) abar.classList.add('show');
-  const btn = document.getElementById('plbtn'); if (btn) btn.textContent = '⏸';
+  set('nowPlaying', `▶ ${r.en} — ${s ? s.en : 'Surah ' + sn}`);
+  var abar = document.getElementById('abar'); if (abar) abar.classList.add('show');
+  var btn = document.getElementById('plbtn'); if (btn) btn.textContent = '⏸';
 }
 
-// togPlay used by reciters.html audio bar button
+// togPlay — used by reciters.html audio bar toggle button
 function togPlay() {
-  const aud = document.getElementById('aud'); if (!aud) return;
-  if (aud.paused) { aud.play().catch(() => {}); _qpPlaying = true; }
+  var aud = document.getElementById('aud'); if (!aud) return;
+  if (aud.paused) { aud.play().catch(function() {}); _qpPlaying = true; }
   else { aud.pause(); _qpPlaying = false; }
-  const btn = document.getElementById('plbtn');
+  var btn = document.getElementById('plbtn');
   if (btn) btn.textContent = aud.paused ? '▶' : '⏸';
 }
+
+// togPlayRec — alias for reciters.html (called by togPlay override)
+function togPlayRec() { togPlay(); }
+
 function stopSurah() {
-  const aud = document.getElementById('aud');
+  var aud = document.getElementById('aud');
   if (aud) { aud.pause(); aud.currentTime = 0; }
   _qpPlaying = false;
-  const btn = document.getElementById('plbtn'); if (btn) btn.textContent = '▶';
+  var btn = document.getElementById('plbtn'); if (btn) btn.textContent = '▶';
   closeAudio();
 }
+
 function closeAudio() {
-  const abar = document.getElementById('abar'); if (abar) abar.classList.remove('show');
+  var abar = document.getElementById('abar'); if (abar) abar.classList.remove('show');
+  var aud = document.getElementById('aud'); if (aud) aud.pause();
 }
 
-// updP — alias for progress update (used in some HTML oninput attributes)
+// updP — progress update for reciters.html seek bar
 function updP() {
-  const aud = document.getElementById('aud'); if (!aud) return;
-  const p = aud.duration ? aud.currentTime / aud.duration * 100 : 0;
-  const sl = document.getElementById('seekSlider'); if (sl) sl.value = p;
+  var aud = document.getElementById('aud'); if (!aud) return;
+  var p = aud.duration ? aud.currentTime / aud.duration * 100 : 0;
+  var sl = document.getElementById('seekSlider'); if (sl) sl.value = p;
 }
 function seekAudio() {
-  const aud = document.getElementById('aud');
-  const sl = document.getElementById('seekSlider');
+  var aud = document.getElementById('aud');
+  var sl = document.getElementById('seekSlider');
   if (!aud || !sl || !aud.duration) return;
   aud.currentTime = sl.value / 100 * aud.duration;
 }
@@ -501,35 +551,38 @@ function onEnd() { stopSurah(); }
 
 // ── PRAYER PAGE ──
 function loadPrayerBig() {
-  const fetchPrayer = (la, lo) => {
+  var fetchPrayer = function(la, lo) {
     fetch(`https://api.aladhan.com/v1/timings?latitude=${la}&longitude=${lo}&method=2`)
-      .then(r => r.json()).then(d => {
-        const t = d.data.timings;
+      .then(function(r) { return r.json(); }).then(function(d) {
+        var t = d.data.timings;
         set('bft', t.Fajr); set('bst', t.Sunrise); set('bdt', t.Dhuhr);
         set('bat', t.Asr); set('bmt', t.Maghrib); set('bit', t.Isha);
         updatePrayerCards(t, d.data.date);
         hlPrayer(t); schedulePrayer(t);
-      }).catch(() => {});
+      }).catch(function() {});
   };
-  const fb = () => fetch('https://ipapi.co/json/').then(r => r.json()).then(d => fetchPrayer(d.latitude, d.longitude)).catch(() => {});
+  var fb = function() {
+    fetch('https://ipapi.co/json/').then(function(r) { return r.json(); }).then(function(d) { fetchPrayer(d.latitude, d.longitude); }).catch(function() {});
+  };
   if (!navigator.geolocation) return fb();
-  navigator.geolocation.getCurrentPosition(pos => fetchPrayer(pos.coords.latitude, pos.coords.longitude), fb);
+  navigator.geolocation.getCurrentPosition(function(pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
 }
 
 function updatePrayerCards(t) {
-  const now = new Date();
-  const timeMap = { Fajr: t.Fajr, Sunrise: t.Sunrise, Dhuhr: t.Dhuhr, Asr: t.Asr, Maghrib: t.Maghrib, Isha: t.Isha };
-  const prayers = [
+  var now = new Date();
+  var timeMap = { Fajr: t.Fajr, Sunrise: t.Sunrise, Dhuhr: t.Dhuhr, Asr: t.Asr, Maghrib: t.Maghrib, Isha: t.Isha };
+  var prayers = [
     { id: 'pb-fajr', name: 'Fajr', tip: 'bfl' }, { id: 'pb-sunrise', name: 'Sunrise', tip: 'bsl' },
     { id: 'pb-dhuhr', name: 'Dhuhr', tip: 'bdl' }, { id: 'pb-asr', name: 'Asr', tip: 'bal' },
     { id: 'pb-maghrib', name: 'Maghrib', tip: 'bml' }, { id: 'pb-isha', name: 'Isha', tip: 'bil' },
   ];
-  prayers.forEach(p => {
-    const e = document.getElementById(p.id); if (!e) return;
-    const tm = timeMap[p.name]; if (!tm) return;
-    const [h, m] = tm.split(':').map(Number);
-    const next = new Date(); next.setHours(h, m, 0, 0);
-    const diff = next - now;
+  prayers.forEach(function(p) {
+    var e = document.getElementById(p.id); if (!e) return;
+    var tm = timeMap[p.name]; if (!tm) return;
+    var parts = tm.split(':').map(Number);
+    var h = parts[0], m = parts[1];
+    var next = new Date(); next.setHours(h, m, 0, 0);
+    var diff = next - now;
     if (diff > 0 && diff < 86400000) { set(p.tip, Math.round(diff / 60000) + 'm left'); e.classList.add('now'); }
     else e.classList.remove('now');
   });
@@ -537,81 +590,17 @@ function updatePrayerCards(t) {
 
 // ── NAMES PAGE ──
 function loadNames() {
-  const ng = document.getElementById('ng'); if (!ng) return;
+  var ng = document.getElementById('ng'); if (!ng) return;
   fetch(`${API_BASE}/names/`)
-    .then(r => r.json()).then(d => {
+    .then(function(r) { return r.json(); }).then(function(d) {
       ng.innerHTML = '';
-      d.names.forEach(n => {
-        const div = document.createElement('div'); div.className = 'nc card';
+      d.names.forEach(function(n) {
+        var div = document.createElement('div'); div.className = 'nc card';
         div.innerHTML = `<div class="nn2">${n.num}</div><div class="na">${n.arabic}</div><div class="nt">${n.transliteration}</div><div class="nm">${n.meaning_en}</div>`;
         ng.appendChild(div);
       });
-    }).catch(e => console.warn('Names error:', e));
+    }).catch(function(e) { console.warn('Names error:', e); });
 }
 
-// ── AUDIO PLAYER FUNCTIONS (Global) ──
-function playAyah(surah, ayah) {
-  const num = ALL.slice(0, surah - 1).reduce((acc, x) => acc + x.v, 0) + ayah;
-  const aud = document.getElementById('aud');
-  if (aud) {
-    aud.src = `https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
-    aud.play().catch(e => console.warn('Playback blocked:', e));
-    const elem = document.getElementById('ay' + ayah);
-    if (elem) elem.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  }
-}
-
-function togPlay() {
-  const aud = document.getElementById('aud');
-  const plBtn = document.getElementById('plbtn');
-  if (aud) {
-    if (aud.paused) {
-      aud.play().catch(e => console.warn(e));
-      if (plBtn) plBtn.textContent = '⏸';
-    } else {
-      aud.pause();
-      if (plBtn) plBtn.textContent = '▶';
-    }
-  }
-}
-
-function nextA() {
-  if (CUR && CAY < CUR.v) playAyah(CUR.n, CAY + 1);
-}
-
-function prevA() {
-  if (CUR && CAY > 1) playAyah(CUR.n, CAY - 1);
-}
-
-function updProg() {
-  const aud = document.getElementById('aud');
-  const pf = document.getElementById('pf');
-  if (aud && aud.duration && pf) {
-    pf.style.width = (aud.currentTime / aud.duration * 100) + '%';
-  }
-}
-
-function seekAudio(slider) {
-  const aud = document.getElementById('aud');
-  if (aud && aud.duration) {
-    aud.currentTime = (slider.value / 100) * aud.duration;
-  }
-}
-
-function closeAudio() {
-  const abar = document.getElementById('abar');
-  const aud = document.getElementById('aud');
-  if (abar) abar.classList.remove('show');
-  if (aud) aud.pause();
-}
-
-// ── PAGE INIT ──
-document.addEventListener('DOMContentLoaded', () => {
-  if (document.getElementById('grid'))   loadSurahs();
-  if (document.getElementById('rg'))     loadReciters();
-  if (document.getElementById('pbgrid')) loadPrayerBig();
-  if (document.getElementById('ng'))     loadNames();
-});
-
-// ── PRAYER BAR (background) ──
+// ── PRAYER BAR (background, runs on all pages) ──
 loadPrayer();

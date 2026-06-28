@@ -35,6 +35,17 @@ let _aud, _playerSurahName, _playerSurahAr, _playerAyahInfo,
     _volSlider, _volIcon, _speedBtn, _repeatBtn,
     _ayahList, _abar;
 
+let _isInit = false;
+
+// Map for reciters that support per-ayah playback via everyayah.com
+const EVERYAYAH_MAP = {
+  abdulbasit: 'Abdul_Basit_Murattal_192kbps',
+  ghamdi: 'Ghamadi_40kbps',
+  minshawi: 'Minshawy_Murattal_128kbps',
+  maher: 'MaherAlMuaiqly128kbps',
+  yasser_dosari: 'Yasser_Ad-Dussary_128kbps'
+};
+
 function _initRefs() {
   _aud            = document.getElementById('aud');
   _playerSurahName = document.getElementById('playerSurahName');
@@ -104,6 +115,8 @@ async function loadSurahAyahs(n) {
   if (_playerSurahName) _playerSurahName.textContent = s ? s.en : `Surah ${n}`;
   if (_playerSurahAr)   _playerSurahAr.textContent   = s ? s.ar : '';
   if (_playerAyahInfo)  _playerAyahInfo.textContent   = 'Loading verses…';
+  const _ayahPanelTitle = document.getElementById('ayahPanelTitle');
+  if (_ayahPanelTitle)  _ayahPanelTitle.textContent   = s ? `Surah ${n} — ${s.en}` : `Surah ${n}`;
 
   // Highlight active surah button
   document.querySelectorAll('.surah-btn').forEach(b => b.classList.remove('active'));
@@ -131,12 +144,24 @@ async function loadSurahAyahs(n) {
     const transAyahs  = data.data[1].ayahs;
     PlayerState.totalAyahs = arabAyahs.length;
 
-    PlayerState.ayahData = arabAyahs.map((a, i) => ({
-      num:    a.numberInSurah,
-      arab:   a.text,
-      trans:  transAyahs[i]?.text || '',
-      audio:  `${RECITER_SERVER}${String(n).padStart(3, '0')}.mp3`, // full surah
-    }));
+    const eaFolder = EVERYAYAH_MAP[RECITER_ID];
+    const surahStr = String(n).padStart(3, '0');
+
+    PlayerState.ayahData = arabAyahs.map((a, i) => {
+      const ayahStr = String(a.numberInSurah).padStart(3, '0');
+      const isPerAyah = !!eaFolder;
+      const audioUrl = isPerAyah 
+        ? `https://everyayah.com/data/${eaFolder}/${surahStr}${ayahStr}.mp3`
+        : `${RECITER_SERVER}${surahStr}.mp3`;
+
+      return {
+        num:    a.numberInSurah,
+        arab:   a.text,
+        trans:  transAyahs[i]?.text || '',
+        audio:  audioUrl,
+        isPerAyah: isPerAyah
+      };
+    });
 
     _renderAyahList();
     if (_playerAyahInfo) _playerAyahInfo.textContent = `${arabAyahs.length} Ayahs`;
@@ -186,18 +211,25 @@ function playAyahAt(ayahNum) {
 
   PlayerState.ayahNum = ayahNum;
 
-  // For mp3quran.net servers, we play the full surah and track time per-ayah
-  // For alquran.cloud per-ayah audio:
-  const ayahAudioUrl = `https://cdn.islamic.network/quran/audio/128/${_getEditionCode()}/${_globalAyahNumber(PlayerState.surahNum, ayahNum)}.mp3`;
-
-  _aud.src = ayahAudioUrl;
-  _aud.playbackRate = PlayerState.speed;
-  _aud.volume = PlayerState.volume;
-  _aud.play().catch(() => {
-    // Fallback to full surah MP3
+  if (ayah.isPerAyah) {
     _aud.src = ayah.audio;
-    _aud.play().catch(e => console.warn('Audio play blocked:', e));
-  });
+    _aud.playbackRate = PlayerState.speed;
+    _aud.volume = PlayerState.volume;
+    _aud.play().catch(e => console.warn('Audio play error:', e));
+  } else {
+    const isNewSurah = (_aud.getAttribute('data-surah') !== String(PlayerState.surahNum));
+    _aud.setAttribute('data-surah', String(PlayerState.surahNum));
+    
+    if (isNewSurah || _aud.src === '' || _aud.readyState === 0) {
+      _aud.src = ayah.audio;
+      _aud.playbackRate = PlayerState.speed;
+      _aud.volume = PlayerState.volume;
+      _aud.load();
+      _aud.play().catch(e => console.warn('Audio play error:', e));
+    } else {
+      _aud.play().catch(e => console.warn('Audio play error:', e));
+    }
+  }
 
   _highlightAyah(ayahNum);
   _updateBotBarLabel();
@@ -221,16 +253,16 @@ function _globalAyahNumber(surahNum, ayahInSurah) {
 }
 
 function _getEditionCode() {
-  // Map RECITER_ID to islamic.network CDN edition identifiers
+  // Map RECITER_ID to islamic.network CDN edition identifiers.
   const map = {
-    alafasy:    'ar.alafasy',
     abdulbasit: 'ar.abdulbasitmurattal',
-    ghamdi:     'ar.saoodshuraym',
+    ghamdi:     'ar.saoodshuraym',   // same server, murattal
     minshawi:   'ar.minshawimujawwad',
     maher:      'ar.maheralmuaiqly',
-    saud_juma:  'ar.alafasy', // fallback; saud_juma not on islamic.network
+    sudais:     'ar.abdurrahmaansudais',
+    shuraym:    'ar.saoodshuraym',
   };
-  return map[RECITER_ID] || 'ar.alafasy';
+  return map[RECITER_ID] || null;
 }
 
 function _highlightAyah(num) {
@@ -346,13 +378,25 @@ function _onMeta() {
 
 function _onEnded() {
   if (PlayerState.repeatMode) { if (_aud) { _aud.currentTime = 0; _aud.play().catch(() => {}); } return; }
-  if (PlayerState.ayahNum < PlayerState.totalAyahs) {
-    setTimeout(() => playAyahAt(PlayerState.ayahNum + 1), 600);
-  } else if (PlayerState.surahNum < 114) {
-    setTimeout(() => loadSurahAyahs(PlayerState.surahNum + 1), 1000);
+  
+  const ayah = PlayerState.ayahData[PlayerState.ayahNum - 1];
+  
+  if (ayah && ayah.isPerAyah) {
+    if (PlayerState.ayahNum < PlayerState.totalAyahs) {
+      setTimeout(() => playAyahAt(PlayerState.ayahNum + 1), 600);
+    } else if (PlayerState.surahNum < 114) {
+      setTimeout(() => loadSurahAyahs(PlayerState.surahNum + 1), 1000);
+    } else {
+      _updatePlayBtn(false);
+      PlayerState.isPlaying = false;
+    }
   } else {
-    _updatePlayBtn(false);
-    PlayerState.isPlaying = false;
+    if (PlayerState.surahNum < 114) {
+      setTimeout(() => loadSurahAyahs(PlayerState.surahNum + 1), 1000);
+    } else {
+      _updatePlayBtn(false);
+      PlayerState.isPlaying = false;
+    }
   }
 }
 
