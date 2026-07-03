@@ -15,21 +15,24 @@
     .main-counter {background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(30,144,255,0.05));border:2px solid var(--gold);border-radius:16px;padding:40px;text-align:center;position:relative;overflow:hidden}
     .main-counter::before {content:'';position:absolute;top:-50%;right:-50%;width:200%;height:200%;background:radial-gradient(circle,rgba(212,175,55,0.1) 1px,transparent 1px);background-size:40px 40px;animation:moveGrid 20s linear infinite}
     @keyframes moveGrid {from{transform:translate(0,0)}to{transform:translate(40px,40px)}}
-    .counter-display {font-size:6rem;font-weight:bold;color:var(--gold);font-family:'Cinzel Decorative',cursive;margin:30px 0;position:relative;z-index:1;text-shadow:0 0 20px rgba(212,175,55,0.3)}
-    .dhikr-label {font-family:'Amiri Quran',serif;font-size:1.5rem;color:var(--gold);margin:20px 0;position:relative;z-index:1}
+    .counter-display {font-size:6rem;font-weight:bold;color:var(--gold);font-family:'Cinzel Decorative',cursive;margin:30px 0;position:relative;z-index:1;text-shadow:0 0 20px rgba(212,175,55,0.3);transition:transform 0.1s}
+    .counter-display.bump {transform:scale(1.08)}
+    .dhikr-arabic {font-family:'Amiri Quran',serif;font-size:1.8rem;color:var(--gold);margin:15px 0;direction:rtl;position:relative;z-index:1}
     .dhikr-english {font-size:1.1rem;color:var(--soft);margin-bottom:10px;position:relative;z-index:1}
     .progress-bar {height:8px;background:rgba(212,175,55,0.1);border-radius:10px;margin:20px 0 30px;overflow:hidden;position:relative;z-index:1}
     .progress-fill {height:100%;background:linear-gradient(90deg,var(--gold),var(--blue));transition:width 0.3s ease}
-    .tap-button {width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;color:#000;font-size:2rem;font-weight:bold;cursor:pointer;transition:all 0.2s ease;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,175,55,0.4);position:relative;z-index:1}
+    .tap-button {width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;color:#000;font-size:2rem;font-weight:bold;cursor:pointer;transition:all 0.15s ease;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,175,55,0.4);position:relative;z-index:1;display:flex;align-items:center;justify-content:center}
     .tap-button:hover {transform:scale(1.1);box-shadow:0 12px 48px rgba(212,175,55,0.6)}
-    .tap-button:active {transform:scale(0.95)}
+    .tap-button:active {transform:scale(0.92)}
     .button-group {display:flex;gap:10px;margin:20px 0;position:relative;z-index:1;flex-wrap:wrap;justify-content:center}
     .btn-action {background:var(--blue);border:none;color:#fff;padding:10px 20px;border-radius:8px;cursor:pointer;font-size:0.9rem;font-weight:bold;transition:all 0.2s ease}
     .btn-action:hover {background:#0084cc;transform:translateY(-2px)}
     .btn-action.danger {background:#e74c3c}
     .btn-action.danger:hover {background:#c0392b}
+    .btn-action.gold {background:rgba(212,175,55,0.2);border:1px solid var(--gold);color:var(--gold)}
+    .btn-action.gold:hover {background:var(--gold);color:#000}
     .dhikr-selection {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:25px;position:relative;z-index:1}
-    .dhikr-option {background:rgba(212,175,55,0.05);border:2px solid var(--gold);color:var(--gold);padding:12px 16px;border-radius:8px;cursor:pointer;transition:all 0.3s ease;font-weight:600;margin-bottom:10px;text-align:center;font-size:0.9rem}
+    .dhikr-option {background:rgba(212,175,55,0.05);border:2px solid var(--gold);color:var(--gold);padding:12px 16px;border-radius:8px;cursor:pointer;transition:all 0.3s ease;font-weight:600;margin-bottom:10px;text-align:center;font-size:0.9rem;width:100%}
     .dhikr-option:hover {background:var(--gold);color:#000;transform:translateX(5px)}
     .dhikr-option.active {background:var(--gold);color:#000;box-shadow:0 4px 12px rgba(212,175,55,0.4)}
     .stats-widget {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:20px;position:relative;z-index:1}
@@ -38,7 +41,9 @@
     .stat-label {font-size:0.85rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px}
     .stat-value {font-size:1.5rem;font-weight:bold;color:var(--blue);margin-top:5px}
     .preset-buttons {display:grid;gap:10px}
-    .section-title {font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);margin:40px 0 20px;text-align:center;border-bottom:2px solid var(--gold);padding-bottom:15px}
+    .completed-banner {background:linear-gradient(135deg,rgba(46,204,113,0.2),rgba(39,174,96,0.1));border:2px solid #2ecc71;border-radius:10px;padding:15px;margin:15px 0;text-align:center;color:#2ecc71;font-weight:bold;font-size:1.1rem;display:none;position:relative;z-index:1}
+    .completed-banner.show {display:block;animation:fadeIn 0.5s ease}
+    @keyframes fadeIn {from{opacity:0;transform:scale(0.9)}to{opacity:1;transform:scale(1)}}
     @media(max-width:768px){
       .counter-display {font-size:4rem}
       .tap-button {width:120px;height:120px;font-size:1.8rem}
@@ -67,6 +72,7 @@
           <a href="tasbih.html">Tasbih Counter</a>
           <a href="qibla.html">Qibla Compass</a>
           <a href="hijri.html">Hijri Calendar</a>
+          <a href="hadith.html">Hadith</a>
         </div>
       </li>
       <li><a href="names.html">99 Names</a></li>
@@ -79,7 +85,7 @@
       <div class="stag">سبحة</div>
       <h1 class="st">Tasbih <span>Counter</span></h1>
       <div class="sl"></div>
-      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">Digital prayer beads for remembrance of Allah</p>
+      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">Digital prayer beads — tap to count, space bar shortcut</p>
     </div>
 
     <section class="sec" style="padding-bottom:60px">
@@ -88,39 +94,37 @@
           <!-- Main Counter -->
           <div class="main-counter">
             <div class="counter-display" id="counterDisplay">0</div>
-            <div class="dhikr-arabic" id="dhikrAr" style="font-family:'Amiri Quran',serif;font-size:1.8rem;color:var(--gold);margin:15px 0;direction:rtl">سُبْحَانَ اللَّهِ</div>
-            <div class="dhikr-english" id="dhikrEn">Subhan'Allah</div>
-            
+            <div class="dhikr-arabic" id="dhikrAr">سُبْحَانَ اللَّهِ</div>
+            <div class="dhikr-english" id="dhikrEn">Subhan'Allah (Glory be to Allah)</div>
+
             <div class="progress-bar">
               <div class="progress-fill" id="progressFill" style="width:0%"></div>
             </div>
-            
-            <button class="tap-button" onclick="incrementCounter()">📿</button>
-            
+
+            <div class="completed-banner" id="completedBanner">
+              ✅ Mashallah! Goal reached! 🤲
+            </div>
+
+            <button class="tap-button" id="tapBtn" onclick="incrementCounter()">📿</button>
+
             <div class="button-group">
-              <button class="btn-action" onclick="decrementCounter()">← Previous</button>
+              <button class="btn-action gold" onclick="prevDhikr()">◀ Prev Dhikr</button>
               <button class="btn-action danger" onclick="resetCounter()">🔄 Reset</button>
-              <button class="btn-action" onclick="incrementCounter()">Next →</button>
+              <button class="btn-action gold" onclick="nextDhikr()">Next Dhikr ▶</button>
             </div>
 
             <p style="color:var(--soft);font-size:0.9rem;margin-top:20px;text-align:center">
-              Goal: <span style="color:var(--gold);font-weight:bold" id="goalDisplay">33</span> | 
+              Goal: <span style="color:var(--gold);font-weight:bold" id="goalDisplay">33</span> |
               <span id="percentDisplay" style="color:var(--blue)">0%</span> Complete
             </p>
           </div>
 
-          <!-- Sidebar Stats & Options -->
+          <!-- Sidebar -->
           <div>
             <!-- Dhikr Selection -->
             <div class="dhikr-selection">
               <h3 style="color:var(--gold);margin-bottom:15px;font-weight:bold">Choose Dhikr</h3>
-              <div class="preset-buttons">
-                <button class="dhikr-option active" onclick="selectDhikr(0)">🌅 Subhan'Allah<br><small>×33</small></button>
-                <button class="dhikr-option" onclick="selectDhikr(1)">🙏 Alhamdulillah<br><small>×33</small></button>
-                <button class="dhikr-option" onclick="selectDhikr(2)">⭐ Allahu Akbar<br><small>×34</small></button>
-                <button class="dhikr-option" onclick="selectDhikr(3)">🌙 La ilaha illallah<br><small>×33</small></button>
-                <button class="dhikr-option" onclick="selectDhikr(4)">✨ Durood Shareef<br><small>×10</small></button>
-              </div>
+              <div class="preset-buttons" id="dhikrButtons"></div>
             </div>
 
             <!-- Stats -->
@@ -135,7 +139,7 @@
                 <div class="stat-value" id="statsSessions">0</div>
               </div>
               <div class="stat-item">
-                <div class="stat-label">Best Streak</div>
+                <div class="stat-label">Best Count</div>
                 <div class="stat-value" id="statsBestStreak">0</div>
               </div>
               <button class="btn-action" style="width:100%;margin-top:15px" onclick="saveDhikrSession()">💾 Save Session</button>
@@ -157,7 +161,6 @@
       <div class="ati">Welcome Back</div>
       <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
       <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
-      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg" style="filter:invert(1)"> Continue with Apple</div>
       <div class="sep">or</div>
       <input type="email" class="ainp" placeholder="Email Address">
       <input type="password" class="ainp" placeholder="Password">
@@ -168,90 +171,199 @@
 
   <script src="../shared.js"></script>
   <script>
-    const DHIKRS = [
-      {ar:'سُبْحَانَ اللَّهِ',en:'Subhan\'Allah (Glory be to Allah)',goal:33},
-      {ar:'الْحَمْدُ لِلَّهِ',en:'Alhamdulillah (All praise be to Allah)',goal:33},
-      {ar:'اللَّهُ أَكْبَر',en:'Allahu Akbar (Allah is the Greatest)',goal:34},
+    // ── ИСПРАВЛЕНО: переименовано чтобы не конфликтовало с shared.js DHIKRS ──
+    const TASBIH_LIST = [
+      {ar:'سُبْحَانَ اللَّهِ',       en:'Subhan\'Allah (Glory be to Allah)',           goal:33},
+      {ar:'الْحَمْدُ لِلَّهِ',       en:'Alhamdulillah (All praise be to Allah)',       goal:33},
+      {ar:'اللَّهُ أَكْبَر',          en:'Allahu Akbar (Allah is the Greatest)',         goal:34},
       {ar:'لَا إِلَهَ إِلَّا اللَّهُ',en:'La ilaha illallah (There is no god but Allah)',goal:33},
-      {ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ',en:'Durood Shareef (Blessings upon the Prophet)',goal:10}
+      {ar:'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ',en:'Durood Shareef (Blessings upon the Prophet)',goal:10},
     ];
 
-    let currentDhikr=0;
-    let counter=0;
-    let totalToday=0;
-    let sessions=0;
-    let bestStreak=0;
+    const TASBIH_STORAGE_KEY = 'nq_tasbih_state';
 
-    function selectDhikr(idx){
-      currentDhikr=idx;
-      counter=0;
-      document.querySelectorAll('.dhikr-option').forEach((btn,i)=>btn.classList.toggle('active',i===idx));
-      updateDisplay();
+    let currentDhikrIdx = 0;
+    let counter = 0;
+    let totalToday = 0;
+    let sessions = 0;
+    let bestCount = 0;
+    let goalReached = false;
+
+    // ── AudioContext singleton (fixes memory leak — was creating new ctx on every tap) ──
+    let _audioCtx = null;
+    function _getAudioCtx() {
+      if (!_audioCtx) {
+        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return _audioCtx;
     }
 
-    function incrementCounter(){
+    // ── localStorage Persistence ──
+    function _getTodayStr() {
+      return new Date().toISOString().slice(0, 10); // 'YYYY-MM-DD'
+    }
+
+    function _saveState() {
+      const state = {
+        date: _getTodayStr(),
+        currentDhikrIdx,
+        counter,
+        totalToday,
+        sessions,
+        bestCount,
+      };
+      try { localStorage.setItem(TASBIH_STORAGE_KEY, JSON.stringify(state)); } catch(e) {}
+    }
+
+    function _loadState() {
+      try {
+        const raw = localStorage.getItem(TASBIH_STORAGE_KEY);
+        if (!raw) return;
+        const state = JSON.parse(raw);
+
+        // Daily reset: if stored date is not today, reset daily counters
+        if (state.date !== _getTodayStr()) {
+          totalToday = 0;
+          sessions = 0;
+          counter = 0;
+          currentDhikrIdx = state.currentDhikrIdx || 0;
+          bestCount = state.bestCount || 0; // Keep all-time best
+          _saveState();
+          return;
+        }
+
+        currentDhikrIdx = state.currentDhikrIdx || 0;
+        counter = state.counter || 0;
+        totalToday = state.totalToday || 0;
+        sessions = state.sessions || 0;
+        bestCount = state.bestCount || 0;
+      } catch(e) {}
+    }
+
+    // Build dhikr buttons dynamically
+    function buildDhikrButtons() {
+      const container = document.getElementById('dhikrButtons');
+      if (!container) return;
+      container.innerHTML = '';
+      TASBIH_LIST.forEach((d, i) => {
+        const btn = document.createElement('button');
+        btn.className = 'dhikr-option' + (i === currentDhikrIdx ? ' active' : '');
+        btn.innerHTML = `${d.ar}<br><small>×${d.goal}</small>`;
+        btn.onclick = () => selectDhikr(i);
+        container.appendChild(btn);
+      });
+    }
+
+    function selectDhikr(idx) {
+      currentDhikrIdx = idx;
+      counter = 0;
+      goalReached = false;
+      document.getElementById('completedBanner').classList.remove('show');
+      document.querySelectorAll('.dhikr-option').forEach((btn, i) =>
+        btn.classList.toggle('active', i === idx)
+      );
+      updateDisplay();
+      _saveState();
+    }
+
+    // ── ИСПРАВЛЕНО: prevDhikr/nextDhikr переключают ВИД ДИКРА ──
+    function prevDhikr() {
+      const newIdx = (currentDhikrIdx - 1 + TASBIH_LIST.length) % TASBIH_LIST.length;
+      selectDhikr(newIdx);
+    }
+
+    function nextDhikr() {
+      const newIdx = (currentDhikrIdx + 1) % TASBIH_LIST.length;
+      selectDhikr(newIdx);
+    }
+
+    function incrementCounter() {
       counter++;
+      const d = TASBIH_LIST[currentDhikrIdx];
       updateDisplay();
-      playSound();
-    }
+      playBeep();
+      _saveState();
 
-    function decrementCounter(){
-      if(counter>0)counter--;
-      updateDisplay();
-    }
+      // Bump animation
+      const display = document.getElementById('counterDisplay');
+      display.classList.add('bump');
+      setTimeout(() => display.classList.remove('bump'), 150);
 
-    function resetCounter(){
-      if(confirm('Reset the counter?')){
-        counter=0;
-        updateDisplay();
+      // Show banner when goal reached
+      if (counter === d.goal && !goalReached) {
+        goalReached = true;
+        document.getElementById('completedBanner').classList.add('show');
+        setTimeout(() => document.getElementById('completedBanner').classList.remove('show'), 3000);
       }
     }
 
-    function updateDisplay(){
-      const d=DHIKRS[currentDhikr];
-      document.getElementById('counterDisplay').textContent=counter;
-      document.getElementById('dhikrAr').textContent=d.ar;
-      document.getElementById('dhikrEn').textContent=d.en;
-      document.getElementById('goalDisplay').textContent=d.goal;
-      const percent=Math.min(100,Math.round((counter/d.goal)*100));
-      document.getElementById('progressFill').style.width=percent+'%';
-      document.getElementById('percentDisplay').textContent=percent+'%';
-      document.getElementById('statsToday').textContent=(totalToday+counter);
-    }
-
-    function saveDhikrSession(){
-      if(counter===0)return alert('Counter is empty!');
-      totalToday+=counter;
-      sessions++;
-      if(counter>bestStreak)bestStreak=counter;
-      counter=0;
+    function resetCounter() {
+      counter = 0;
+      goalReached = false;
+      document.getElementById('completedBanner').classList.remove('show');
       updateDisplay();
-      alert('✅ Session saved! '+totalToday+' total today.');
+      _saveState();
     }
 
-    function playSound(){
-      // Create simple beep using Web Audio API
-      try{
-        const audioContext=new(window.AudioContext||window.webkitAudioContext)();
-        const oscillator=audioContext.createOscillator();
-        const gain=audioContext.createGain();
-        oscillator.connect(gain);
-        gain.connect(audioContext.destination);
-        oscillator.frequency.value=800;
-        oscillator.type='sine';
-        gain.gain.setValueAtTime(0.3,audioContext.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.01,audioContext.currentTime+0.1);
-        oscillator.start(audioContext.currentTime);
-        oscillator.stop(audioContext.currentTime+0.1);
-      }catch(e){}
+    function updateDisplay() {
+      const d = TASBIH_LIST[currentDhikrIdx];
+      document.getElementById('counterDisplay').textContent = counter;
+      document.getElementById('dhikrAr').textContent = d.ar;
+      document.getElementById('dhikrEn').textContent = d.en;
+      document.getElementById('goalDisplay').textContent = d.goal;
+      const percent = Math.min(100, Math.round((counter / d.goal) * 100));
+      document.getElementById('progressFill').style.width = percent + '%';
+      document.getElementById('percentDisplay').textContent = percent + '%';
+      document.getElementById('statsToday').textContent = totalToday + counter;
+      document.getElementById('statsSessions').textContent = sessions;
+      document.getElementById('statsBestStreak').textContent = bestCount;
     }
 
-    document.addEventListener('DOMContentLoaded',()=>{updateDisplay();});
+    function saveDhikrSession() {
+      if (counter === 0) { alert('Counter is empty!'); return; }
+      totalToday += counter;
+      sessions++;
+      if (counter > bestCount) {
+        bestCount = counter;
+        // ── ИСПРАВЛЕНО: обновляем DOM bestStreak ──
+        document.getElementById('statsBestStreak').textContent = bestCount;
+      }
+      document.getElementById('statsSessions').textContent = sessions;
+      counter = 0;
+      goalReached = false;
+      document.getElementById('completedBanner').classList.remove('show');
+      updateDisplay();
+      _saveState();
+      alert('✅ Session saved! ' + totalToday + ' total today.');
+    }
+
+    function playBeep() {
+      try {
+        const ctx = _getAudioCtx();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 880;
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.25, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.12);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.12);
+      } catch(e) {}
+    }
+
+    // Init — load persisted state first, then build UI
+    _loadState();
+    buildDhikrButtons();
+    updateDisplay();
 
     // Keyboard shortcuts
-    document.addEventListener('keydown',(e)=>{
-      if(e.code==='Space'){e.preventDefault();incrementCounter();}
-      if(e.code==='Backspace')resetCounter();
+    document.addEventListener('keydown', (e) => {
+      if (e.code === 'Space') { e.preventDefault(); incrementCounter(); }
+      if (e.code === 'ArrowLeft') prevDhikr();
+      if (e.code === 'ArrowRight') nextDhikr();
+      if (e.code === 'KeyR') resetCounter();
     });
   </script>
 </body>

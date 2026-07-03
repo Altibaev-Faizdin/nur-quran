@@ -38,9 +38,10 @@ RECITER_EDITIONS = {
 
 # Direct server URLs for reciters not on alquran.cloud / islamic.network
 MP3QURAN_SERVERS = {
-    'islam_sobhi':    'https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/',
-    'sherif_mostafa': 'https://surahquran.com/audio/15/',
-    'yasser_dosari':  'https://server11.mp3quran.net/yasser/',
+    'islam_sobhi':        'https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/',
+    'sherif_mostafa':     'https://server6.mp3quran.net/shrf/',
+    'yasser_dosari':      'https://server11.mp3quran.net/yasser/',
+    'abdurrahman_mossad': 'https://server16.mp3quran.net/mossad/',
 }
 
 

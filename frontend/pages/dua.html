@@ -63,6 +63,7 @@
           <a href="tasbih.html">Tasbih Counter</a>
           <a href="qibla.html">Qibla Compass</a>
           <a href="hijri.html">Hijri Calendar</a>
+          <a href="hadith.html">Hadith</a>
         </div>
       </li>
       <li><a href="names.html">99 Names</a></li>
@@ -104,12 +105,12 @@
 
         <!-- Category Filters -->
         <div class="category-tabs">
-          <button class="tab-btn active" onclick="filterCategory('all')">All Duas</button>
-          <button class="tab-btn" onclick="filterCategory('morning')">🌅 Morning</button>
-          <button class="tab-btn" onclick="filterCategory('evening')">🌙 Evening</button>
-          <button class="tab-btn" onclick="filterCategory('protection')">🛡️ Protection</button>
-          <button class="tab-btn" onclick="filterCategory('forgiveness')">🤲 Forgiveness</button>
-          <button class="tab-btn" onclick="filterCategory('blessing')">✨ Blessing</button>
+          <button class="tab-btn active" onclick="filterCategory('all',this)">All Duas</button>
+          <button class="tab-btn" onclick="filterCategory('morning',this)">🌅 Morning</button>
+          <button class="tab-btn" onclick="filterCategory('evening',this)">🌙 Evening</button>
+          <button class="tab-btn" onclick="filterCategory('protection',this)">🛡️ Protection</button>
+          <button class="tab-btn" onclick="filterCategory('forgiveness',this)">🤲 Forgiveness</button>
+          <button class="tab-btn" onclick="filterCategory('blessing',this)">✨ Blessing</button>
         </div>
 
         <!-- Duas Grid -->
@@ -141,7 +142,7 @@
 
   <script src="../shared.js"></script>
   <script>
-    const DUAS = [
+    const DAILY_DUAS = [
       {cat:'morning',ar:'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا',en:'O Allah, by You we enter the morning and by You we enter the evening.',ru:'О Аллах, с Тобой мы вошли в утро и с Тобой мы вошли в вечер.'},
       {cat:'morning',ar:'اللَّهُمَّ إِنِّي أَسْأَلُكَ خَيْرَ هَذَا الْيَوْمِ',en:'O Allah, I ask You for the good of this day.',ru:'О Аллах, я прошу Тебя о благе этого дня.'},
       {cat:'evening',ar:'اللَّهُمَّ عَالِمَ الْغَيْبِ وَالشَّهَادَة',en:'O Allah, Knower of the unseen and the seen.',ru:'О Аллах, Знающий скрытое и явное.'},
@@ -175,7 +176,7 @@
       const noResults=document.getElementById('noResults');
       grid.innerHTML='';
       
-      const filtered=DUAS.filter(d=>{
+      const filtered=DAILY_DUAS.filter(d=>{
         const matchFilter=filter==='all'||d.cat===filter;
         const matchSearch=d.ar.includes(search)||d.en.toLowerCase().includes(search.toLowerCase())||d.ru.toLowerCase().includes(search.toLowerCase());
         return matchFilter&&matchSearch;
@@ -199,12 +200,12 @@
       });
     }
 
-    function filterCategory(cat){
+    function filterCategory(cat,btn){
       currentFilter=cat;
-      document.querySelectorAll('.tab-btn').forEach(btn=>btn.classList.remove('active'));
-      event.target.classList.add('active');
-      const search=document.getElementById('searchInput').value;
-      displayDuas(cat,search);
+      document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+      const search=document.getElementById('searchInput');
+      displayDuas(cat, search ? search.value : '');
     }
 
     function copyDua(text){
@@ -217,11 +218,12 @@
       });
     }
 
-    document.getElementById('searchInput').addEventListener('input',(e)=>{
-      displayDuas(currentFilter,e.target.value);
+    document.addEventListener('DOMContentLoaded',()=>{
+      displayDuas();
+      document.getElementById('searchInput').addEventListener('input',(e)=>{
+        displayDuas(currentFilter,e.target.value);
+      });
     });
-
-    document.addEventListener('DOMContentLoaded',()=>{displayDuas();});
   </script>
 </body>
 </html>

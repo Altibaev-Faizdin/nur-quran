@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hadith — Noor Al-Quran</title>
+  <meta name="description" content="Browse authentic Hadith collections — Bukhari, Muslim, Abu Dawud, Tirmidhi and more with Arabic text and English translations.">
+  <link rel="stylesheet" href="../shared.css">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    .hadith-controls {max-width:900px;margin:0 auto 30px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+    .hadith-select {background:rgba(10,26,74,.8);border:1.5px solid rgba(212,160,23,.35);color:var(--white);padding:10px 16px;border-radius:10px;font-size:.85rem;font-family:'Lato',sans-serif;cursor:pointer;outline:none;transition:.3s;flex:1;min-width:160px}
+    .hadith-select:focus {border-color:var(--gold);box-shadow:0 0 14px rgba(212,160,23,.2)}
+    .hadith-select option {background:#0d1b40}
+    .hadith-search {background:rgba(10,26,74,.8);border:1.5px solid rgba(212,160,23,.25);color:var(--white);padding:10px 18px;border-radius:10px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;transition:.3s;flex:2;min-width:200px}
+    .hadith-search:focus {border-color:var(--gold);box-shadow:0 0 14px rgba(212,160,23,.2)}
+    .hadith-search::placeholder {color:var(--soft)}
+    .btn-load {background:linear-gradient(135deg,var(--gold),var(--goldL));color:#000;border:none;padding:10px 22px;border-radius:10px;font-weight:700;font-size:.85rem;cursor:pointer;transition:.25s;font-family:'Lato',sans-serif;white-space:nowrap}
+    .btn-load:hover {transform:translateY(-2px);box-shadow:0 6px 20px rgba(212,160,23,.4)}
+
+    .hadith-grid {max-width:900px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+    .hadith-card {background:linear-gradient(135deg,rgba(13,38,128,.5),rgba(6,15,46,.8));border:1px solid rgba(212,160,23,.2);border-radius:16px;padding:28px;transition:.3s;position:relative;overflow:hidden}
+    .hadith-card::before {content:'';position:absolute;top:0;left:0;width:4px;height:100%;background:linear-gradient(180deg,var(--gold),var(--blue))}
+    .hadith-card:hover {border-color:rgba(212,160,23,.45);transform:translateY(-3px);box-shadow:0 10px 30px rgba(212,160,23,.12)}
+    .hadith-meta {display:flex;gap:10px;flex-wrap:wrap;margin-bottom:16px;align-items:center}
+    .hadith-book {background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.3);color:var(--goldL);padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;letter-spacing:1px;text-transform:uppercase;font-family:'Lato',sans-serif}
+    .hadith-num {background:rgba(30,144,255,.15);border:1px solid rgba(30,144,255,.3);color:#6ab0f5;padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;font-family:'Lato',sans-serif}
+    .hadith-grade {padding:4px 12px;border-radius:20px;font-size:.72rem;font-weight:700;font-family:'Lato',sans-serif}
+    .hadith-grade.sahih {background:rgba(46,204,113,.15);border:1px solid rgba(46,204,113,.3);color:#2ecc71}
+    .hadith-grade.hasan {background:rgba(241,196,15,.15);border:1px solid rgba(241,196,15,.3);color:#f1c40f}
+    .hadith-arabic {font-family:'Amiri Quran',serif;font-size:1.35rem;color:var(--goldL);line-height:2.2;text-align:right;direction:rtl;margin-bottom:16px;padding:16px;background:rgba(212,160,23,.05);border-radius:10px;border-right:3px solid var(--gold)}
+    .hadith-english {font-size:.9rem;color:var(--silver);line-height:1.8;margin-bottom:14px}
+    .hadith-chain {font-size:.75rem;color:var(--soft);font-style:italic;line-height:1.6;padding-top:12px;border-top:1px solid rgba(212,160,23,.1)}
+    .hadith-actions {display:flex;gap:8px;margin-top:14px;flex-wrap:wrap}
+    .btn-copy-h {background:rgba(30,144,255,.15);border:1px solid rgba(30,144,255,.3);color:#6ab0f5;padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:'Lato',sans-serif;transition:.2s}
+    .btn-copy-h:hover {background:rgba(30,144,255,.3)}
+    .btn-share-h {background:rgba(212,160,23,.1);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:6px 14px;border-radius:8px;cursor:pointer;font-size:.75rem;font-family:'Lato',sans-serif;transition:.2s}
+    .btn-share-h:hover {background:rgba(212,160,23,.25)}
+
+    .hadith-pagination {display:flex;gap:10px;justify-content:center;margin:30px 0;flex-wrap:wrap}
+    .page-btn {background:rgba(13,38,128,.6);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:8px 18px;border-radius:8px;cursor:pointer;font-family:'Lato',sans-serif;font-size:.82rem;transition:.2s}
+    .page-btn:hover {background:rgba(212,160,23,.2);border-color:var(--gold)}
+    .page-btn.active {background:var(--gold);color:#000;border-color:var(--gold)}
+    .page-btn:disabled {opacity:.3;cursor:not-allowed}
+
+    .hadith-loading {display:flex;align-items:center;justify-content:center;gap:14px;padding:60px;color:var(--soft)}
+    .spinner {width:28px;height:28px;border:2.5px solid rgba(212,160,23,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .8s linear infinite}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .hadith-empty {text-align:center;padding:60px;color:var(--soft)}
+    .hadith-empty .icon {font-size:3rem;margin-bottom:16px}
+
+    .daily-hadith {max-width:900px;margin:0 auto 40px;background:linear-gradient(135deg,rgba(212,160,23,.12),rgba(30,144,255,.08));border:2px solid rgba(212,160,23,.35);border-radius:18px;padding:32px;position:relative;overflow:hidden}
+    .daily-hadith::before {content:'✨ Hadith of the Day';position:absolute;top:14px;left:20px;font-size:.65rem;color:var(--goldL);letter-spacing:2px;text-transform:uppercase;font-family:'Lato',sans-serif;font-weight:700}
+    .daily-hadith-ar {font-family:'Amiri Quran',serif;font-size:1.4rem;color:var(--goldL);line-height:2.2;text-align:right;direction:rtl;margin:28px 0 16px}
+    .daily-hadith-en {font-size:.95rem;color:var(--silver);line-height:1.8;margin-bottom:10px}
+    .daily-hadith-src {font-size:.78rem;color:var(--soft);font-style:italic}
+
+    .collection-tabs {display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin-bottom:28px}
+    .col-tab {background:rgba(13,38,128,.5);border:1px solid rgba(212,160,23,.2);color:var(--soft);padding:8px 18px;border-radius:20px;cursor:pointer;font-size:.8rem;font-family:'Lato',sans-serif;transition:.25s}
+    .col-tab:hover {border-color:rgba(212,160,23,.5);color:var(--goldL)}
+    .col-tab.active {background:rgba(212,160,23,.2);border-color:var(--gold);color:var(--goldL);font-weight:700}
+
+    @media(max-width:600px){
+      .hadith-controls {flex-direction:column}
+      .hadith-arabic {font-size:1.1rem}
+    }
+  </style>
+</head>
+<body>
+  <div class="cur" id="cur"></div>
+  <div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+
+  <nav>
+    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+    <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+          <a href="hadith.html">Hadith</a>
+        </div>
+      </li>
+      <li><a href="names.html">99 Names</a></li>
+      <li><a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a></li>
+    </ul>
+  </nav>
+
+  <div class="wrap">
+    <div class="ph fi">
+      <div class="stag">الحديث الشريف</div>
+      <h1 class="st">Hadith <span>Collections</span></h1>
+      <div class="sl"></div>
+      <p style="color:var(--soft);font-size:.83rem;margin-top:13px;letter-spacing:1px">Authentic sayings of the Prophet ﷺ — Bukhari · Muslim · Abu Dawud · Tirmidhi</p>
+    </div>
+
+    <section class="sec">
+      <div style="max-width:900px;margin:0 auto">
+
+        <!-- Daily Hadith -->
+        <div class="daily-hadith fi" id="dailyHadith">
+          <div class="daily-hadith-ar" id="dailyAr">
+            اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا
+          </div>
+          <div class="daily-hadith-en" id="dailyEn">
+            "O Allah, I ask You for beneficial knowledge, good provision, and accepted deeds."
+          </div>
+          <div class="daily-hadith-src" id="dailySrc">— Ibn Majah | Graded: Sahih</div>
+        </div>
+
+        <!-- Collection Tabs -->
+        <div class="collection-tabs fi">
+          <button class="col-tab active" onclick="selectCollection('bukhari', this)">📚 Bukhari</button>
+          <button class="col-tab" onclick="selectCollection('muslim', this)">📖 Muslim</button>
+          <button class="col-tab" onclick="selectCollection('abu-dawud', this)">📜 Abu Dawud</button>
+          <button class="col-tab" onclick="selectCollection('tirmidhi', this)">📋 Tirmidhi</button>
+          <button class="col-tab" onclick="selectCollection('ibn-majah', this)">📑 Ibn Majah</button>
+          <button class="col-tab" onclick="selectCollection('nasai', this)">📃 An-Nasai</button>
+        </div>
+
+        <!-- Controls -->
+        <div class="hadith-controls fi">
+          <input class="hadith-search" id="hadithSearch" type="search"
+            placeholder="🔍 Search in hadiths..."
+            oninput="searchHadiths(this.value)"
+            aria-label="Search hadiths">
+          <select class="hadith-select" id="pageSize" onchange="loadHadiths(1)">
+            <option value="10">10 per page</option>
+            <option value="20" selected>20 per page</option>
+            <option value="50">50 per page</option>
+          </select>
+          <button class="btn-load" onclick="loadHadiths(1)">🔄 Load</button>
+        </div>
+
+        <!-- Hadiths container -->
+        <div class="hadith-grid fi" id="hadithGrid">
+          <div class="hadith-loading">
+            <div class="spinner"></div>
+            <span>Loading hadiths…</span>
+          </div>
+        </div>
+
+        <!-- Pagination -->
+        <div class="hadith-pagination fi" id="pagination"></div>
+
+      </div>
+    </section>
+  </div>
+
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  </footer>
+
+  <div class="auth" id="authModal">
+    <div class="acard">
+      <button class="aclose" onclick="closeAuth()">✕</button>
+      <div class="ati">Welcome Back</div>
+      <div class="adsc">Sign in to sync your progress and saved bookmarks.</div>
+      <div class="scl-btn"><img src="https://upload.wikimedia.org/wikipedia/commons/c/c1/Google_%22G%22_logo.svg"> Continue with Google</div>
+      <div class="sep">or</div>
+      <input type="email" class="ainp" placeholder="Email Address">
+      <input type="password" class="ainp" placeholder="Password">
+      <button class="a-btn" onclick="closeAuth()">Sign In</button>
+      <div class="atg">Don't have an account? <span>Sign Up</span></div>
+    </div>
+  </div>
+
+  <script src="../shared.js"></script>
+  <script>
+    // ── State ──
+    let currentCollection = 'bukhari';
+    let currentPage = 1;
+    let totalPages = 1;
+    let searchQuery = '';
+    let searchTimer = null;
+    let apiCache = {};
+
+    const API_MAP = {
+      'bukhari': 'bukhari',
+      'muslim': 'muslim',
+      'abu-dawud': 'abudawud',
+      'tirmidhi': 'tirmidhi',
+      'ibn-majah': 'ibnmajah',
+      'nasai': 'nasai'
+    };
+
+    // ── Daily Hadiths rotation ──
+    const DAILY_HADITHS = [
+      {ar:'اللَّهُمَّ إِنِّي أَسْأَلُكَ عِلْمًا نَافِعًا وَرِزْقًا طَيِّبًا وَعَمَلًا مُتَقَبَّلًا', en:'"O Allah, I ask You for beneficial knowledge, good provision, and accepted deeds."', src:'Ibn Majah | Sahih'},
+      {ar:'إِنَّمَا الأَعْمَالُ بِالنِّيَّاتِ', en:'"Actions are but by intentions."', src:'Bukhari | Sahih'},
+      {ar:'خَيْرُكُمْ مَنْ تَعَلَّمَ الْقُرْآنَ وَعَلَّمَهُ', en:'"The best of you are those who learn the Quran and teach it."', src:'Bukhari | Sahih'},
+      {ar:'لَا يُؤْمِنُ أَحَدُكُمْ حَتَّى يُحِبَّ لِأَخِيهِ مَا يُحِبُّ لِنَفْسِهِ', en:'"None of you truly believes until he loves for his brother what he loves for himself."', src:'Bukhari & Muslim | Sahih'},
+      {ar:'الدِّينُ النَّصِيحَةُ', en:'"The religion is sincere advice."', src:'Muslim | Sahih'},
+      {ar:'الجَنَّةُ تَحتَ أَقدامِ الأُمَّهاتِ', en:'"Paradise lies beneath the feet of mothers."', src:'An-Nasai | Sahih'},
+      {ar:'أَكمَلُ المُؤمِنينَ إيمانًا أَحسَنُهُم خُلُقًا', en:'"The most complete of the believers in faith is the one with the best character."', src:'Abu Dawud | Sahih'},
+    ];
+
+    function showDailyHadith() {
+      const d = new Date();
+      const idx = (d.getDate() + d.getMonth()) % DAILY_HADITHS.length;
+      const h = DAILY_HADITHS[idx];
+      const arEl = document.getElementById('dailyAr');
+      const enEl = document.getElementById('dailyEn');
+      const srcEl = document.getElementById('dailySrc');
+      if(arEl) arEl.textContent = h.ar;
+      if(enEl) enEl.textContent = '"' + h.en.replace(/^"|"$/g,'') + '"';
+      if(srcEl) srcEl.textContent = '— ' + h.src;
+    }
+
+    async function fetchHadithCollection(col) {
+      if (apiCache[col]) return apiCache[col];
+      
+      const apiName = API_MAP[col];
+      const grid = document.getElementById('hadithGrid');
+      grid.innerHTML = `<div class="hadith-loading"><div class="spinner"></div><span>Downloading complete ${col.replace('-',' ')} collection...</span></div>`;
+      
+      try {
+        const [arRes, enRes] = await Promise.all([
+          fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/ara-${apiName}.min.json`),
+          fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-${apiName}.min.json`)
+        ]);
+        if (!arRes.ok || !enRes.ok) throw new Error('API Error');
+        const arData = await arRes.json();
+        const enData = await enRes.json();
+        
+        const merged = [];
+        const enMap = {};
+        if (enData.hadiths) {
+          enData.hadiths.forEach(h => { enMap[h.hadithnumber] = h; });
+        }
+        
+        if (arData.hadiths) {
+          arData.hadiths.forEach(h => {
+             const enH = enMap[h.hadithnumber] || {};
+             const gradeObj = h.grades && h.grades.length ? h.grades[0] : null;
+             const grade = gradeObj ? gradeObj.grade : 'sahih';
+             let textEn = enH.text || 'Translation not available.';
+             if(textEn.length > 800) textEn = textEn.substring(0, 800) + '...';
+             let textAr = h.text || '';
+             if(textAr.length > 800) textAr = textAr.substring(0, 800) + '...';
+             
+             let colorClass = 'sahih';
+             if (grade.toLowerCase().includes('hasan')) colorClass = 'hasan';
+             else if (grade.toLowerCase().includes('daif') || grade.toLowerCase().includes('weak')) colorClass = 'daif';
+
+             merged.push({
+               num: h.hadithnumber,
+               ar: textAr,
+               en: textEn,
+               grade: colorClass,
+               gradeRaw: grade,
+               chain: 'Various'
+             });
+          });
+        }
+        apiCache[col] = merged;
+        return merged;
+      } catch (err) {
+        console.error('Hadith fetch error:', err);
+        grid.innerHTML = `<div class="hadith-empty"><div class="icon">⚠</div><p>Failed to load hadiths. Check your internet connection.</p></div>`;
+        return null;
+      }
+    }
+
+    async function selectCollection(col, btn) {
+      currentCollection = col;
+      currentPage = 1;
+      document.querySelectorAll('.col-tab').forEach(b => b.classList.remove('active'));
+      if(btn) btn.classList.add('active');
+      searchQuery = '';
+      const searchEl = document.getElementById('hadithSearch');
+      if(searchEl) searchEl.value = '';
+      await loadHadiths(1);
+    }
+
+    async function loadHadiths(page) {
+      currentPage = page;
+      const grid = document.getElementById('hadithGrid');
+      if(!grid) return;
+
+      const data = await fetchHadithCollection(currentCollection);
+      if (!data) return;
+
+      const pageSize = parseInt(document.getElementById('pageSize').value) || 20;
+
+      let filtered = data;
+      if(searchQuery) {
+        const q = searchQuery.toLowerCase();
+        filtered = data.filter(h => h.en.toLowerCase().includes(q) || h.ar.includes(searchQuery));
+      }
+
+      totalPages = Math.ceil(filtered.length / pageSize) || 1;
+      const start = (page - 1) * pageSize;
+      const pageData = filtered.slice(start, start + pageSize);
+
+      if(pageData.length === 0) {
+        grid.innerHTML = `<div class="hadith-empty"><div class="icon">🔍</div><p>No hadiths found. Try a different search.</p></div>`;
+        buildPagination(0);
+        return;
+      }
+
+      grid.innerHTML = pageData.map(h => `
+        <div class="hadith-card">
+          <div class="hadith-meta">
+            <span class="hadith-book">${currentCollection.replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}</span>
+            <span class="hadith-num">No. ${h.num}</span>
+            <span class="hadith-grade ${h.grade}">${h.gradeRaw.charAt(0).toUpperCase() + h.gradeRaw.slice(1)}</span>
+          </div>
+          <div class="hadith-arabic">${h.ar}</div>
+          <div class="hadith-english">${h.en}</div>
+          <div class="hadith-actions">
+            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')">📋 Copy</button>
+            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')">📤 Share</button>
+          </div>
+        </div>`).join('');
+
+      buildPagination(totalPages);
+      window.scrollTo({top: document.getElementById('hadithGrid').offsetTop - 80, behavior:'smooth'});
+    }
+
+    function buildPagination(total) {
+      const pg = document.getElementById('pagination');
+      if(!pg || total <= 1) { if(pg) pg.innerHTML=''; return; }
+      let html = `<button class="page-btn" onclick="loadHadiths(${currentPage-1})" ${currentPage===1?'disabled':''}>◀ Prev</button>`;
+      
+      let startP = Math.max(1, currentPage - 2);
+      let endP = Math.min(total, currentPage + 2);
+      
+      if (startP > 1) {
+        html += `<button class="page-btn" onclick="loadHadiths(1)">1</button>`;
+        if (startP > 2) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
+      }
+      
+      for(let i=startP; i<=endP; i++) {
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadHadiths(${i})">${i}</button>`;
+      }
+      
+      if (endP < total) {
+        if (endP < total - 1) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
+        html += `<button class="page-btn" onclick="loadHadiths(${total})">${total}</button>`;
+      }
+      
+      html += `<button class="page-btn" onclick="loadHadiths(${currentPage+1})" ${currentPage===total?'disabled':''}>Next ▶</button>`;
+      pg.innerHTML = html;
+    }
+
+    function searchHadiths(q) {
+      clearTimeout(searchTimer);
+      searchTimer = setTimeout(() => {
+        searchQuery = q.trim();
+        loadHadiths(1);
+      }, 350);
+    }
+
+    function copyHadith(encoded) {
+      const text = decodeURIComponent(encoded);
+      navigator.clipboard.writeText(text).then(() => showToast('✅ Hadith copied!'));
+    }
+
+    function shareHadith(encoded) {
+      const text = decodeURIComponent(encoded);
+      if(navigator.share) {
+        navigator.share({title:'Hadith — Noor Al-Quran', text});
+      } else {
+        navigator.clipboard.writeText(text).then(() => showToast('📋 Hadith copied for sharing!'));
+      }
+    }
+
+    // Init
+    showDailyHadith();
+    loadHadiths(1);
+  </script>
+</body>
+</html>

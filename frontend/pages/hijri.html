@@ -73,6 +73,7 @@
           <a href="tasbih.html">Tasbih Counter</a>
           <a href="qibla.html">Qibla Compass</a>
           <a href="hijri.html">Hijri Calendar</a>
+          <a href="hadith.html">Hadith</a>
         </div>
       </li>
       <li><a href="names.html">99 Names</a></li>
@@ -165,51 +166,56 @@
       {name:'Islamic New Year',emoji:'🌟',hijriMonth:1,hijriDay:1,description:'First day of Muharram'}
     ];
 
-    // Gregorian to Hijri conversion (simplified algorithm)
-    function gregorianToHijri(date=new Date()){
-      const d=date.getDate(),m=date.getMonth()+1,y=date.getFullYear();
-      const jd=Math.floor((1461*(y+4800+Math.floor((m-14)/12)))/4)+Math.floor((367*(m-2-12*(Math.floor((m-14)/12))))/12)-Math.floor((3*(Math.floor((y+4900+Math.floor((m-14)/12))/100)))/4)+d-32045;
-      const l=jd+568860;const n=Math.floor((30*l+10646)/(10631));const j=l-Math.floor((10631*n-473)/30)+1;const month=Math.floor((11*j+3)/325);const day=j-Math.floor((325*month+48)/11);
-      return {year:n,month:month+1,day:Math.floor(day)};
+    function gregorianToHijri(date = new Date()) {
+      const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic', {day:'numeric', month:'numeric', year:'numeric'}).formatToParts(date);
+      let y, m, d;
+      parts.forEach(p => {
+        if (p.type === 'year') y = parseInt(p.value);
+        if (p.type === 'month') m = parseInt(p.value);
+        if (p.type === 'day') d = parseInt(p.value);
+      });
+      return { year: y, month: m, day: d };
     }
 
-    function hijriToGregorian(hijriY,hijriM,hijriD){
-      const jd=Math.floor((11*hijriY+3)/30)+hijriM*30+hijriD-1+Math.floor((hijriY-1)/30)*355;
-      const ell=jd+1948440-32045;
-      const n=Math.floor((4*ell+1)/146097);const ell2=ell-(Math.floor((146097*n)/4));const i=Math.floor((4000*(ell2+1))/1461001);const ell3=ell2-Math.floor((1461*i)/4)+31;const j=Math.floor((80*ell3)/2447);const day=ell3-Math.floor((2447*j)/80);const ell4=Math.floor(j/11);const month=j+2-12*ell4;const year=100*(n-49)+i+ell4;
-      return new Date(year,month-1,day);
+    function daysUntilHijriEvent(now, targetM, targetD) {
+      let d = new Date(now);
+      d.setHours(0,0,0,0);
+      for(let i=0; i<=360; i++) {
+        let h = gregorianToHijri(d);
+        if (h.month === targetM && h.day === targetD) return i;
+        d.setDate(d.getDate() + 1);
+      }
+      return 0;
     }
 
     function displayCurrentDate(){
-      const now=new Date();
-      const hijri=gregorianToHijri(now);
-      document.getElementById('gregorianDate').textContent=now.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
-      document.getElementById('hijriDate').textContent=`${hijri.day} / ${hijri.month} / ${hijri.year}`;
-      document.getElementById('hijriText').textContent=`${hijri.day} ${ISLAMIC_MONTHS[hijri.month-1]} ${hijri.year}ھ`;
-      document.getElementById('currentMonth').textContent=ISLAMIC_MONTHS[hijri.month-1];
-      document.getElementById('monthDescription').textContent=MONTH_DESCRIPTIONS[hijri.month-1];
+      const now = new Date();
+      const hijri = gregorianToHijri(now);
+      document.getElementById('gregorianDate').textContent = now.toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+      document.getElementById('hijriDate').textContent = `${hijri.day} / ${hijri.month} / ${hijri.year}`;
+      document.getElementById('hijriText').textContent = `${hijri.day} ${ISLAMIC_MONTHS[hijri.month-1]} ${hijri.year}ھ`;
+      document.getElementById('currentMonth').textContent = ISLAMIC_MONTHS[hijri.month-1];
+      document.getElementById('monthDescription').textContent = MONTH_DESCRIPTIONS[hijri.month-1];
     }
 
     function displayEvents(){
-      const grid=document.getElementById('eventsGrid');
-      const now=new Date();
-      const hijri=gregorianToHijri(now);
+      const grid = document.getElementById('eventsGrid');
+      const now = new Date();
       
-      grid.innerHTML='';
-      ISLAMIC_EVENTS.forEach(evt=>{
-        const eventDate=hijriToGregorian(hijri.year,evt.hijriMonth,evt.hijriDay);
-        const daysUntil=Math.ceil((eventDate-now)/(1000*60*60*24));
-        const daysText=daysUntil>0?`${daysUntil} days away`:daysUntil===0?'Today!':'Upcoming';
+      grid.innerHTML = '';
+      ISLAMIC_EVENTS.forEach(evt => {
+        const daysUntil = daysUntilHijriEvent(now, evt.hijriMonth, evt.hijriDay);
+        const daysText = daysUntil > 0 ? `${daysUntil} days away` : daysUntil === 0 ? 'Today!' : 'Upcoming';
         
-        const card=document.createElement('div');
-        card.className='event-card';
-        card.innerHTML=`
+        const card = document.createElement('div');
+        card.className = 'event-card';
+        card.innerHTML = `
           <div class="event-emoji">${evt.emoji}</div>
           <div class="event-name">${evt.name}</div>
           <div class="event-date">${evt.hijriDay} ${ISLAMIC_MONTHS[evt.hijriMonth-1]}</div>
           <div class="event-countdown">
             <div class="countdown-item">
-              <span class="countdown-number">${Math.abs(daysUntil)}</span>
+              <span class="countdown-number">${daysUntil}</span>
               <span class="countdown-label">Days</span>
             </div>
           </div>
