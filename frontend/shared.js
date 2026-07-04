@@ -96,7 +96,7 @@ const RECITERS = [
   },
   {
     id: 'sherif_mostafa',
-    server: 'https://archive.org/download/Sherif-Mostafa/',
+    server: 'https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/',
     photo: 'https://tvquran.com/uploads/photo/166.jpg',
     ar: 'شريف مصطفى',
     en: 'Sherif Mostafa',
@@ -108,7 +108,7 @@ const RECITERS = [
   },
   {
     id: 'abdurrahman_mossad',
-    server: 'https://archive.org/download/abdulrahman-mosad/',
+    server: 'https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/',
     photo: 'https://tvquran.com/uploads/photo/230.jpg',
     ar: 'عبدالرحمن مسعد',
     en: 'Abdurrahman Mossad',
@@ -118,6 +118,18 @@ const RECITERS = [
     bio: 'Sheikh Abdurrahman Mossad is a young Egyptian Quran reciter whose heartfelt and powerful voice has gained him millions of followers, known for his deeply emotional recitations that touch the soul.',
     page: 'reciter-abdurrahman-mossad.html',
   },
+  {
+    id: 'raad_kurdi',
+    server: 'https://server6.mp3quran.net/kurdi/',
+    photo: 'https://tvquran.com/uploads/photo/356.jpg',
+    ar: 'رعد محمد الكردي',
+    en: 'Raad Mohammad Al Kurdi',
+    style: 'Murattal',
+    country: 'Iraq',
+    init: 'ر',
+    bio: 'Sheikh Raad Mohammad Al Kurdi is an Iraqi Quran reciter and Imam known for his beautiful, distinct, and emotional recitation style.',
+    page: 'reciter-raad-kurdi.html',
+  }
 ];
 
 // ── SURAH DATA (114 surahs) ──
@@ -160,6 +172,15 @@ var SURAHS = [
   {n:106,ar:'قريش',en:'Quraysh'},{n:107,ar:'الماعون',en:"Al-Ma'un"},{n:108,ar:'الكوثر',en:'Al-Kawthar'},
   {n:109,ar:'الكافرون',en:'Al-Kafirun'},{n:110,ar:'النصر',en:'An-Nasr'},{n:111,ar:'المسد',en:'Al-Masad'},
   {n:112,ar:'الإخلاص',en:'Al-Ikhlas'},{n:113,ar:'الفلق',en:'Al-Falaq'},{n:114,ar:'الناس',en:'An-Nas'},
+];
+
+const MOSSAD_AVAILABLE = [
+  10, 19, 23, 29, 32, 49, 73, 78, 87, 88, 100, 107
+];
+
+const SHERIF_AVAILABLE = [
+  13, 15, 19, 20, 31, 32, 53, 55, 56, 57, 60, 
+  61, 62, 63, 64, 65, 66, 67, 71, 75, 76, 77, 89
 ];
 
 // ── STARS ──
@@ -337,35 +358,8 @@ function setLang(l, btn) {
   document.dispatchEvent(new CustomEvent('langChange', { detail: l }));
 }
 
-// ── AUTH ──
-function openAuth() { var a = document.getElementById('authModal'); if (a) a.classList.add('show'); }
-function closeAuth() { var a = document.getElementById('authModal'); if (a) a.classList.remove('show'); }
-function mockGoogleSignIn() {
-  var user = { name: 'User', avatar: 'https://ui-avatars.com/api/?name=User&background=d4a017&color=fff' };
-  localStorage.setItem('noor_user', JSON.stringify(user));
-  closeAuth(); updateNavAuth();
-}
-function signOut() { localStorage.removeItem('noor_user'); updateNavAuth(); }
-function updateNavAuth() {
-  var userStr = localStorage.getItem('noor_user');
-  var authLink = document.querySelector('nav .nav-links li:last-child');
-  if (!authLink) return;
-  if (userStr) {
-    var user = JSON.parse(userStr);
-    authLink.innerHTML = `<div class="dropdown" style="display:flex;align-items:center;gap:8px;cursor:pointer" onclick="this.classList.toggle('active')">
-      <img src="${user.avatar}" alt="User" style="width:28px;height:28px;border-radius:50%;border:1px solid var(--gold)">
-      <span style="color:var(--goldL);font-weight:700">${user.name}</span>
-      <div class="dropdown-content" style="right:0;left:auto;min-width:120px">
-        <a href="javascript:void(0)" onclick="signOut()" style="color:#e05050">Sign Out</a>
-      </div></div>`;
-  } else {
-    authLink.innerHTML = `<a href="javascript:void(0)" onclick="openAuth()" style="color:var(--goldL);font-weight:700">Sign In</a>`;
-  }
-}
-
-// ── GLOBAL INIT ──
 document.addEventListener('DOMContentLoaded', function() {
-  // Dropdown handler
+  // Global init
   document.addEventListener('click', function(e) {
     var dropLink = e.target.closest('.dropdown > a');
     if (dropLink) {
@@ -377,12 +371,7 @@ document.addEventListener('DOMContentLoaded', function() {
     } else if (!e.target.closest('.dropdown')) {
       document.querySelectorAll('.dropdown.active').forEach(function(d) { d.classList.remove('active'); });
     }
-    if (e.target.closest('.scl-btn')) {
-      var text = e.target.closest('.scl-btn').textContent.toLowerCase();
-      if (text.includes('google')) mockGoogleSignIn();
-    }
   });
-  updateNavAuth();
 
   // Page-specific init
   if (document.getElementById('grid'))   loadSurahs();
@@ -503,14 +492,25 @@ function loadReciters() {
 
   // Quick-play selects
   var recSel = document.getElementById('reciterSel');
-  if (recSel) {
+  var surahSel = document.getElementById('surahSel');
+  
+  if (recSel && surahSel) {
     recSel.innerHTML = '';
     RECITERS.forEach(function(r) { recSel.innerHTML += `<option value="${r.id}">${r.en}</option>`; });
-  }
-  var surahSel = document.getElementById('surahSel');
-  if (surahSel) {
-    surahSel.innerHTML = '';
-    SURAHS.forEach(function(s) { surahSel.innerHTML += `<option value="${s.n}">${s.n}. ${s.en} — ${s.ar}</option>`; });
+    
+    function updateSurahSel() {
+      surahSel.innerHTML = '';
+      let displaySurahs = SURAHS;
+      if (recSel.value === 'sherif_mostafa') {
+        displaySurahs = SURAHS.filter(s => SHERIF_AVAILABLE.includes(s.n));
+      } else if (recSel.value === 'abdurrahman_mossad') {
+        displaySurahs = SURAHS.filter(s => MOSSAD_AVAILABLE.includes(s.n));
+      }
+      displaySurahs.forEach(function(s) { surahSel.innerHTML += `<option value="${s.n}">${s.n}. ${s.en} — ${s.ar}</option>`; });
+    }
+    
+    recSel.addEventListener('change', updateSurahSel);
+    updateSurahSel(); // init
   }
 }
 

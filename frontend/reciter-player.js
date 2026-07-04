@@ -39,24 +39,7 @@ const EVERYAYAH_MAP = {
   yasser_dosari:      'Yasser_Ad-Dussary_128kbps',
 };
 
-const MOSSAD_MAP = {
-  1: '001 Al-Fatiha الفاتحة.mp3',
-  29: '029 Al-Ankabut العنكبوت.mp3',
-  32: '032 As-Sajdah السجدة.mp3',
-  49: '049 Al-Hujurat الحجرات.mp3',
-  73: '073 Al-Muzzammil المزمل.mp3',
-  78: '078 An-Naba النبأ.mp3',
-  87: '087 Al-Ala الأعلى.mp3',
-  88: '088 Al-Ghashiyah الغاشية.mp3',
-  100: '100 Al-Adiyat العاديات.mp3',
-  107: "107 Al-Ma'un الماعون.mp3",
-};
 
-const SHERIF_AVAILABLE = [
-  13, 15, 19, 20, 31, 32, 53, 55, 56, 57, 
-  60, 61, 62, 63, 64, 65, 66, 67, 71, 75, 
-  76, 77, 89
-];
 
 // ── Fallback servers (full-surah MP3) ────────────────────────────────────
 const FALLBACK_SERVERS = {
@@ -65,10 +48,8 @@ const FALLBACK_SERVERS = {
     'https://server11.mp3quran.net/yasser/',
   ],
   sherif_mostafa: [
-    'https://corsproxy.io/?https://archive.org/download/Sherif-Mostafa/'
   ],
   abdurrahman_mossad: [
-    'https://corsproxy.io/?https://archive.org/download/abdulrahman-mosad/'
   ]
 };
 
@@ -139,8 +120,8 @@ async function buildSurahGrid() {
 function _getAvailableSurahsSync() {
   const valid = [];
   if (RECITER_ID === 'abdurrahman_mossad') {
-    for (const n of Object.keys(MOSSAD_MAP)) {
-      valid.push(Number(n));
+    for (const n of MOSSAD_AVAILABLE) {
+      valid.push(n);
     }
   } else if (RECITER_ID === 'sherif_mostafa') {
     for (const n of SHERIF_AVAILABLE) {
@@ -168,10 +149,7 @@ function _buildAyahUrl(n, ayahNum) {
     // Per-ayah from everyayah.com
     return `https://everyayah.com/data/${eaFolder}/${surahStr}${ayahStr}.mp3`;
   }
-  if (RECITER_ID === 'abdurrahman_mossad' && MOSSAD_MAP[n]) {
-    return (RECITER_SERVER || '') + encodeURIComponent(MOSSAD_MAP[n]);
-  }
-  // Full-surah fallback
+  // Full-surah fallback (Sherif and Mossad are hosted locally with same format)
   return (RECITER_SERVER || '') + surahStr + '.mp3';
 }
 
@@ -218,8 +196,6 @@ async function loadSurahAyahs(n) {
       let audioUrl;
       if (eaFolder) {
         audioUrl = `https://everyayah.com/data/${eaFolder}/${surahStr}${ayahStr}.mp3`;
-      } else if (RECITER_ID === 'abdurrahman_mossad' && MOSSAD_MAP[n]) {
-        audioUrl = (RECITER_SERVER || '') + encodeURIComponent(MOSSAD_MAP[n]);
       } else {
         audioUrl = (RECITER_SERVER || '') + surahStr + '.mp3';
       }
@@ -311,11 +287,7 @@ function playAyahAt(ayahNum) {
     const urls = [ayah.audio];
     const surahStr = String(PlayerState.surahNum).padStart(3, '0');
     fallbacks.forEach(srv => {
-      if (RECITER_ID === 'abdurrahman_mossad' && MOSSAD_MAP[PlayerState.surahNum]) {
-        urls.push(srv + encodeURIComponent(MOSSAD_MAP[PlayerState.surahNum]));
-      } else {
-        urls.push(srv + surahStr + '.mp3');
-      }
+      urls.push(srv + surahStr + '.mp3');
     });
     playWithFallback(urls, 0);
   }
@@ -354,20 +326,34 @@ function _updateNavButtons() {
 
 // ── Controls ──────────────────────────────────────────────────────────────
 function playPrev() {
-  if (PlayerState.ayahNum > 1) { playAyahAt(PlayerState.ayahNum - 1); return; }
-  if (PlayerState.surahNum > 1) { loadSurahAyahs(PlayerState.surahNum - 1); }
+  const ayah = PlayerState.ayahData.find(a => a.num === PlayerState.ayahNum);
+  if (ayah && ayah.isPerAyah && PlayerState.ayahNum > 1) { 
+    playAyahAt(PlayerState.ayahNum - 1); 
+    return; 
+  }
+  const avail = typeof _getAvailableSurahsSync === 'function' ? _getAvailableSurahsSync() : SURAHS;
+  const idx = avail.findIndex(s => s.n === PlayerState.surahNum);
+  if (idx > 0) { loadSurahAyahs(avail[idx - 1].n); }
 }
 
 function playNext() {
-  if (PlayerState.ayahNum < PlayerState.totalAyahs) { playAyahAt(PlayerState.ayahNum + 1); return; }
-  if (PlayerState.surahNum < 114) { loadSurahAyahs(PlayerState.surahNum + 1); }
+  const ayah = PlayerState.ayahData.find(a => a.num === PlayerState.ayahNum);
+  if (ayah && ayah.isPerAyah && PlayerState.ayahNum < PlayerState.totalAyahs) { 
+    playAyahAt(PlayerState.ayahNum + 1); 
+    return; 
+  }
+  const nextSurah = typeof _getNextSurah === 'function' ? _getNextSurah(PlayerState.surahNum) : null;
+  if (nextSurah) { loadSurahAyahs(nextSurah); }
 }
 
 function togPlayReciter() {
   if (!_aud) return;
   if (!_aud.src || _aud.src === window.location.href) {
-    // Nothing loaded yet — load first ayah of first surah
-    if (SURAHS && SURAHS.length) loadSurahAyahs(1);
+    // Nothing loaded yet — load first available surah
+    const avail = typeof _getAvailableSurahsSync === 'function' ? _getAvailableSurahsSync() : SURAHS;
+    if (avail && avail.length > 0) {
+      loadSurahAyahs(avail[0].n);
+    }
     return;
   }
   if (_aud.paused) { _aud.play().catch(() => {}); PlayerState.isPlaying = true; }
@@ -444,6 +430,15 @@ function _onMeta() {
   if (_timeDurB) _timeDurB.textContent = dur;
 }
 
+function _getNextSurah(currentNum) {
+  const avail = _getAvailableSurahsSync();
+  const idx = avail.findIndex(s => s.n === currentNum);
+  if (idx !== -1 && idx < avail.length - 1) {
+    return avail[idx + 1].n;
+  }
+  return null;
+}
+
 function _onEnded() {
   if (PlayerState.repeatMode) {
     if (_aud) { _aud.currentTime = 0; _aud.play().catch(() => {}); }
@@ -453,14 +448,18 @@ function _onEnded() {
   if (ayah && ayah.isPerAyah) {
     if (PlayerState.ayahNum < PlayerState.totalAyahs) {
       setTimeout(() => playAyahAt(PlayerState.ayahNum + 1), 600);
-    } else if (PlayerState.surahNum < 114) {
-      setTimeout(() => loadSurahAyahs(PlayerState.surahNum + 1), 1000);
     } else {
-      _updatePlayBtn(false); PlayerState.isPlaying = false;
+      const nextSurah = _getNextSurah(PlayerState.surahNum);
+      if (nextSurah) {
+        setTimeout(() => loadSurahAyahs(nextSurah), 1000);
+      } else {
+        _updatePlayBtn(false); PlayerState.isPlaying = false;
+      }
     }
   } else {
-    if (PlayerState.surahNum < 114) {
-      setTimeout(() => loadSurahAyahs(PlayerState.surahNum + 1), 1000);
+    const nextSurah = _getNextSurah(PlayerState.surahNum);
+    if (nextSurah) {
+      setTimeout(() => loadSurahAyahs(nextSurah), 1000);
     } else {
       _updatePlayBtn(false); PlayerState.isPlaying = false;
     }
@@ -468,6 +467,7 @@ function _onEnded() {
 }
 
 function _onError() {
+  if (!_aud || !_aud.src || _aud.src === window.location.href) return;
   console.warn('Audio error for reciter:', RECITER_ID, 'ayah:', PlayerState.ayahNum);
   
   const fallbacks = FALLBACK_SERVERS[RECITER_ID] || [];
