@@ -6,7 +6,7 @@
   <title>Yasser Al-Dosari — Noor Al-Quran</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <meta name="description" content="Listen to Yasser Al-Dosari's full Quran recitation — all 114 Surahs with a premium audio player.">
-  <link rel="stylesheet" href="../shared.css">
+  <link rel="stylesheet" href="../shared.css?v=3">
   <style>
     .reciter-hero{background:linear-gradient(135deg,rgba(13,38,128,.85),rgba(26,58,143,.65));padding:70px 24px;text-align:center;border-bottom:1px solid rgba(212,160,23,.2)}
     .reciter-photo{width:180px;height:180px;border-radius:50%;margin:0 auto 24px;border:3px solid var(--gold);box-shadow:0 0 50px rgba(212,160,23,.4),0 0 100px rgba(212,160,23,.15);background-size:cover;background-position:center;transition:.4s}
@@ -65,12 +65,12 @@
     .surah-btn.active .playing-badge{display:inline-block}
 
     /* ── Ayah Panel ── */
-    .ayah-panel{max-width:780px;margin:0 auto 60px;padding:0 24px}
+    .ayah-panel{max-width:960px;margin:0 auto 60px;padding:0 24px}
     .ayah-panel-header{font-family:'Cinzel Decorative',serif;font-size:.8rem;color:var(--soft);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;text-align:center}
-    .ayah-list-wrap{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px}
+    .ayah-list-wrap{display:flex;flex-direction:column;gap:14px;max-height:65vh;overflow-y:auto;padding-right:10px}
     .ayah-list-wrap::-webkit-scrollbar{width:4px}
     .ayah-list-wrap::-webkit-scrollbar-thumb{background:rgba(212,160,23,.3);border-radius:2px}
-    .ayah-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+    .ayah-item{flex-shrink:0;display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
     .ayah-item:hover{border-color:rgba(212,160,23,.4);background:rgba(13,38,128,.65)}
     .ayah-item.active{border-color:var(--gold);background:rgba(212,160,23,.1);box-shadow:0 0 20px rgba(212,160,23,.2)}
     .ayah-item.active::before{content:'\25B6';position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--goldL);font-size:.7rem;opacity:.8}
@@ -115,7 +115,7 @@
 
   <div class="wrap" style="padding-top:0">
     <div class="reciter-hero fi">
-      <div style="background:url('https://tvquran.com/uploads/photo/92.jpg');background-size:cover;background-position:center" class="reciter-photo"></div>
+      <div style="background:url('../assets/images/reciters/yasser_dosari.webp');background-size:cover;background-position:center" class="reciter-photo"></div>
       <div class="reciter-name">Yasser Al-Dosari</div>
       <div class="reciter-ar">ياسر الدوسري</div>
       <div class="reciter-info">
@@ -210,11 +210,11 @@
 
   <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
 
-  <script src="../shared.js"></script>
+  <script src="../shared.js?v=3"></script>
   <script>
     const RECITER_ID = 'yasser_dosari';
     const RECITER_SERVER = 'https://server11.mp3quran.net/yasser/';
   </script>
-  <script src="../reciter-player.js"></script>
+  <script src="../reciter-player.js?v=5"></script>
 </body>
 </html>

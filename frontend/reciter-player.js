@@ -158,6 +158,7 @@ async function loadSurahAyahs(n) {
   PlayerState.surahNum = n;
   PlayerState.ayahNum  = 0;
   PlayerState.ayahData = [];
+  PlayerState.ayahTimings = null;
 
   const s = SURAHS.find(x => x.n === n);
 
@@ -284,12 +285,29 @@ function playAyahAt(ayahNum) {
     playWithFallback(urls, 0);
   } else {
     const fallbacks = FALLBACK_SERVERS[RECITER_ID] || [];
-    const urls = [ayah.audio];
     const surahStr = String(PlayerState.surahNum).padStart(3, '0');
-    fallbacks.forEach(srv => {
-      urls.push(srv + surahStr + '.mp3');
-    });
-    playWithFallback(urls, 0);
+    const urls = [ayah.audio, ...fallbacks.map(srv => srv + surahStr + '.mp3')];
+    
+    // Check if we are already playing the right audio file
+    if (!_aud.src || !_aud.src.includes(surahStr + '.mp3')) {
+       playWithFallback(urls, 0);
+       const onMeta = () => {
+          _aud.removeEventListener('loadedmetadata', onMeta);
+          _ensureTimings();
+          if (PlayerState.ayahTimings) {
+             const timing = PlayerState.ayahTimings.find(t => t.num === ayahNum);
+             if (timing) _aud.currentTime = timing.start;
+          }
+       };
+       _aud.addEventListener('loadedmetadata', onMeta);
+    } else {
+       _ensureTimings();
+       if (PlayerState.ayahTimings) {
+           const timing = PlayerState.ayahTimings.find(t => t.num === ayahNum);
+           if (timing) _aud.currentTime = timing.start;
+       }
+       if (_aud.paused) _aud.play();
+    }
   }
 
   _highlightAyah(ayahNum);
@@ -304,7 +322,26 @@ function _highlightAyah(num) {
   const el = document.getElementById(`ayah-row-${num}`);
   if (el) {
     el.classList.add('active');
-    el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    
+    const container = document.getElementById('ayahList');
+    if (container) {
+      const elRect = el.getBoundingClientRect();
+      const contRect = container.getBoundingClientRect();
+      
+      const isVisible = (elRect.top >= contRect.top) && (elRect.bottom <= contRect.bottom);
+      
+      if (!isVisible) {
+        const offsetToTop = elRect.top - contRect.top;
+        const targetScrollTop = container.scrollTop + offsetToTop - (container.clientHeight / 2) + (elRect.height / 2);
+        
+        container.scrollTo({
+          top: targetScrollTop,
+          behavior: 'smooth'
+        });
+      }
+    } else {
+      el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
   }
 }
 
@@ -413,6 +450,20 @@ function seekFromBar() {
   _aud.currentTime = _seekSliderB.value / 100 * _aud.duration;
 }
 
+// ── Pseudo-timings for full-surah MP3s ─────────────────────────────────────
+function _ensureTimings() {
+   if (PlayerState.ayahTimings || !_aud || !_aud.duration || isNaN(_aud.duration) || !PlayerState.ayahData.length) return;
+   const totalChars = PlayerState.ayahData.reduce((acc, a) => acc + (a.arab ? a.arab.length : 10), 0);
+   let timeAcc = 0;
+   PlayerState.ayahTimings = PlayerState.ayahData.map(a => {
+      const chars = a.arab ? a.arab.length : 10;
+      const duration = (chars / totalChars) * _aud.duration;
+      const start = timeAcc;
+      timeAcc += duration;
+      return { num: a.num, start, end: timeAcc };
+   });
+}
+
 // ── Audio events ───────────────────────────────────────────────────────────
 function _onTimeUpdate() {
   if (!_aud || PlayerState.isSeeking) return;
@@ -421,6 +472,23 @@ function _onTimeUpdate() {
   const now = _fmtTime(_aud.currentTime);
   if (_timeNow) _timeNow.textContent = now;
   if (_timeNowB) _timeNowB.textContent = now;
+
+  // Auto-transition for full-surah MP3s
+  const ayah = PlayerState.ayahData[0];
+  if (ayah && !ayah.isPerAyah && _aud.duration && !isNaN(_aud.duration)) {
+    _ensureTimings();
+    if (PlayerState.ayahTimings && !PlayerState.isSeeking) {
+       const currentTime = _aud.currentTime;
+       const currentAyah = PlayerState.ayahTimings.find(t => currentTime >= t.start && currentTime < t.end);
+       if (currentAyah && currentAyah.num !== PlayerState.ayahNum) {
+         PlayerState.ayahNum = currentAyah.num;
+         _highlightAyah(currentAyah.num);
+         if (_playerAyahInfo) {
+           _playerAyahInfo.textContent = `Ayah ${currentAyah.num} / ${PlayerState.totalAyahs}`;
+         }
+       }
+    }
+  }
 }
 
 function _onMeta() {

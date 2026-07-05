@@ -6,7 +6,7 @@
   <title>Mishary Alafasy — Noor Al-Quran</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <meta name="description" content="Listen to Mishary Alafasy's full Quran recitation — all 114 Surahs with per-ayah highlighting and a premium audio player.">
-  <link rel="stylesheet" href="../shared.css">
+  <link rel="stylesheet" href="../shared.css?v=3">
   <style>
     .reciter-hero{background:linear-gradient(135deg,rgba(13,38,128,.85),rgba(26,58,143,.65));padding:70px 24px;text-align:center;border-bottom:1px solid rgba(212,160,23,.2)}
     .reciter-photo{width:180px;height:180px;border-radius:50%;margin:0 auto 24px;border:3px solid var(--gold);box-shadow:0 0 50px rgba(212,160,23,.4),0 0 100px rgba(212,160,23,.15);background-size:cover;background-position:center;transition:.4s}
@@ -55,12 +55,12 @@
     .speed-btn:hover,.repeat-btn:hover{background:rgba(212,160,23,.25)}
     .repeat-btn.active{background:rgba(212,160,23,.35);border-color:var(--gold)}
     /* ── Ayah Panel ── */
-    .ayah-panel{max-width:780px;margin:0 auto 60px;padding:0 24px}
+    .ayah-panel{max-width:960px;margin:0 auto 60px;padding:0 24px}
     .ayah-panel-header{font-family:'Cinzel Decorative',serif;font-size:.8rem;color:var(--soft);letter-spacing:2px;text-transform:uppercase;margin-bottom:16px;text-align:center}
-    .ayah-list-wrap{display:flex;flex-direction:column;gap:10px;max-height:420px;overflow-y:auto;padding-right:4px}
+    .ayah-list-wrap{display:flex;flex-direction:column;gap:14px;max-height:65vh;overflow-y:auto;padding-right:10px}
     .ayah-list-wrap::-webkit-scrollbar{width:4px}
     .ayah-list-wrap::-webkit-scrollbar-thumb{background:rgba(212,160,23,.3);border-radius:2px}
-    .ayah-item{display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
+    .ayah-item{flex-shrink:0;display:flex;align-items:flex-start;gap:14px;padding:16px 18px;background:var(--card);border:1px solid var(--border);border-radius:14px;cursor:pointer;transition:all .3s;position:relative;overflow:hidden}
     .ayah-item:hover{border-color:rgba(212,160,23,.4);background:rgba(13,38,128,.65)}
     .ayah-item.active{border-color:var(--gold);background:rgba(212,160,23,.1);box-shadow:0 0 20px rgba(212,160,23,.2)}
     .ayah-item.active::before{content:'▶';position:absolute;left:8px;top:50%;transform:translateY(-50%);color:var(--goldL);font-size:.7rem;opacity:.8}
@@ -137,7 +137,7 @@
 
     <!-- ── HERO ── -->
     <div class="reciter-hero fi">
-      <div class="reciter-photo" style="background-image:url('https://tvquran.com/uploads/photo/36.jpg')"></div>
+      <div class="reciter-photo" style="background-image:url('../assets/images/reciters/mishary_alafasy.webp')"></div>
       <div class="reciter-name">Mishary Alafasy</div>
       <div class="reciter-ar">مشاري العفاسي</div>
       <div class="reciter-info">
@@ -249,11 +249,11 @@
   <!-- ── AUTH MODAL ── -->
   </div>
 
-  <script src="../shared.js"></script>
+  <script src="../shared.js?v=3"></script>
   <script>
     const RECITER_ID     = 'mishary_alafasy';
     const RECITER_SERVER = 'https://server8.mp3quran.net/afs/';
   </script>
-  <script src="../reciter-player.js"></script>
+  <script src="../reciter-player.js?v=5"></script>
 </body>
 </html>

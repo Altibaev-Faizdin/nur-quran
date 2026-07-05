@@ -5,8 +5,9 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reciters — Noor Al-Quran</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-  <link rel="stylesheet" href="../shared.css">
+  <link rel="icon"
+    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
+  <link rel="stylesheet" href="../shared.css?v=2">
 </head>
 
 <body>
@@ -35,14 +36,15 @@
         </div>
       </li>
       <li><a href="names.html">99 Names</a></li>
-      </ul>
+    </ul>
   </nav>
   <div class="wrap">
     <div class="ph fi">
       <div class="stag">المقرئون</div>
       <h1 class="st">The <span>Reciters</span></h1>
       <div class="sl"></div>
-      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">9 World-Renowned Quran Reciters · Click to view full page</p>
+      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">9 World-Renowned Quran Reciters · Click to view full
+        page</p>
     </div>
 
     <section class="sec">
@@ -50,20 +52,26 @@
 
       <!-- QUICK PLAY SECTION -->
       <div style="margin-top:60px;max-width:700px;margin-inline:auto;text-align:center" class="fi">
-        <div class="stag" style="display:inline-block;background:rgba(212,160,23,.1);padding:10px 16px;border-radius:20px">Quick Play</div>
+        <div class="stag"
+          style="display:inline-block;background:rgba(212,160,23,.1);padding:10px 16px;border-radius:20px">Quick Play
+        </div>
         <h3 class="st" style="font-size:1.4rem;margin-top:14px">Or <span>Play Instantly</span></h3>
         <div class="sl" style="margin-bottom:28px"></div>
-        <p style="color:var(--soft);font-size:.85rem;margin-bottom:18px;font-style:italic">Select a reciter and surah to play audio immediately</p>
+        <p style="color:var(--soft);font-size:.85rem;margin-bottom:18px;font-style:italic">Select a reciter and surah to
+          play audio immediately</p>
         <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
-          <select id="reciterSel" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:200px">
+          <select id="reciterSel"
+            style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:200px">
             <option value="">Select Reciter...</option>
           </select>
-          <select id="surahSel" style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:250px">
+          <select id="surahSel"
+            style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:250px">
             <option value="">Loading Surahs...</option>
           </select>
           <button class="btn bp" onclick="quickPlay()" style="white-space:nowrap">▶ Play</button>
         </div>
-        <div id="nowPlaying" style="font-family:'Amiri',serif;font-size:1.1rem;color:var(--goldL);min-height:28px;margin-bottom:14px">
+        <div id="nowPlaying"
+          style="font-family:'Amiri',serif;font-size:1.1rem;color:var(--goldL);min-height:28px;margin-bottom:14px">
         </div>
       </div>
     </section>
@@ -103,14 +111,14 @@
 
   </div>
 
-  <script src="../shared.js"></script>
+  <script src="../shared.js?v=2"></script>
   <script>
     // Initialize reciters page
-    document.addEventListener('DOMContentLoaded',()=>{
+    document.addEventListener('DOMContentLoaded', () => {
       loadReciters();
     });
 
-    function togPlay(){togPlayRec();}
+    function togPlay() { togPlayRec(); }
   </script>
 </body>
 
