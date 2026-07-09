@@ -1,0 +1,3 @@
+/api/*    https://your-backend-name.onrender.com/api/:splat  200
+/admin/*  https://your-backend-name.onrender.com/admin/:splat  200
+/static/* https://your-backend-name.onrender.com/static/:splat  200

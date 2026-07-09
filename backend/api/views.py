@@ -389,6 +389,14 @@ def names_of_allah(request):
 
 # ─── AUTHENTICATION ─────────────────────────────────────────────────────────
 
+@api_view(['GET'])
+@permission_classes([AllowAny])
+def health_check(request):
+    """
+    Returns 200 OK for Render's zero-downtime deploy health checks.
+    """
+    return Response({'status': 'ok'})
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
 def register_user(request):

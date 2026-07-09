@@ -19,6 +19,8 @@ if not SECRET_KEY:
         raise ValueError("SECRET_KEY environment variable is not set and DEBUG is False.")
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
+    ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -140,6 +142,8 @@ CORS_ALLOWED_ORIGINS = [
 if not CORS_ALLOWED_ORIGINS and not DEBUG:
     CORS_ALLOWED_ORIGINS = ['https://nurquran.com'] # Example production origin
 
+CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
+
 CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in dev mode for file:// access
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
@@ -153,6 +157,17 @@ CORS_ALLOW_HEADERS = [
     'x-csrftoken',
     'x-requested-with',
 ]
+
+# ─── SECURITY HEADERS (PRODUCTION) ───────────────────────────────────────────
+if not DEBUG:
+    SECURE_SSL_REDIRECT = True
+    SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+    SESSION_COOKIE_SECURE = True
+    CSRF_COOKIE_SECURE = True
+    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_INCLUDE_SUBDOMAINS = True
+    SECURE_HSTS_PRELOAD = True
+
 
 # ─── LOGGING CONFIGURATION ───────────────────────────────────────────────────
 LOGGING = {

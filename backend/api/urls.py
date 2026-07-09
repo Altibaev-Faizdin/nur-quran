@@ -10,6 +10,9 @@ router.register(r'bookmarks',      views.BookmarkViewSet,            basename='b
 router.register(r'notifications',  views.PrayerNotificationViewSet,  basename='notification')
 
 urlpatterns = [
+    # Health check for Render
+    path('health/', views.health_check, name='health-check'),
+
     # Auth routes
     path('auth/register/', views.register_user, name='auth-register'),
     path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
