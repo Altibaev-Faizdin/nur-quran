@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.auth.models import User
 
 
 class Reciter(models.Model):
@@ -34,6 +35,7 @@ class Reciter(models.Model):
 
 class Bookmark(models.Model):
     """User bookmarks for Quran verses"""
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='bookmarks')
     surah_number = models.IntegerField()
     ayah_number = models.IntegerField()
     note = models.TextField(blank=True)
@@ -41,7 +43,7 @@ class Bookmark(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     class Meta:
-        unique_together = ('surah_number', 'ayah_number')
+        unique_together = ('user', 'surah_number', 'ayah_number')
         ordering = ['-created_at']
         verbose_name_plural = "Bookmarks"
 

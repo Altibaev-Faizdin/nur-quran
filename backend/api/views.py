@@ -5,12 +5,16 @@ RESTful API endpoints with proper ViewSets and serialization
 import logging
 from datetime import date
 
-import requests
+import httpx
+from django.utils.decorators import method_decorator
+from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, status, viewsets
-from rest_framework.decorators import api_view
-from rest_framework.permissions import AllowAny
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from django.contrib.auth.models import User
+from rest_framework_simplejwt.tokens import RefreshToken
 
 from .models import Bookmark, PrayerNotification, Reciter
 from .serializers import (
@@ -50,16 +54,17 @@ MP3QURAN_SERVERS = {
 def fetch_external_api(url: str, timeout: int = API_TIMEOUT) -> dict:
     """Fetch data from an external API with structured error handling."""
     try:
-        response = requests.get(url, timeout=timeout)
-        response.raise_for_status()
-        return response.json()
-    except requests.exceptions.Timeout:
+        with httpx.Client(timeout=timeout) as client:
+            response = client.get(url)
+            response.raise_for_status()
+            return response.json()
+    except httpx.TimeoutException:
         logger.error("API timeout: %s", url)
         raise exceptions.APIException("External API timed out. Please try again.")
-    except requests.exceptions.ConnectionError:
+    except httpx.RequestError:
         logger.error("Connection error: %s", url)
         raise exceptions.APIException("Cannot reach external API. Check your connection.")
-    except requests.exceptions.HTTPError as exc:
+    except httpx.HTTPStatusError as exc:
         logger.error("HTTP error %s: %s", exc.response.status_code, url)
         raise exceptions.APIException(
             f"External API returned error {exc.response.status_code}."
@@ -72,6 +77,7 @@ def fetch_external_api(url: str, timeout: int = API_TIMEOUT) -> dict:
 # ─── QURAN ENDPOINTS ────────────────────────────────────────────────────────
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 24) # Cache for 24 hours
 def surah_list(request):
     """
     GET /api/surahs/
@@ -82,6 +88,7 @@ def surah_list(request):
 
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 24)
 def surah_detail(request, surah_number: int):
     """
     GET /api/surahs/<surah_number>/?lang=en|ru|uz
@@ -106,6 +113,7 @@ def surah_detail(request, surah_number: int):
 
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 24)
 def ayah_audio(request, surah_number: int, ayah_number: int):
     """
     GET /api/audio/<surah>/<ayah>/?reciter=alafasy
@@ -147,6 +155,7 @@ def ayah_audio(request, surah_number: int, ayah_number: int):
 
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 24)
 def ayah_audio_by_reciter_id(request, reciter_id: str, surah_number: int, ayah_number: int):
     """
     GET /api/audio/<reciter_id>/<surah>/<ayah>/
@@ -205,6 +214,7 @@ class ReciterViewSet(viewsets.ModelViewSet):
 # ─── PRAYER TIMES ──────────────────────────────────────────────────────────
 
 @api_view(['GET'])
+@cache_page(60 * 30) # Cache for 30 minutes
 def prayer_times(request):
     """
     GET /api/prayer-times/?lat=X&lng=Y&method=2
@@ -220,6 +230,7 @@ def prayer_times(request):
 
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 12) # Cache for 12 hours
 def hijri_date(request):
     """
     GET /api/hijri-date/
@@ -246,13 +257,18 @@ class PrayerNotificationViewSet(viewsets.ModelViewSet):
 
 class BookmarkViewSet(viewsets.ModelViewSet):
     """ViewSet for user bookmarks with filtering by surah"""
-    queryset = Bookmark.objects.all().order_by('-created_at')
     serializer_class = BookmarkSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend, filters.OrderingFilter]
     filterset_fields = ['surah_number', 'ayah_number']
     ordering_fields = ['created_at', 'surah_number']
     ordering = ['-created_at']
+
+    def get_queryset(self):
+        return Bookmark.objects.filter(user=self.request.user).order_by('-created_at')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 # ─── 99 NAMES OF ALLAH ─────────────────────────────────────────────────────
@@ -361,6 +377,7 @@ NAMES_OF_ALLAH = [
 
 
 @api_view(['GET'])
+@cache_page(60 * 60 * 24)
 def names_of_allah(request):
     """
     GET /api/names/
@@ -369,3 +386,21 @@ def names_of_allah(request):
     serializer = NameOfAllahSerializer(data=NAMES_OF_ALLAH, many=True)
     serializer.is_valid()
     return Response({'count': len(NAMES_OF_ALLAH), 'names': serializer.data}, status=status.HTTP_200_OK)
+
+# ─── AUTHENTICATION ─────────────────────────────────────────────────────────
+
+@api_view(['POST'])
+@permission_classes([AllowAny])
+def register_user(request):
+    username = request.data.get('username')
+    password = request.data.get('password')
+    if not username or not password:
+        return Response({'error': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
+    if User.objects.filter(username=username).exists():
+        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+    user = User.objects.create_user(username=username, password=password)
+    refresh = RefreshToken.for_user(user)
+    return Response({
+        'refresh': str(refresh),
+        'access': str(refresh.access_token),
+    }, status=status.HTTP_201_CREATED)

@@ -1,5 +1,6 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
+from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from . import views
 
 # ─── Router for ModelViewSets ────────────────────────────────────────────────
@@ -9,6 +10,11 @@ router.register(r'bookmarks',      views.BookmarkViewSet,            basename='b
 router.register(r'notifications',  views.PrayerNotificationViewSet,  basename='notification')
 
 urlpatterns = [
+    # Auth routes
+    path('auth/register/', views.register_user, name='auth-register'),
+    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
     # ViewSet routes
     path('', include(router.urls)),
 
