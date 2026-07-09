@@ -108,8 +108,12 @@
             <button class="tap-button" id="tapBtn" onclick="incrementCounter()">📿</button>
 
             <div class="button-group">
-              <button class="btn-action gold" onclick="prevDhikr()">◀ Prev Dhikr</button>
+              <button class="btn-action" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="decrementCounter()">➖ -1</button>
               <button class="btn-action danger" onclick="resetCounter()">🔄 Reset</button>
+            </div>
+            
+            <div class="button-group" style="margin-top:10px">
+              <button class="btn-action gold" onclick="prevDhikr()">◀ Prev Dhikr</button>
               <button class="btn-action gold" onclick="nextDhikr()">Next Dhikr ▶</button>
             </div>
 
@@ -282,6 +286,16 @@
         goalReached = true;
         document.getElementById('completedBanner').classList.add('show');
         setTimeout(() => document.getElementById('completedBanner').classList.remove('show'), 3000);
+      }
+    }
+
+    function decrementCounter() {
+      if (counter > 0) {
+        counter--;
+        goalReached = false;
+        document.getElementById('completedBanner').classList.remove('show');
+        updateDisplay();
+        _saveState();
       }
     }
 

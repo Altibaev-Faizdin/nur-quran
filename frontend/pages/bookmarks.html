@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <title>My Bookmarks — Noor Al-Quran</title>
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="../shared.css?v=3">
+  <style>
+    .bm-container { max-width: 800px; margin: 0 auto; padding: 20px; }
+    .bm-card { background: var(--surface); border: 1px solid rgba(212,160,23,0.15); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: var(--r); }
+    .bm-card:hover { border-color: rgba(212,160,23,0.4); transform: translateY(-2px); }
+    .bm-info { flex: 1; }
+    .bm-title { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold); margin-bottom: 5px; }
+    .bm-meta { font-size: 0.85rem; color: var(--soft); }
+    .bm-actions { display: flex; gap: 10px; }
+    .bm-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: var(--r); font-family: 'Lato', sans-serif; }
+    .bm-btn:hover { background: var(--gold); color: var(--bg); }
+    .bm-btn.del { border-color: #e05050; color: #e05050; }
+    .bm-btn.del:hover { background: #e05050; color: var(--bg); }
+    .bm-empty { text-align: center; padding: 50px 20px; color: var(--soft); font-family: 'Cinzel', serif; font-size: 1.2rem; }
+  </style>
+</head>
+<body>
+  <!-- HEADER -->
+  <header class="hdr">
+    <div class="h-in">
+      <a href="../index.html" class="logo">Noor <span>Al-Quran</span></a>
+      <div class="lang">
+        <select id="ls" onchange="setLang(this.value)">
+          <option value="en">English</option>
+          <option value="ru">Русский</option>
+          <option value="uz">O'zbek</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- CONTENT -->
+  <div class="pg-hdr">
+    <div class="pg-t">My Bookmarks</div>
+    <div class="pg-s">Saved verses and surahs</div>
+  </div>
+
+  <div class="bm-container" id="bm-list">
+    <div class="rload">Loading bookmarks... 🌙</div>
+  </div>
+
+  <script src="../shared.js?v=3"></script>
+  <script>
+    document.addEventListener('DOMContentLoaded', () => {
+      loadBookmarks();
+    });
+
+    async function loadBookmarks() {
+      const container = document.getElementById('bm-list');
+      const token = localStorage.getItem('access_token');
+      if (!token) {
+        container.innerHTML = '<div class="bm-empty">Please login to view your bookmarks.</div>';
+        return;
+      }
+
+      try {
+        const res = await authFetch(`${API_BASE}/bookmarks/`);
+        if (!res.ok) {
+          if (res.status === 401) {
+            container.innerHTML = '<div class="bm-empty">Session expired. Please login again.</div>';
+          } else {
+            container.innerHTML = '<div class="bm-empty">Failed to load bookmarks.</div>';
+          }
+          return;
+        }
+
+        const data = await res.json();
+        if (!data || data.length === 0) {
+          container.innerHTML = '<div class="bm-empty">You have no bookmarks yet.</div>';
+          return;
+        }
+
+        container.innerHTML = data.map(bm => `
+          <div class="bm-card" id="bm-${bm.id}">
+            <div class="bm-info">
+              <div class="bm-title">Surah ${bm.surah_number}, Ayah ${bm.ayah_number}</div>
+              <div class="bm-meta">Saved on: ${new Date(bm.created_at).toLocaleDateString()}</div>
+            </div>
+            <div class="bm-actions">
+              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})">Read</button>
+              <button class="bm-btn del" onclick="deleteBM(${bm.id})">Delete</button>
+            </div>
+          </div>
+        `).join('');
+
+      } catch (err) {
+        console.error(err);
+        container.innerHTML = '<div class="bm-empty">An error occurred. Please check your connection.</div>';
+      }
+    }
+
+    async function deleteBM(id) {
+      if (!confirm('Are you sure you want to delete this bookmark?')) return;
+      
+      try {
+        const res = await authFetch(`${API_BASE}/bookmarks/${id}/`, {
+          method: 'DELETE'
+        });
+        
+        if (res.ok) {
+          document.getElementById(`bm-${id}`).remove();
+          showToast('Bookmark deleted');
+          if (document.querySelectorAll('.bm-card').length === 0) {
+            document.getElementById('bm-list').innerHTML = '<div class="bm-empty">You have no bookmarks left.</div>';
+          }
+        } else {
+          showToast('Failed to delete bookmark');
+        }
+      } catch (err) {
+        console.error(err);
+        showToast('Network error');
+      }
+    }
+
+    function goToAyah(surah, ayah) {
+      window.location.href = `quran.html?surah=${surah}#ay${ayah}`;
+    }
+  </script>
+</body>
+</html>

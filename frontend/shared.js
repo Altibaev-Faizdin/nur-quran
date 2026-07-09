@@ -5,7 +5,7 @@
 'use strict';
 
 // ── API BASE ──
-const API_BASE = 'http://127.0.0.1:8000/api';
+const API_BASE = '/api'; // Use relative path or update to production URL later
 
 // ── RECITERS DATA ──
 // Alafasy removed; Sherif Mostafa and Sheikh Saud Al-Juma'a added.
@@ -264,7 +264,7 @@ function set(id, v) { const e = document.getElementById(id); if (e) e.textConten
 // ── PRAYER TIMES ──
 function loadPrayer() {
   var fetchPrayer = function (la, lo) {
-    fetch(`https://api.aladhan.com/v1/timings?latitude=${la}&longitude=${lo}&method=2`)
+    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(r => r.json()).then(d => {
         const t = d.data.timings;
         set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
@@ -378,11 +378,89 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('rg')) loadReciters();
   if (document.getElementById('pbgrid')) loadPrayerBig();
   if (document.getElementById('ng')) loadNames();
+  
+  // Add quick auth UI
+  var authDiv = document.createElement('div');
+  authDiv.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:9999;display:flex;gap:5px;';
+  authDiv.innerHTML = `<button onclick="doLogin()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Login</button>
+                       <button onclick="doRegister()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Register</button>
+                       <button onclick="doLogout()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Logout</button>`;
+  document.body.appendChild(authDiv);
 });
+
+window.doLogin = function() {
+  const u = prompt("Username");
+  const p = prompt("Password");
+  if (!u || !p) return;
+  fetch(`${API_BASE}/auth/login/`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: u, password: p})
+  }).then(r => r.json()).then(d => {
+    if (d.access) { 
+      localStorage.setItem('access_token', d.access); 
+      localStorage.setItem('refresh_token', d.refresh);
+      showToast('Logged in!'); 
+    }
+    else { showToast('Login failed'); }
+  });
+};
+
+window.doRegister = function() {
+  const u = prompt("Username");
+  const p = prompt("Password");
+  if (!u || !p) return;
+  fetch(`${API_BASE}/auth/register/`, {
+    method: 'POST', headers: {'Content-Type': 'application/json'},
+    body: JSON.stringify({username: u, password: p})
+  }).then(r => r.json()).then(d => {
+    if (d.access) { 
+      localStorage.setItem('access_token', d.access); 
+      localStorage.setItem('refresh_token', d.refresh);
+      showToast('Registered!'); 
+    }
+    else { showToast('Registration failed'); }
+  });
+};
+
+window.doLogout = function() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  showToast('Logged out');
+};
+
+window.authFetch = async function(url, options = {}) {
+  let token = localStorage.getItem('access_token');
+  if (!options.headers) options.headers = {};
+  if (token) options.headers['Authorization'] = `Bearer ${token}`;
+  
+  let res = await fetch(url, options);
+  
+  if (res.status === 401) {
+    const refresh = localStorage.getItem('refresh_token');
+    if (refresh) {
+      const refRes = await fetch(`${API_BASE}/auth/refresh/`, {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({refresh: refresh})
+      });
+      if (refRes.ok) {
+        const refData = await refRes.json();
+        localStorage.setItem('access_token', refData.access);
+        options.headers['Authorization'] = `Bearer ${refData.access}`;
+        res = await fetch(url, options);
+      } else {
+        doLogout();
+      }
+    } else {
+      doLogout();
+    }
+  }
+  return res;
+};
 
 // ── QURAN PAGE ──
 function loadSurahs() {
-  fetch('https://api.alquran.cloud/v1/surah')
+  fetch(`${API_BASE}/surahs/`)
     .then(function (r) { return r.json(); }).then(function (d) {
       var grid = document.getElementById('grid'); if (!grid) return;
       grid.innerHTML = '';
@@ -392,6 +470,20 @@ function loadSurahs() {
         div.onclick = function () { openSurah(s.number, s.name, s.englishName); };
         grid.appendChild(div);
       });
+      const params = new URLSearchParams(window.location.search);
+      const surahParam = params.get('surah');
+      if (surahParam) {
+        const target = d.data.find(s => s.number == surahParam);
+        if (target) {
+          openSurah(target.number, target.name, target.englishName);
+          setTimeout(() => {
+            if(window.location.hash) {
+              const el = document.querySelector(window.location.hash);
+              if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
+            }
+          }, 1000);
+        }
+      }
     }).catch(function (e) { console.warn('Surah list error:', e); });
 }
 
@@ -400,7 +492,7 @@ function openSurah(n, ar, en) {
   set('rn', `SURAH ${n}`); set('rar', ar); set('ren', en);
   var listEl = document.getElementById('alist'); if (listEl) listEl.innerHTML = '<div class="rload">Loading...</div>';
   r.classList.add('open');
-  fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,en.asad`)
+  fetch(`${API_BASE}/surahs/${n}/?lang=en`)
     .then(function (r) { return r.json(); }).then(function (d) {
       if (!listEl) return;
       listEl.innerHTML = '';
@@ -451,7 +543,9 @@ function filterS(q) {
 }
 
 function addBM(s, a) {
-  fetch(`${API_BASE}/bookmarks/`, {
+  var token = localStorage.getItem('access_token');
+  if (!token) return showToast('Please login to bookmark 📌');
+  authFetch(`${API_BASE}/bookmarks/`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ surah_number: s, ayah_number: a }),
@@ -576,7 +670,7 @@ function onEnd() { stopSurah(); }
 // ── PRAYER PAGE ──
 function loadPrayerBig() {
   var fetchPrayer = function (la, lo) {
-    fetch(`https://api.aladhan.com/v1/timings?latitude=${la}&longitude=${lo}&method=2`)
+    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(function (r) { return r.json(); }).then(function (d) {
         var t = d.data.timings;
         set('bft', t.Fajr); set('bst', t.Sunrise); set('bdt', t.Dhuhr);

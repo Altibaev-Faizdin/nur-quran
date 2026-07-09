@@ -181,7 +181,7 @@ async function loadSurahAyahs(n) {
   if (_ayahList) _ayahList.innerHTML = '<div class="ayah-loading"><div class="ayah-spinner"></div><span>Loading Surah…</span></div>';
 
   try {
-    const res  = await fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,en.asad`);
+    const res  = await fetch(`${API_BASE}/surahs/${n}/?lang=en`);
     const data = await res.json();
     if (data.code !== 200) throw new Error('API error');
 

@@ -228,6 +228,21 @@ renderS(ALL);
 
 function filterS(q){renderS(ALL.filter(s=>s.en.toLowerCase().includes(q.toLowerCase())||s.ar.includes(q)||String(s.n).includes(q)));}
 
+document.addEventListener('DOMContentLoaded', () => {
+  const params = new URLSearchParams(window.location.search);
+  const surahParam = params.get('surah');
+  if (surahParam) {
+    openS(parseInt(surahParam)).then(() => {
+      setTimeout(() => {
+        if(window.location.hash) {
+          const el = document.querySelector(window.location.hash);
+          if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
+        }
+      }, 500);
+    });
+  }
+});
+
 async function openS(n){
   const s=ALL.find(x=>x.n===n);if(!s)return;
   CUR=s;CAY=1;
@@ -238,10 +253,9 @@ async function openS(n){
   set('asn',s.ar+' — '+s.en);
   document.getElementById('alist').innerHTML='<div class="rload">Loading verses... 🌙</div>';
 
-  const emap={en:'en.asad',ru:'ru.kuliev',uz:'uz.sodik'};
-  const ed=emap[CLANG]||'en.asad';
+  const lang = CLANG || 'en';
   try{
-    const r=await fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,${ed}`);
+    const r=await fetch(`${API_BASE}/surahs/${n}/?lang=${lang}`);
     const d=await r.json();
     if(d.code===200){
       const ar=d.data[0].ayahs,tr=d.data[1].ayahs;
@@ -250,8 +264,8 @@ async function openS(n){
           <div class="at">
             <span class="anum">${a.numberInSurah}</span>
             <div class="aact">
-              <button class="abtn" onclick="playAyah(${n},${a.numberInSurah})" title="Play">▶️</button>
-              <button class="abtn" onclick="bookmark(${n},${a.numberInSurah})" title="Bookmark">🔖</button>
+              <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play">🔊</button>
+              <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark">🔖</button>
             </div>
           </div>
           <div class="aarb">${a.text}</div>
@@ -263,7 +277,7 @@ async function openS(n){
 
 function closeR(){document.getElementById('reader').classList.remove('open');}
 
-function playAyah(s,a){
+function playAyahQuran(s,a){
   CAY=a;
   const num=ALL.slice(0,s-1).reduce((acc,x)=>acc+x.v,0)+a;
   document.getElementById('aud').src=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
@@ -272,17 +286,10 @@ function playAyah(s,a){
   document.getElementById('ay'+a)?.scrollIntoView({behavior:'smooth',block:'center'});
 }
 function togPlay(){const a=document.getElementById('aud');if(PLAYING){a.pause();PLAYING=false;set('plbtn','▶');}else{a.play();PLAYING=true;set('plbtn','⏸');}}
-function nextA(){if(CUR)playAyah(CUR.n,Math.min(CAY+1,CUR.v));}
-function prevA(){if(CUR&&CAY>1)playAyah(CUR.n,CAY-1);}
+function nextA(){if(CUR)playAyahQuran(CUR.n,Math.min(CAY+1,CUR.v));}
+function prevA(){if(CUR&&CAY>1)playAyahQuran(CUR.n,CAY-1);}
 function updProg(){const a=document.getElementById('aud');if(a.duration)document.getElementById('pf').style.width=(a.currentTime/a.duration*100)+'%';}
 function closeAudio(){document.getElementById('abar').classList.remove('show');document.getElementById('aud').pause();PLAYING=false;}
-
-function bookmark(s,a){
-  fetch('http://localhost:8000/api/bookmarks/',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({surah_number:s,ayah_number:a})})
-  .catch(()=>{});
-  const btn=document.querySelector(`#ay${a} .abtn:last-child`);
-  if(btn){btn.textContent='✅';setTimeout(()=>btn.textContent='🔖',2000);}
-}
 
 document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);});
 </script>
