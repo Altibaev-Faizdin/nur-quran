@@ -1,17 +1,17 @@
 [[redirects]]
   from = "/api/*"
-  to = "https://your-backend-name.onrender.com/api/:splat"
+  to = "https://nur-quran.onrender.com/api/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/admin/*"
-  to = "https://your-backend-name.onrender.com/admin/:splat"
+  to = "https://nur-quran.onrender.com/admin/:splat"
   status = 200
   force = true
 
 [[redirects]]
   from = "/static/*"
-  to = "https://your-backend-name.onrender.com/static/:splat"
+  to = "https://nur-quran.onrender.com/static/:splat"
   status = 200
   force = true
