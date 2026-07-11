@@ -18,7 +18,12 @@ if not SECRET_KEY:
     else:
         raise ValueError("SECRET_KEY environment variable is not set and DEBUG is False.")
 
-ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '*').split(',')
+ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', '').split(',') if os.getenv('ALLOWED_HOSTS') else []
+if not ALLOWED_HOSTS and not DEBUG:
+    raise ValueError("ALLOWED_HOSTS environment variable is not set and DEBUG is False.")
+elif not ALLOWED_HOSTS and DEBUG:
+    ALLOWED_HOSTS = ['*']
+
 if os.getenv('RENDER_EXTERNAL_HOSTNAME'):
     ALLOWED_HOSTS.append(os.getenv('RENDER_EXTERNAL_HOSTNAME'))
 
@@ -140,7 +145,7 @@ CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in os.getenv('CORS_ALLOWED_ORIGINS', '').split(',') if origin.strip()
 ]
 if not CORS_ALLOWED_ORIGINS and not DEBUG:
-    CORS_ALLOWED_ORIGINS = ['https://nurquran.com'] # Example production origin
+    CORS_ALLOWED_ORIGINS = ['https://nuur-quran.netlify.app']
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 

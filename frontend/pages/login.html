@@ -24,23 +24,33 @@
 </head>
 <body>
   <!-- HEADER -->
-  <nav>
+    <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
     <ul class="nav-links">
-      <li><a href="quran.html" data-i18n="nav_quran">Quran</a></li>
-      <li><a href="reciters.html" data-i18n="nav_reciters">Reciters</a></li>
-      <li><a href="prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
+      <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
+      <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
+      <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
         <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
         <div class="dropdown-content">
-          <a href="dua.html" data-i18n="nav_dua">Daily Dua</a>
-          <a href="tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
-          <a href="qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
-          <a href="hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
-          <a href="hadith.html" data-i18n="nav_hadith">Hadith</a>
+          <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
+          <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
+          <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
+          <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
+          <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
         </div>
       </li>
-      <li><a href="names.html" data-i18n="nav_names">99 Names</a></li>
+      <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
+      <li class="dropdown account-dropdown">
+        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <div class="dropdown-content">
+          <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
+          <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
+          <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
+          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
+          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+        </div>
+      </li>
     </ul>
   </nav>
 
@@ -63,9 +73,7 @@
   </div>
 
   <!-- MOBILE NAV -->
-  <div class="mob-nav">
-    <a href="../index.html">
-      <div class="mn-ic">🏠</div>
+  
       <div data-i18n="mn_home">Home</div>
     </a>
     <a href="quran.html">
@@ -136,6 +144,44 @@
       });
     });
   </script>
+<div class="mob-nav">
+  <a href="../index.html">
+    <div class="mn-ic">🏠</div>
+    <div data-i18n="mn_home">Home</div>
+  </a>
+  <a href="../pages/quran.html">
+    <div class="mn-ic">📖</div>
+    <div data-i18n="mn_quran">Quran</div>
+  </a>
+  <a href="../pages/reciters.html">
+    <div class="mn-ic">🎙️</div>
+    <div data-i18n="mn_reciters">Audio</div>
+  </a>
+  <a href="../pages/prayer.html">
+    <div class="mn-ic">🕐</div>
+    <div data-i18n="mn_prayer">Prayer</div>
+  </a>
+  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
+    <div class="mn-ic">👤</div>
+    <div data-i18n="mn_account">Account</div>
+  </a>
+</div>
+
+<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
+<div id="mobAccountSheet" class="bottom-sheet">
+  <div class="sheet-content">
+    <div class="sheet-handle"></div>
+    <h3 data-i18n="mn_account_title">My Account</h3>
+    <div class="sheet-links">
+      <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
+      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+      <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
+      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
+      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+    </div>
+  </div>
+</div>
+<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
 <script src="../i18n.js"></script>
 </body>
 </html>

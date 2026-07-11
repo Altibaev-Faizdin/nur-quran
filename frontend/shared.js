@@ -378,6 +378,8 @@ function setLang(l, btn) {
 
 document.addEventListener('DOMContentLoaded', function () {
   // Global init
+  checkAuthVisibility();
+  
   document.addEventListener('click', function (e) {
     var dropLink = e.target.closest('.dropdown > a');
     if (dropLink) {
@@ -818,3 +820,19 @@ function renderNames(names) {
 
 // ── PRAYER BAR (background, runs on all pages) ──
 loadPrayer();
+
+window.toggleMobileAccount = function() {
+  var sheet = document.getElementById('mobAccountSheet');
+  var overlay = document.getElementById('sheetOverlay');
+  if (sheet) sheet.classList.toggle('open');
+  if (overlay) overlay.classList.toggle('open');
+};
+
+function checkAuthVisibility() {
+  var token = localStorage.getItem('access_token');
+  if (token) {
+    document.body.classList.add('is-logged-in');
+  } else {
+    document.body.classList.remove('is-logged-in');
+  }
+}

@@ -311,3 +311,104 @@ footer{background:rgba(2,8,24,.96);border-top:1px solid rgba(212,160,23,.1);padd
 }
 
 button, .btn, a, input, select { touch-action: manipulation; }
+
+/* ── ACCOUNT BOTTOM SHEET (Mobile) ── */
+.bottom-sheet {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: var(--surface);
+  border-top: 1px solid rgba(212,160,23,0.3);
+  border-radius: 20px 20px 0 0;
+  transform: translateY(100%);
+  transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 10000;
+  padding-bottom: max(20px, env(safe-area-inset-bottom));
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
+}
+.bottom-sheet.open {
+  transform: translateY(0);
+}
+.sheet-content {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+}
+.sheet-handle {
+  width: 40px;
+  height: 5px;
+  background: rgba(255,255,255,0.2);
+  border-radius: 3px;
+  margin: 0 auto 15px auto;
+}
+.bottom-sheet h3 {
+  font-family: 'Cinzel', serif;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 20px;
+  font-size: 1.3rem;
+}
+.sheet-links {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.sheet-item {
+  display: flex;
+  align-items: center;
+  padding: 12px 15px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  color: #fff;
+  text-decoration: none;
+  font-size: 1.05rem;
+  transition: var(--r);
+}
+.sheet-item:hover, .sheet-item:active {
+  background: rgba(212,160,23,0.1);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.sheet-item .ic {
+  margin-right: 15px;
+  font-size: 1.2rem;
+}
+.sheet-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.6);
+  z-index: 9999;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s;
+  backdrop-filter: blur(3px);
+  -webkit-backdrop-filter: blur(3px);
+}
+.sheet-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+/* ── AUTH VISIBILITY LOGIC ── */
+[data-auth="in"], [data-auth="out"] {
+  display: none !important;
+}
+body.is-logged-in [data-auth="in"] {
+  display: flex !important; /* mostly for flex buttons/links */
+}
+body.is-logged-in .account-dropdown [data-auth="in"] {
+  display: block !important;
+}
+body:not(.is-logged-in) [data-auth="out"] {
+  display: flex !important;
+}
+body:not(.is-logged-in) .account-dropdown [data-auth="out"] {
+  display: block !important;
+}

@@ -15,13 +15,14 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 
-from .models import Bookmark, PrayerNotification, Reciter
+from .models import Bookmark, PrayerNotification
 from .serializers import (
     BookmarkSerializer,
     NameOfAllahSerializer,
     PrayerNotificationSerializer,
-    ReciterSerializer,
 )
 
 logger = logging.getLogger(__name__)
@@ -154,64 +155,7 @@ def ayah_audio(request, surah_number: int, ayah_number: int):
     return Response(data, status=status.HTTP_200_OK)
 
 
-@api_view(['GET'])
-@cache_page(60 * 60 * 24)
-def ayah_audio_by_reciter_id(request, reciter_id: str, surah_number: int, ayah_number: int):
-    """
-    GET /api/audio/<reciter_id>/<surah>/<ayah>/
-    Convenience endpoint — looks up reciter from DB and returns audio URL.
-    """
-    try:
-        reciter_obj = Reciter.objects.get(reciter_id=reciter_id, is_active=True)
-    except Reciter.DoesNotExist:
-        return Response({'error': f"Reciter '{reciter_id}' not found."}, status=status.HTTP_404_NOT_FOUND)
 
-    if not (1 <= surah_number <= 114):
-        return Response({'error': 'Surah number must be 1–114.'}, status=status.HTTP_400_BAD_REQUEST)
-    if not (1 <= ayah_number <= 286):
-        return Response({'error': 'Ayah number must be 1–286.'}, status=status.HTTP_400_BAD_REQUEST)
-
-    # If reciter uses mp3quran.net
-    if reciter_obj.reciter_id in MP3QURAN_SERVERS:
-        audio_url = f"{reciter_obj.server_url}{str(surah_number).zfill(3)}.mp3"
-        return Response({
-            'reciter': reciter_obj.name_en,
-            'surah': surah_number,
-            'ayah': ayah_number,
-            'audio': audio_url,
-        }, status=status.HTTP_200_OK)
-
-    edition = reciter_obj.edition
-    url = f"{ALQURAN_BASE}/ayah/{surah_number}:{ayah_number}/{edition}"
-    data = fetch_external_api(url)
-    return Response(data, status=status.HTTP_200_OK)
-
-
-# ─── RECITER VIEWSET ────────────────────────────────────────────────────────
-
-class ReciterViewSet(viewsets.ModelViewSet):
-    """
-    ViewSet for Quran reciters.
-    Supports filtering by country/style and searching by name.
-    """
-    queryset = Reciter.objects.filter(is_active=True).order_by('name_en')
-    serializer_class = ReciterSerializer
-    permission_classes = [AllowAny]
-    filter_backends = [DjangoFilterBackend, filters.SearchFilter, filters.OrderingFilter]
-    filterset_fields = ['country', 'style']
-    search_fields = ['name_en', 'name_ar', 'country', 'transliteration']
-    ordering_fields = ['name_en', 'country', 'created_at']
-    ordering = ['name_en']
-
-    def get_queryset(self):
-        qs = super().get_queryset()
-        # Allow fetching inactive reciters for admin
-        if self.request.query_params.get('include_inactive') and self.request.user.is_staff:
-            qs = Reciter.objects.all().order_by('name_en')
-        return qs
-
-
-# ─── PRAYER TIMES ──────────────────────────────────────────────────────────
 
 @api_view(['GET'])
 @cache_page(60 * 30) # Cache for 30 minutes
@@ -246,11 +190,16 @@ def hijri_date(request):
 
 class PrayerNotificationViewSet(viewsets.ModelViewSet):
     """ViewSet for prayer notification settings"""
-    queryset = PrayerNotification.objects.all().order_by('prayer_name')
     serializer_class = PrayerNotificationSerializer
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['prayer_name', 'is_enabled']
+
+    def get_queryset(self):
+        return PrayerNotification.objects.filter(user=self.request.user).order_by('prayer_name')
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
 
 
 # ─── BOOKMARKS VIEWSET ─────────────────────────────────────────────────────
@@ -406,6 +355,12 @@ def register_user(request):
         return Response({'error': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
     if User.objects.filter(username=username).exists():
         return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
+    
+    try:
+        validate_password(password)
+    except DjangoValidationError as e:
+        return Response({'error': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
+
     user = User.objects.create_user(username=username, password=password)
     refresh = RefreshToken.for_user(user)
     return Response({

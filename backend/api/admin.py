@@ -2,38 +2,7 @@
 Noor Al-Quran — Django Admin Configuration
 """
 from django.contrib import admin
-from .models import Reciter, Bookmark, PrayerNotification
-
-
-@admin.register(Reciter)
-class ReciterAdmin(admin.ModelAdmin):
-    list_display = ('name_en', 'country', 'style', 'is_active', 'created_at')
-    list_filter = ('country', 'style', 'is_active', 'created_at')
-    search_fields = ('name_en', 'name_ar', 'country')
-    readonly_fields = ('created_at', 'updated_at')
-    
-    fieldsets = (
-        ('Basic Information', {
-            'fields': ('reciter_id', 'name_ar', 'name_en', 'transliteration')
-        }),
-        ('Details', {
-            'fields': ('style', 'country', 'edition', 'server_url', 'initial_letter')
-        }),
-        ('Biography', {
-            'fields': ('bio_en', 'bio_ru', 'bio_uz'),
-            'classes': ('collapse',)
-        }),
-        ('Media', {
-            'fields': ('photo_url',),
-            'classes': ('collapse',)
-        }),
-        ('Status', {
-            'fields': ('is_active', 'created_at', 'updated_at'),
-            'classes': ('collapse',)
-        }),
-    )
-
-
+from .models import Bookmark, PrayerNotification
 @admin.register(Bookmark)
 class BookmarkAdmin(admin.ModelAdmin):
     list_display = ('surah_number', 'ayah_number', 'note', 'created_at')
