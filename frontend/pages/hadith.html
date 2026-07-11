@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Hadith — Noor Al-Quran</title>
+  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
+  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="/manifest.json">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <meta name="description" content="Browse authentic Hadith collections — Bukhari, Muslim, Abu Dawud, Tirmidhi and more with Arabic text and English translations.">
   <link rel="stylesheet" href="../shared.css?v=3">
@@ -117,12 +125,12 @@
 
         <!-- Collection Tabs -->
         <div class="collection-tabs fi">
-          <button class="col-tab active" onclick="selectCollection('bukhari', this)">📚 Bukhari</button>
-          <button class="col-tab" onclick="selectCollection('muslim', this)">📖 Muslim</button>
-          <button class="col-tab" onclick="selectCollection('abu-dawud', this)">📜 Abu Dawud</button>
-          <button class="col-tab" onclick="selectCollection('tirmidhi', this)">📋 Tirmidhi</button>
-          <button class="col-tab" onclick="selectCollection('ibn-majah', this)">📑 Ibn Majah</button>
-          <button class="col-tab" onclick="selectCollection('nasai', this)">📃 An-Nasai</button>
+          <button class="col-tab active" onclick="selectCollection('bukhari', this)" aria-label="Action Button">📚 Bukhari</button>
+          <button class="col-tab" onclick="selectCollection('muslim', this)" aria-label="Action Button">📖 Muslim</button>
+          <button class="col-tab" onclick="selectCollection('abu-dawud', this)" aria-label="Action Button">📜 Abu Dawud</button>
+          <button class="col-tab" onclick="selectCollection('tirmidhi', this)" aria-label="Action Button">📋 Tirmidhi</button>
+          <button class="col-tab" onclick="selectCollection('ibn-majah', this)" aria-label="Action Button">📑 Ibn Majah</button>
+          <button class="col-tab" onclick="selectCollection('nasai', this)" aria-label="Action Button">📃 An-Nasai</button>
         </div>
 
         <!-- Controls -->
@@ -136,7 +144,7 @@
             <option value="20" selected>20 per page</option>
             <option value="50">50 per page</option>
           </select>
-          <button class="btn-load" onclick="loadHadiths(1)">🔄 Load</button>
+          <button class="btn-load" onclick="loadHadiths(1)" aria-label="Action Button">🔄 Load</button>
         </div>
 
         <!-- Hadiths container -->
@@ -305,8 +313,8 @@
           <div class="hadith-arabic">${h.ar}</div>
           <div class="hadith-english">${h.en}</div>
           <div class="hadith-actions">
-            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')">📋 Copy</button>
-            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')">📤 Share</button>
+            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')" aria-label="Action Button">📋 Copy</button>
+            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')" aria-label="Action Button">📤 Share</button>
           </div>
         </div>`).join('');
 
@@ -317,26 +325,26 @@
     function buildPagination(total) {
       const pg = document.getElementById('pagination');
       if(!pg || total <= 1) { if(pg) pg.innerHTML=''; return; }
-      let html = `<button class="page-btn" onclick="loadHadiths(${currentPage-1})" ${currentPage===1?'disabled':''}>◀ Prev</button>`;
+      let html = `<button class="page-btn" onclick="loadHadiths(${currentPage-1})" ${currentPage===1?'disabled':''} aria-label="Action Button">◀ Prev</button>`;
       
       let startP = Math.max(1, currentPage - 2);
       let endP = Math.min(total, currentPage + 2);
       
       if (startP > 1) {
-        html += `<button class="page-btn" onclick="loadHadiths(1)">1</button>`;
+        html += `<button class="page-btn" onclick="loadHadiths(1)" aria-label="Action Button">1</button>`;
         if (startP > 2) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
       }
       
       for(let i=startP; i<=endP; i++) {
-        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadHadiths(${i})">${i}</button>`;
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadHadiths(${i})" aria-label="Action Button">${i}</button>`;
       }
       
       if (endP < total) {
         if (endP < total - 1) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
-        html += `<button class="page-btn" onclick="loadHadiths(${total})">${total}</button>`;
+        html += `<button class="page-btn" onclick="loadHadiths(${total})" aria-label="Action Button">${total}</button>`;
       }
       
-      html += `<button class="page-btn" onclick="loadHadiths(${currentPage+1})" ${currentPage===total?'disabled':''}>Next ▶</button>`;
+      html += `<button class="page-btn" onclick="loadHadiths(${currentPage+1})" ${currentPage===total?'disabled':''} aria-label="Action Button">Next ▶</button>`;
       pg.innerHTML = html;
     }
 

@@ -215,7 +215,7 @@ async function loadSurahAyahs(n) {
     playAyahAt(1);
 
   } catch (err) {
-    console.error('Failed to load surah:', err);
+    /* error handled */
     if (_ayahList) _ayahList.innerHTML = '<div class="ayah-error">⚠ Failed to load. Check your connection.</div>';
     if (_playerSurahName) _playerSurahName.textContent = '⚠ Load failed — try again';
   }
@@ -257,7 +257,7 @@ function playAyahAt(ayahNum) {
   // Try play, with fallback servers for sherif_mostafa
   const playWithFallback = (urlList, index) => {
     if (index >= urlList.length) {
-      console.warn('All audio sources failed for', RECITER_ID);
+      /* error handled */
       _updatePlayBtn(false);
       if (_playerSurahName) _playerSurahName.textContent = '⚠ Audio unavailable';
       return;
@@ -536,7 +536,7 @@ function _onEnded() {
 
 function _onError() {
   if (!_aud || !_aud.src || _aud.src === window.location.href) return;
-  console.warn('Audio error for reciter:', RECITER_ID, 'ayah:', PlayerState.ayahNum);
+  /* error handled */
   
   const fallbacks = FALLBACK_SERVERS[RECITER_ID] || [];
   if (fallbacks.length > 0) {

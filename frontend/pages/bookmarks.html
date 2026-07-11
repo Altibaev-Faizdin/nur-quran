@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>My Bookmarks — Noor Al-Quran</title>
+  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
+  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="/manifest.json">
+
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="../shared.css?v=3">
   <style>
@@ -84,8 +92,8 @@
               <div class="bm-meta">Saved on: ${new Date(bm.created_at).toLocaleDateString()}</div>
             </div>
             <div class="bm-actions">
-              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})">Read</button>
-              <button class="bm-btn del" onclick="deleteBM(${bm.id})">Delete</button>
+              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Action Button">Read</button>
+              <button class="bm-btn del" onclick="deleteBM(${bm.id})" aria-label="Action Button">Delete</button>
             </div>
           </div>
         `).join('');

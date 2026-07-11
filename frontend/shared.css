@@ -47,7 +47,7 @@ body{background:var(--bg0);color:var(--white);font-family:'Lato',sans-serif;min-
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
 
 /* ── NAV ── */
-nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 48px;background:linear-gradient(180deg,rgba(2,8,24,.96) 0%,transparent 100%);backdrop-filter:blur(12px);border-bottom:1px solid rgba(212,160,23,.1)}
+nav{padding-top: max(15px, env(safe-area-inset-top)); padding-left: max(48px, env(safe-area-inset-left)); padding-right: max(48px, env(safe-area-inset-right)); position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:15px 48px;background:linear-gradient(180deg,rgba(2,8,24,.96) 0%,transparent 100%);backdrop-filter:blur(12px);border-bottom:1px solid rgba(212,160,23,.1)}
 .logo{font-family:'Cinzel Decorative',serif;font-size:.95rem;color:var(--goldL);letter-spacing:2px;text-decoration:none;text-shadow:0 0 20px rgba(240,192,64,.4)}
 .logo span{color:var(--silver);font-size:.65rem;display:block;letter-spacing:4px;margin-top:2px}
 .nav-links{display:flex;gap:24px;list-style:none}
@@ -134,7 +134,7 @@ nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:cen
 .rload{text-align:center;color:var(--soft);padding:50px;font-size:.95rem}
 
 /* ── AUDIO BAR ── */
-.abar{position:fixed;bottom:0;left:0;right:0;z-index:300;background:linear-gradient(90deg,rgba(2,8,24,.98),rgba(13,38,128,.95),rgba(2,8,24,.98));border-top:1px solid rgba(212,160,23,.25);padding:12px 48px;display:flex;align-items:center;gap:18px;backdrop-filter:blur(20px);transform:translateY(100%);transition:transform .4s ease}
+.abar{padding-bottom: max(12px, env(safe-area-inset-bottom)); padding-left: max(48px, env(safe-area-inset-left)); padding-right: max(48px, env(safe-area-inset-right)); position:fixed;bottom:0;left:0;right:0;z-index:300;background:linear-gradient(90deg,rgba(2,8,24,.98),rgba(13,38,128,.95),rgba(2,8,24,.98));border-top:1px solid rgba(212,160,23,.25);padding:12px 48px;display:flex;align-items:center;gap:18px;backdrop-filter:blur(20px);transform:translateY(100%);transition:transform .4s ease}
 .abar.show{transform:translateY(0)}
 .ainf{flex:1}
 .asn{font-family:'Cinzel Decorative',serif;font-size:.82rem;color:var(--goldL)}
@@ -160,7 +160,7 @@ audio{display:none}
 .pf{height:100%;background:linear-gradient(90deg,var(--goldL),var(--gold));transition:width .3s;box-shadow:0 0 6px var(--goldL)}
 
 /* ── ADHAN BANNER ── */
-.adhan{position:fixed;bottom:0;left:0;right:0;z-index:200;background:linear-gradient(90deg,rgba(2,8,24,.98),rgba(13,38,128,.95),rgba(2,8,24,.98));border-top:1px solid rgba(212,160,23,.3);padding:12px 48px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);transform:translateY(100%);transition:transform .5s cubic-bezier(.175,.885,.32,1.275)}
+.adhan{padding-bottom: max(12px, env(safe-area-inset-bottom)); padding-left: max(48px, env(safe-area-inset-left)); padding-right: max(48px, env(safe-area-inset-right)); position:fixed;bottom:0;left:0;right:0;z-index:200;background:linear-gradient(90deg,rgba(2,8,24,.98),rgba(13,38,128,.95),rgba(2,8,24,.98));border-top:1px solid rgba(212,160,23,.3);padding:12px 48px;display:flex;align-items:center;justify-content:space-between;backdrop-filter:blur(20px);transform:translateY(100%);transition:transform .5s cubic-bezier(.175,.885,.32,1.275)}
 .adhan.show{transform:translateY(0)}
 .adl{display:flex;align-items:center;gap:13px}
 .adi{font-size:1.6rem;animation:ring .9s ease-in-out infinite}
@@ -274,4 +274,15 @@ footer{background:rgba(2,8,24,.96);border-top:1px solid rgba(212,160,23,.1);padd
   .moon{width:70px;height:70px;top:76px;right:14px}
   .abar{padding:11px 16px}
   footer{padding:34px 18px}
+}
+
+
+@media (max-height: 500px) and (orientation: landscape) {
+  nav { padding: max(10px, env(safe-area-inset-top)) max(16px, env(safe-area-inset-right)); }
+  .nav-links { display: none; }
+  .sec { padding: 40px 18px; }
+  .pbar, .adhan { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .abar { padding-bottom: max(10px, env(safe-area-inset-bottom)); }
+  .moon { width: 50px; height: 50px; top: 40px; }
+  footer { padding: 24px 18px; }
 }

@@ -3,8 +3,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Mohamed Siddiq El-Minshawi — Noor Al-Quran</title>
+  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
+  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="/manifest.json">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <meta name="description" content="Listen to Mohamed Siddiq El-Minshawi's full Quran recitation — all 114 Surahs with a premium audio player.">
   <link rel="stylesheet" href="../shared.css?v=3">
@@ -127,9 +135,9 @@
           <div class="player-surah-ar" id="playerSurahAr"></div>
           <div class="player-ayah-info" id="playerAyahInfo" style="font-size:.8rem;color:var(--soft);margin-bottom:20px;min-height:1.2rem;font-family:'Lato',sans-serif"></div>
           <div class="play-btn-wrap">
-            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" disabled>◀◀</button>
-            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()">▶</button>
-            <button class="prev-next-btn" id="nextBtn" onclick="playNext()">▶▶</button>
+            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" disabled aria-label="Action Button">◀◀</button>
+            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" aria-label="Action Button">▶</button>
+            <button class="prev-next-btn" id="nextBtn" onclick="playNext()" aria-label="Action Button">▶▶</button>
           </div>
           <div class="progress-section">
             <input type="range" class="seek-slider" id="playerSeekSlider" min="0" max="100" value="0" oninput="seekFromPlayer()">
@@ -140,12 +148,12 @@
             <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="80" oninput="setVolume()">
           </div>
           <div class="vol-row" style="margin-top:8px">
-            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Lato',sans-serif;transition:.2s">1×</button>
-            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:.2s">⟳</button>
+            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;font-family:'Lato',sans-serif;transition:.2s" aria-label="Action Button">1×</button>
+            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" style="background:rgba(212,160,23,.12);border:1px solid rgba(212,160,23,.25);color:var(--goldL);padding:4px 10px;border-radius:8px;cursor:pointer;font-size:.78rem;transition:.2s" aria-label="Action Button">⟳</button>
           </div>
           <div class="ctrl-row" style="margin-top:18px">
-            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()">⏹ Stop</button>
-            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()">✕ Close Bar</button>
+            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()" aria-label="Action Button">⏹ Stop</button>
+            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()" aria-label="Action Button">✕ Close Bar</button>
           </div>
         </div>
       </div>
@@ -168,9 +176,9 @@
     <div style="display:flex;align-items:center;padding:14px 20px;gap:14px;flex-wrap:wrap">
       <div style="flex:1;min-width:180px"><div id="asn" style="font-family:'Cinzel Decorative',serif;font-size:.8rem;font-weight:700;color:var(--goldL);margin-bottom:3px">—</div><div id="arcn" style="font-size:.78rem;color:var(--silver)">Mohamed Siddiq El-Minshawi</div></div>
       <div style="display:flex;gap:10px;align-items:center">
-        <button id="plbtn" onclick="togPlayReciter()" style="background:var(--gold);color:#000;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;font-weight:700">▶</button>
-        <button onclick="stopReciter()" style="background:rgba(212,160,23,.15);color:var(--goldL);width:44px;height:44px;border-radius:50%;border:1px solid rgba(212,160,23,.35);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s">⏹</button>
-        <button onclick="closePlayerBar()" style="background:rgba(255,255,255,.08);color:var(--soft);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s">✕</button>
+        <button id="plbtn" onclick="togPlayReciter()" style="background:var(--gold);color:#000;width:44px;height:44px;border-radius:50%;border:none;cursor:pointer;font-size:18px;display:flex;align-items:center;justify-content:center;transition:.2s;font-weight:700" aria-label="Action Button">▶</button>
+        <button onclick="stopReciter()" style="background:rgba(212,160,23,.15);color:var(--goldL);width:44px;height:44px;border-radius:50%;border:1px solid rgba(212,160,23,.35);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s" aria-label="Action Button">⏹</button>
+        <button onclick="closePlayerBar()" style="background:rgba(255,255,255,.08);color:var(--soft);width:44px;height:44px;border-radius:50%;border:1px solid rgba(255,255,255,.1);cursor:pointer;font-size:15px;display:flex;align-items:center;justify-content:center;transition:.2s" aria-label="Action Button">✕</button>
       </div>
     </div>
     <div style="padding:0 20px 8px">

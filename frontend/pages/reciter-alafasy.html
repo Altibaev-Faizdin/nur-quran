@@ -2,8 +2,16 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Mishary Alafasy — Noor Al-Quran</title>
+  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
+  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:type" content="website">
+  <meta name="twitter:card" content="summary_large_image">
+  <link rel="manifest" href="/manifest.json">
+
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <meta name="description" content="Listen to Mishary Alafasy's full Quran recitation — all 114 Surahs with per-ayah highlighting and a premium audio player.">
   <link rel="stylesheet" href="../shared.css?v=3">
@@ -169,9 +177,9 @@
           <div class="player-ayah-info" id="playerAyahInfo"></div>
 
           <div class="play-btn-wrap">
-            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" title="Previous" disabled>◀◀</button>
-            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" title="Play / Pause">▶</button>
-            <button class="prev-next-btn" id="nextBtn" onclick="playNext()" title="Next">▶▶</button>
+            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" title="Previous" disabled aria-label="Action Button">◀◀</button>
+            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" title="Play / Pause" aria-label="Action Button">▶</button>
+            <button class="prev-next-btn" id="nextBtn" onclick="playNext()" title="Next" aria-label="Action Button">▶▶</button>
           </div>
 
           <div class="progress-section">
@@ -188,13 +196,13 @@
           <div class="vol-row">
             <span class="vol-icon" onclick="toggleMute()" id="volIcon">🔊</span>
             <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="85" oninput="setVolume()" aria-label="Volume">
-            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" title="Playback speed">1×</button>
-            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat">⟳</button>
+            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" title="Playback speed" aria-label="Action Button">1×</button>
+            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat" aria-label="Action Button">⟳</button>
           </div>
 
           <div class="ctrl-row" style="margin-top:18px">
-            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()">⏹ Stop</button>
-            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()">✕ Close Bar</button>
+            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()" aria-label="Action Button">⏹ Stop</button>
+            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()" aria-label="Action Button">✕ Close Bar</button>
           </div>
         </div>
       </div>
@@ -226,9 +234,9 @@
         <div class="abar-sub">Mishary Alafasy</div>
       </div>
       <div class="abar-controls">
-        <button id="plbtn" onclick="togPlayReciter()" class="abar-play-btn" title="Play/Pause">▶</button>
-        <button onclick="stopReciter()" class="abar-stop-btn" title="Stop">⏹</button>
-        <button onclick="closePlayerBar()" class="abar-close-btn" title="Close">✕</button>
+        <button id="plbtn" onclick="togPlayReciter()" class="abar-play-btn" title="Play/Pause" aria-label="Action Button">▶</button>
+        <button onclick="stopReciter()" class="abar-stop-btn" title="Stop" aria-label="Action Button">⏹</button>
+        <button onclick="closePlayerBar()" class="abar-close-btn" title="Close" aria-label="Action Button">✕</button>
       </div>
     </div>
     <div class="abar-seek" style="padding:0 20px 14px">

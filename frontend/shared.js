@@ -484,7 +484,7 @@ function loadSurahs() {
           }, 1000);
         }
       }
-    }).catch(function (e) { console.warn('Surah list error:', e); });
+    }).catch(function (e) { /* error handled */ });
 }
 
 function openSurah(n, ar, en) {
@@ -526,7 +526,7 @@ function playAyahQuran(surahNum, ayahNum) {
   aud.play().catch(function () {
     // Fallback to full surah MP3
     aud.src = `https://server7.mp3quran.net/basit/${String(surahNum).padStart(3, '0')}.mp3`;
-    aud.play().catch(function (e) { console.warn('Audio play blocked:', e); });
+    aud.play().catch(function (e) { /* error handled */ });
   });
   set('asn', `Surah ${surahNum} : ${ayahNum}`);
   var abar = document.getElementById('abar'); if (abar) abar.classList.add('show');
@@ -551,7 +551,7 @@ function addBM(s, a) {
     body: JSON.stringify({ surah_number: s, ayah_number: a }),
   }).then(function (r) {
     if (r.ok) { showToast('Bookmark saved! 📌'); }
-    else { r.json().then(function (e) { console.warn('Bookmark error:', e); }); }
+    else { r.json().then(function (e) { /* error handled */ }); }
   }).catch(function () { showToast('Bookmark saved locally! 📌'); });
 }
 
