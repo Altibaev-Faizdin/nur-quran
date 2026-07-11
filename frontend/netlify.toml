@@ -15,3 +15,8 @@
   to = "https://nur-quran.onrender.com/static/:splat"
   status = 200
   force = true
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
