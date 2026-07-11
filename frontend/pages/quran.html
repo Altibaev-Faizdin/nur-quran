@@ -97,7 +97,20 @@
   <div class="adr"><select class="adsel"><option>Mishary Alafasy</option></select><button class="adcl" onclick="closeAdhan()" aria-label="Action Button">✕</button></div>
 </div>
 
-<footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
+
+          </a>
+      <a href="../pages/reciters.html" class="fitem">
+        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+      </a>
+      <a href="../pages/prayer.html" class="fitem">
+        <div class="fic">🕐</div><div class="flb">Prayer</div>
+      </a>
+      <a href="../pages/bookmarks.html" class="fitem">
+        <div class="fic">🔖</div><div class="flb">Saved</div>
+      </a>
+    </div>
+
+  <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div></footer>
 
 <script src="../shared.js?v=4"></script>
 <script>
@@ -301,5 +314,30 @@ function closeAudio(){document.getElementById('abar').classList.remove('show');d
 
 document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);});
 </script>
+
+<!-- MOBILE NAV -->
+<div class="mob-nav">
+  <a href="../index.html">
+    <div class="mn-ic">🏠</div>
+    <div>Home</div>
+  </a>
+  <a href="quran.html">
+    <div class="mn-ic">📖</div>
+    <div>Quran</div>
+  </a>
+  <a href="reciters.html">
+    <div class="mn-ic">🎙️</div>
+    <div>Reciters</div>
+  </a>
+  <a href="prayer.html">
+    <div class="mn-ic">🕐</div>
+    <div>Prayer</div>
+  </a>
+  <a href="bookmarks.html">
+    <div class="mn-ic">🔖</div>
+    <div>Saved</div>
+  </a>
+</div>
+
 </body>
 </html>

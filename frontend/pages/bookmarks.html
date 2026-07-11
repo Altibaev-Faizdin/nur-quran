@@ -31,18 +31,25 @@
 </head>
 <body>
   <!-- HEADER -->
-  <header class="hdr">
-    <div class="h-in">
-      <a href="../index.html" class="logo">Noor <span>Al-Quran</span></a>
-      <div class="lang">
-        <select id="ls" onchange="setLang(this.value)">
-          <option value="en">English</option>
-          <option value="ru">Русский</option>
-          <option value="uz">O'zbek</option>
-        </select>
-      </div>
-    </div>
-  </header>
+  <nav>
+    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+    <ul class="nav-links">
+      <li><a href="quran.html">Quran</a></li>
+      <li><a href="reciters.html">Reciters</a></li>
+      <li><a href="prayer.html">Prayer Times</a></li>
+      <li class="dropdown">
+        <a href="javascript:void(0)" style="cursor:default">Tools ▾</a>
+        <div class="dropdown-content">
+          <a href="dua.html">Daily Dua</a>
+          <a href="tasbih.html">Tasbih Counter</a>
+          <a href="qibla.html">Qibla Compass</a>
+          <a href="hijri.html">Hijri Calendar</a>
+          <a href="hadith.html">Hadith</a>
+        </div>
+      </li>
+      <li><a href="names.html">99 Names</a></li>
+    </ul>
+  </nav>
 
   <!-- CONTENT -->
   <div class="pg-hdr">
@@ -131,5 +138,43 @@
       window.location.href = `quran.html?surah=${surah}#ay${ayah}`;
     }
   </script>
+
+          </a>
+      <a href="../pages/reciters.html" class="fitem">
+        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+      </a>
+      <a href="../pages/prayer.html" class="fitem">
+        <div class="fic">🕐</div><div class="flb">Prayer</div>
+      </a>
+      <a href="../pages/bookmarks.html" class="fitem">
+        <div class="fic">🔖</div><div class="flb">Saved</div>
+      </a>
+    </div>
+
+
+<!-- MOBILE NAV -->
+<div class="mob-nav">
+  <a href="../index.html">
+    <div class="mn-ic">🏠</div>
+    <div>Home</div>
+  </a>
+  <a href="quran.html">
+    <div class="mn-ic">📖</div>
+    <div>Quran</div>
+  </a>
+  <a href="reciters.html">
+    <div class="mn-ic">🎙️</div>
+    <div>Reciters</div>
+  </a>
+  <a href="prayer.html">
+    <div class="mn-ic">🕐</div>
+    <div>Prayer</div>
+  </a>
+  <a href="bookmarks.html">
+    <div class="mn-ic">🔖</div>
+    <div>Saved</div>
+  </a>
+</div>
+
 </body>
 </html>

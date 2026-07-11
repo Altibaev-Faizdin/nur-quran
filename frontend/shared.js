@@ -263,6 +263,12 @@ function set(id, v) { const e = document.getElementById(id); if (e) e.textConten
 
 // ── PRAYER TIMES ──
 function loadPrayer() {
+  var err = function() {
+    set('ft', 'Err'); set('srt', 'Err'); set('dt', 'Err');
+    set('at', 'Err'); set('mt', 'Err'); set('it', 'Err');
+    const b = document.querySelector('.pbar .bsm');
+    if (b) b.textContent = "Allow Location";
+  };
   var fetchPrayer = function (la, lo) {
     fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(r => r.json()).then(d => {
@@ -270,10 +276,15 @@ function loadPrayer() {
         set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
         set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
         hlPrayer(t); schedulePrayer(t);
-      }).catch(() => { });
+        const b = document.querySelector('.pbar .bsm');
+        if (b) b.textContent = "📍 My Location";
+      }).catch(err);
   };
   var fb = function () {
-    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => fetchPrayer(d.latitude, d.longitude)).catch(() => { });
+    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
+      if (d.latitude) fetchPrayer(d.latitude, d.longitude);
+      else err();
+    }).catch(err);
   };
   if (!navigator.geolocation) return fb();
   navigator.geolocation.getCurrentPosition(function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
@@ -378,55 +389,7 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('rg')) loadReciters();
   if (document.getElementById('pbgrid')) loadPrayerBig();
   if (document.getElementById('ng')) loadNames();
-  
-  // Add quick auth UI
-  var authDiv = document.createElement('div');
-  authDiv.style.cssText = 'position:fixed;bottom:10px;right:10px;z-index:9999;display:flex;gap:5px;';
-  authDiv.innerHTML = `<button onclick="doLogin()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Login</button>
-                       <button onclick="doRegister()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Register</button>
-                       <button onclick="doLogout()" style="background:#333;color:#fff;border:none;padding:5px 10px;border-radius:5px;cursor:pointer;font-size:12px;">Logout</button>`;
-  document.body.appendChild(authDiv);
 });
-
-window.doLogin = function() {
-  const u = prompt("Username");
-  const p = prompt("Password");
-  if (!u || !p) return;
-  fetch(`${API_BASE}/auth/login/`, {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({username: u, password: p})
-  }).then(r => r.json()).then(d => {
-    if (d.access) { 
-      localStorage.setItem('access_token', d.access); 
-      localStorage.setItem('refresh_token', d.refresh);
-      showToast('Logged in!'); 
-    }
-    else { showToast('Login failed'); }
-  });
-};
-
-window.doRegister = function() {
-  const u = prompt("Username");
-  const p = prompt("Password");
-  if (!u || !p) return;
-  fetch(`${API_BASE}/auth/register/`, {
-    method: 'POST', headers: {'Content-Type': 'application/json'},
-    body: JSON.stringify({username: u, password: p})
-  }).then(r => r.json()).then(d => {
-    if (d.access) { 
-      localStorage.setItem('access_token', d.access); 
-      localStorage.setItem('refresh_token', d.refresh);
-      showToast('Registered!'); 
-    }
-    else { showToast('Registration failed'); }
-  });
-};
-
-window.doLogout = function() {
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  showToast('Logged out');
-};
 
 window.authFetch = async function(url, options = {}) {
   let token = localStorage.getItem('access_token');
@@ -669,6 +632,12 @@ function onEnd() { stopSurah(); }
 
 // ── PRAYER PAGE ──
 function loadPrayerBig() {
+  var err = function() {
+    set('bft', 'Err'); set('bst', 'Err'); set('bdt', 'Err');
+    set('bat', 'Err'); set('bmt', 'Err'); set('bit', 'Err');
+    const msg = document.getElementById('pm-nxt');
+    if (msg) msg.textContent = "Location access blocked. Allow location to see prayer times.";
+  };
   var fetchPrayer = function (la, lo) {
     fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(function (r) { return r.json(); }).then(function (d) {
@@ -677,10 +646,13 @@ function loadPrayerBig() {
         set('bat', t.Asr); set('bmt', t.Maghrib); set('bit', t.Isha);
         updatePrayerCards(t, d.data.date);
         hlPrayer(t); schedulePrayer(t);
-      }).catch(function () { });
+      }).catch(err);
   };
   var fb = function () {
-    fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (d) { fetchPrayer(d.latitude, d.longitude); }).catch(function () { });
+    fetch('https://ipapi.co/json/').then(function (r) { return r.json(); }).then(function (d) { 
+      if (d.latitude) fetchPrayer(d.latitude, d.longitude);
+      else err();
+    }).catch(err);
   };
   if (!navigator.geolocation) return fb();
   navigator.geolocation.getCurrentPosition(function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);

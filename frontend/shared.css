@@ -269,6 +269,25 @@ footer{background:rgba(2,8,24,.96);border-top:1px solid rgba(212,160,23,.1);padd
 @media(max-width:768px){
   nav{padding:13px 16px}
   .nav-links{display:none}
+  .mob-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: rgba(10, 10, 10, 0.95);
+    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(212, 160, 23, 0.2);
+    z-index: 9999;
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+  .mob-nav a {
+    flex: 1; text-align: center; padding: 12px 0;
+    color: var(--soft); text-decoration: none; font-size: 0.75rem;
+    display: flex; flex-direction: column; align-items: center; gap: 4px;
+    transition: color 0.2s;
+  }
+  .mob-nav a.active, .mob-nav a:hover { color: var(--gold); }
+  .mob-nav a .mn-ic { font-size: 1.5rem; margin-bottom: 2px; }
+  body { padding-bottom: calc(70px + env(safe-area-inset-bottom)) !important; }
   .sec{padding:50px 18px}
   .pbar,.adhan{padding:11px 16px}
   .moon{width:70px;height:70px;top:76px;right:14px}

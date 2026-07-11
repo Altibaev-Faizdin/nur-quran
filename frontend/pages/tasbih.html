@@ -30,7 +30,7 @@
     .dhikr-english {font-size:1.1rem;color:var(--soft);margin-bottom:10px;position:relative;z-index:1}
     .progress-bar {height:8px;background:rgba(212,175,55,0.1);border-radius:10px;margin:20px 0 30px;overflow:hidden;position:relative;z-index:1}
     .progress-fill {height:100%;background:linear-gradient(90deg,var(--gold),var(--blue));transition:width 0.3s ease}
-    .tap-button {width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;color:#000;font-size:2rem;font-weight:bold;cursor:pointer;transition:all 0.15s ease;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,175,55,0.4);position:relative;z-index:1;display:flex;align-items:center;justify-content:center}
+    .tap-button {width:140px;height:140px;border-radius:50%;background:linear-gradient(135deg,var(--gold),var(--goldL));border:none;color:#000;font-size:2rem;font-weight:bold;cursor:pointer;transition:all 0.15s ease;margin:0 auto 20px;box-shadow:0 8px 32px rgba(212,175,55,0.4);position:relative;z-index:1;display:flex;align-items:center;justify-content:center;touch-action:manipulation}
     .tap-button:hover {transform:scale(1.1);box-shadow:0 12px 48px rgba(212,175,55,0.6)}
     .tap-button:active {transform:scale(0.92)}
     .button-group {display:flex;gap:10px;margin:20px 0;position:relative;z-index:1;flex-wrap:wrap;justify-content:center}
@@ -161,6 +161,19 @@
       </div>
     </section>
   </div>
+
+  
+          </a>
+      <a href="../pages/reciters.html" class="fitem">
+        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+      </a>
+      <a href="../pages/prayer.html" class="fitem">
+        <div class="fic">🕐</div><div class="flb">Prayer</div>
+      </a>
+      <a href="../pages/bookmarks.html" class="fitem">
+        <div class="fic">🔖</div><div class="flb">Saved</div>
+      </a>
+    </div>
 
   <footer>
     <div class="fl">Noor Al-Quran · نور القرآن</div>
@@ -376,5 +389,30 @@
       if (e.code === 'KeyR') resetCounter();
     });
   </script>
+
+<!-- MOBILE NAV -->
+<div class="mob-nav">
+  <a href="../index.html">
+    <div class="mn-ic">🏠</div>
+    <div>Home</div>
+  </a>
+  <a href="quran.html">
+    <div class="mn-ic">📖</div>
+    <div>Quran</div>
+  </a>
+  <a href="reciters.html">
+    <div class="mn-ic">🎙️</div>
+    <div>Reciters</div>
+  </a>
+  <a href="prayer.html">
+    <div class="mn-ic">🕐</div>
+    <div>Prayer</div>
+  </a>
+  <a href="bookmarks.html">
+    <div class="mn-ic">🔖</div>
+    <div>Saved</div>
+  </a>
+</div>
+
 </body>
 </html>
