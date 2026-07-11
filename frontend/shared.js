@@ -280,11 +280,18 @@ function loadPrayer() {
         if (b) b.textContent = "📍 My Location";
       }).catch(err);
   };
-  var fb = function () {
-    fetch('https://ipapi.co/json/').then(r => r.json()).then(d => {
-      if (d.latitude) fetchPrayer(d.latitude, d.longitude);
-      else err();
-    }).catch(err);
+  var fb = async function () {
+    try {
+      let r = await fetch('https://ipapi.co/json/');
+      let d = await r.json();
+      if (d.latitude) return fetchPrayer(d.latitude, d.longitude);
+    } catch(e) {}
+    try {
+      let r2 = await fetch('https://get.geojs.io/v1/ip/geo.json');
+      let d2 = await r2.json();
+      if (d2.latitude) return fetchPrayer(d2.latitude, d2.longitude);
+    } catch(e) {}
+    err();
   };
   if (!navigator.geolocation) return fb();
   navigator.geolocation.getCurrentPosition(function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
@@ -391,6 +398,13 @@ document.addEventListener('DOMContentLoaded', function () {
   if (document.getElementById('ng')) loadNames();
 });
 
+window.doLogout = function() {
+  localStorage.removeItem('access_token');
+  localStorage.removeItem('refresh_token');
+  localStorage.removeItem('username');
+  window.location.href = 'login.html';
+};
+
 window.authFetch = async function(url, options = {}) {
   let token = localStorage.getItem('access_token');
   if (!options.headers) options.headers = {};
@@ -412,10 +426,10 @@ window.authFetch = async function(url, options = {}) {
         options.headers['Authorization'] = `Bearer ${refData.access}`;
         res = await fetch(url, options);
       } else {
-        doLogout();
+        window.doLogout();
       }
     } else {
-      doLogout();
+      window.doLogout();
     }
   }
   return res;

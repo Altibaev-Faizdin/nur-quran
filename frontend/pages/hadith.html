@@ -237,41 +237,26 @@
           fetch(`https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-${apiName}.min.json`)
         ]);
         if (!arRes.ok || !enRes.ok) throw new Error('API Error');
+        
         const arData = await arRes.json();
         const enData = await enRes.json();
         
-        const merged = [];
-        const enMap = {};
+        // Fast map creation
+        const enMap = new Map();
         if (enData.hadiths) {
-          enData.hadiths.forEach(h => { enMap[h.hadithnumber] = h; });
+          for (let i = 0; i < enData.hadiths.length; i++) {
+            enMap.set(enData.hadiths[i].hadithnumber, enData.hadiths[i].text);
+          }
         }
         
-        if (arData.hadiths) {
-          arData.hadiths.forEach(h => {
-             const enH = enMap[h.hadithnumber] || {};
-             const gradeObj = h.grades && h.grades.length ? h.grades[0] : null;
-             const grade = gradeObj ? gradeObj.grade : 'sahih';
-             let textEn = enH.text || 'Translation not available.';
-             if(textEn.length > 800) textEn = textEn.substring(0, 800) + '...';
-             let textAr = h.text || '';
-             if(textAr.length > 800) textAr = textAr.substring(0, 800) + '...';
-             
-             let colorClass = 'sahih';
-             if (grade.toLowerCase().includes('hasan')) colorClass = 'hasan';
-             else if (grade.toLowerCase().includes('daif') || grade.toLowerCase().includes('weak')) colorClass = 'daif';
-
-             merged.push({
-               num: h.hadithnumber,
-               ar: textAr,
-               en: textEn,
-               grade: colorClass,
-               gradeRaw: grade,
-               chain: 'Various'
-             });
-          });
-        }
-        apiCache[col] = merged;
-        return merged;
+        // Store raw data, we will format it lazily
+        const collection = {
+           ar: arData.hadiths || [],
+           enMap: enMap
+        };
+        
+        apiCache[col] = collection;
+        return collection;
       } catch (err) {
         console.error('Hadith fetch error:', err);
         grid.innerHTML = `<div class="hadith-empty"><div class="icon">⚠</div><p>Failed to load hadiths. Check your internet connection.</p><button class="btn bo" onclick="loadHadiths(1)" style="margin-top: 15px; background: transparent; color: var(--gold); border: 1px solid var(--gold); padding: 8px 16px; border-radius: 6px; cursor: pointer;">Retry</button></div>`;
@@ -300,10 +285,13 @@
 
       const pageSize = parseInt(document.getElementById('pageSize').value) || 20;
 
-      let filtered = data;
+      let filtered = data.ar;
       if(searchQuery) {
         const q = searchQuery.toLowerCase();
-        filtered = data.filter(h => h.en.toLowerCase().includes(q) || h.ar.includes(searchQuery));
+        filtered = data.ar.filter(h => {
+           const textEn = data.enMap.get(h.hadithnumber) || "";
+           return textEn.toLowerCase().includes(q) || h.text.includes(searchQuery);
+        });
       }
 
       totalPages = Math.ceil(filtered.length / pageSize) || 1;
@@ -316,7 +304,29 @@
         return;
       }
 
-      grid.innerHTML = pageData.map(h => `
+      // Format only the current page items
+      const formatted = pageData.map(h => {
+         const gradeObj = h.grades && h.grades.length ? h.grades[0] : null;
+         const gradeRaw = gradeObj ? gradeObj.grade : 'sahih';
+         let colorClass = 'sahih';
+         if (gradeRaw.toLowerCase().includes('hasan')) colorClass = 'hasan';
+         else if (gradeRaw.toLowerCase().includes('daif') || gradeRaw.toLowerCase().includes('weak')) colorClass = 'daif';
+         
+         let textEn = data.enMap.get(h.hadithnumber) || 'Translation not available.';
+         if(textEn.length > 800) textEn = textEn.substring(0, 800) + '...';
+         let textAr = h.text || '';
+         if(textAr.length > 800) textAr = textAr.substring(0, 800) + '...';
+         
+         return {
+           num: h.hadithnumber,
+           ar: textAr,
+           en: textEn,
+           grade: colorClass,
+           gradeRaw: gradeRaw
+         };
+      });
+
+      grid.innerHTML = formatted.map(h => `
         <div class="hadith-card">
           <div class="hadith-meta">
             <span class="hadith-book">${currentCollection.replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}</span>
@@ -412,5 +422,6 @@
   </a>
 </div>
 
+<script src="../i18n.js"></script>
 </body>
 </html>
