@@ -5,9 +5,9 @@ from django.contrib import admin
 from .models import Bookmark, PrayerNotification
 @admin.register(Bookmark)
 class BookmarkAdmin(admin.ModelAdmin):
-    list_display = ('surah_number', 'ayah_number', 'note', 'created_at')
+    list_display = ('user', 'surah_number', 'ayah_number', 'note', 'created_at')
     list_filter = ('surah_number', 'created_at')
-    search_fields = ('note',)
+    search_fields = ('note', 'user__username')
     readonly_fields = ('created_at', 'updated_at')
     
     fieldsets = (

@@ -135,12 +135,12 @@
 
         <!-- Collection Tabs -->
         <div class="collection-tabs fi">
-          <button class="col-tab active" onclick="selectCollection('bukhari', this)" aria-label="Action Button">📚 Bukhari</button>
-          <button class="col-tab" onclick="selectCollection('muslim', this)" aria-label="Action Button">📖 Muslim</button>
-          <button class="col-tab" onclick="selectCollection('abu-dawud', this)" aria-label="Action Button">📜 Abu Dawud</button>
-          <button class="col-tab" onclick="selectCollection('tirmidhi', this)" aria-label="Action Button">📋 Tirmidhi</button>
-          <button class="col-tab" onclick="selectCollection('ibn-majah', this)" aria-label="Action Button">📑 Ibn Majah</button>
-          <button class="col-tab" onclick="selectCollection('nasai', this)" aria-label="Action Button">📃 An-Nasai</button>
+          <button class="col-tab active" onclick="selectCollection('bukhari', this)" >📚 Bukhari</button>
+          <button class="col-tab" onclick="selectCollection('muslim', this)" >📖 Muslim</button>
+          <button class="col-tab" onclick="selectCollection('abu-dawud', this)" >📜 Abu Dawud</button>
+          <button class="col-tab" onclick="selectCollection('tirmidhi', this)" >📋 Tirmidhi</button>
+          <button class="col-tab" onclick="selectCollection('ibn-majah', this)" >📑 Ibn Majah</button>
+          <button class="col-tab" onclick="selectCollection('nasai', this)" >📃 An-Nasai</button>
         </div>
 
         <!-- Controls -->
@@ -154,7 +154,7 @@
             <option value="20" selected>20 per page</option>
             <option value="50">50 per page</option>
           </select>
-          <button class="btn-load" onclick="loadHadiths(1)" aria-label="Action Button">🔄 Load</button>
+          <button class="btn-load" onclick="loadHadiths(1)" >🔄 Load</button>
         </div>
 
         <!-- Hadiths container -->
@@ -173,9 +173,7 @@
   </div>
 
   
-          </a>
-      <a href="../pages/reciters.html" class="fitem">
-        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+          <div class="flb">Reciters</div>
       </a>
       <a href="../pages/prayer.html" class="fitem">
         <div class="fic">🕐</div><div class="flb">Prayer</div>
@@ -346,8 +344,8 @@
           <div class="hadith-arabic">${h.ar}</div>
           <div class="hadith-english">${h.en}</div>
           <div class="hadith-actions">
-            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')" aria-label="Action Button">📋 Copy</button>
-            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')" aria-label="Action Button">📤 Share</button>
+            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')" >📋 Copy</button>
+            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')" >📤 Share</button>
           </div>
         </div>`).join('');
 
@@ -358,26 +356,26 @@
     function buildPagination(total) {
       const pg = document.getElementById('pagination');
       if(!pg || total <= 1) { if(pg) pg.innerHTML=''; return; }
-      let html = `<button class="page-btn" onclick="loadHadiths(${currentPage-1})" ${currentPage===1?'disabled':''} aria-label="Action Button">◀ Prev</button>`;
+      let html = `<button class="page-btn" onclick="loadHadiths(${currentPage-1})" ${currentPage===1?'disabled':''} >◀ Prev</button>`;
       
       let startP = Math.max(1, currentPage - 2);
       let endP = Math.min(total, currentPage + 2);
       
       if (startP > 1) {
-        html += `<button class="page-btn" onclick="loadHadiths(1)" aria-label="Action Button">1</button>`;
+        html += `<button class="page-btn" onclick="loadHadiths(1)" >1</button>`;
         if (startP > 2) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
       }
       
       for(let i=startP; i<=endP; i++) {
-        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadHadiths(${i})" aria-label="Action Button">${i}</button>`;
+        html += `<button class="page-btn ${i===currentPage?'active':''}" onclick="loadHadiths(${i})" >${i}</button>`;
       }
       
       if (endP < total) {
         if (endP < total - 1) html += '<span style="color:var(--soft);padding:0 4px">…</span>';
-        html += `<button class="page-btn" onclick="loadHadiths(${total})" aria-label="Action Button">${total}</button>`;
+        html += `<button class="page-btn" onclick="loadHadiths(${total})" >${total}</button>`;
       }
       
-      html += `<button class="page-btn" onclick="loadHadiths(${currentPage+1})" ${currentPage===total?'disabled':''} aria-label="Action Button">Next ▶</button>`;
+      html += `<button class="page-btn" onclick="loadHadiths(${currentPage+1})" ${currentPage===total?'disabled':''} >Next ▶</button>`;
       pg.innerHTML = html;
     }
 
@@ -410,25 +408,7 @@
 
 <!-- MOBILE NAV -->
 
-    <div>Home</div>
-  </a>
-  <a href="quran.html">
-    <div class="mn-ic">📖</div>
-    <div>Quran</div>
-  </a>
-  <a href="reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div>Reciters</div>
-  </a>
-  <a href="prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div>Prayer</div>
-  </a>
-  <a href="bookmarks.html">
-    <div class="mn-ic">🔖</div>
-    <div>Saved</div>
-  </a>
-</div>
+    
 
 <div class="mob-nav">
   <a href="../index.html">

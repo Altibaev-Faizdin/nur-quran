@@ -62,8 +62,8 @@
     <div id="login-error" class="auth-error"></div>
 
     <form class="auth-form" id="loginForm">
-      <input type="text" id="username" class="auth-input" placeholder="Username" required>
-      <input type="password" id="password" class="auth-input" placeholder="Password" required>
+      <input aria-label="Username" type="text" id="username" class="auth-input" placeholder="Username" required>
+      <input aria-label="Password" type="password" id="password" class="auth-input" placeholder="Password" required>
       <button type="submit" class="auth-btn" id="loginBtn" data-i18n="auth_login_btn">Log In</button>
     </form>
 
@@ -72,29 +72,8 @@
     </div>
   </div>
 
-  <!-- MOBILE NAV -->
-  
-      <div data-i18n="mn_home">Home</div>
-    </a>
-    <a href="quran.html">
-      <div class="mn-ic">📖</div>
-      <div data-i18n="mn_quran">Quran</div>
-    </a>
-    <a href="reciters.html">
-      <div class="mn-ic">🎙️</div>
-      <div data-i18n="mn_reciters">Audio</div>
-    </a>
-    <a href="prayer.html">
-      <div class="mn-ic">🕐</div>
-      <div data-i18n="mn_prayer">Prayer</div>
-    </a>
-    <a href="bookmarks.html" class="active" id="mn-saved">
-      <div class="mn-ic">👤</div>
-      <div data-i18n="mn_profile">Profile</div>
-    </a>
-  </div>
-
   <script src="../shared.js?v=5"></script>
+
   <script>
     document.addEventListener('DOMContentLoaded', () => {
       // If already logged in, redirect to bookmarks

@@ -5,7 +5,8 @@
 'use strict';
 
 // ── API BASE ──
-const API_BASE = '/api'; // Use relative path or update to production URL later
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+const API_BASE = isLocal ? 'http://localhost:8000/api' : '/api'; // Handled by Netlify proxy in production
 
 // ── RECITERS DATA ──
 // Alafasy removed; Sherif Mostafa and Sheikh Saud Al-Juma'a added.
@@ -263,6 +264,24 @@ function set(id, v) { const e = document.getElementById(id); if (e) e.textConten
 
 // ── PRAYER TIMES ──
 function loadPrayer() {
+  // Check localStorage cache (TTL: 30 minutes)
+  var PRAYER_CACHE_TTL = 30 * 60 * 1000; // 30 minutes in ms
+  var cached = null;
+  try {
+    var raw = localStorage.getItem('prayer_cache');
+    if (raw) {
+      var parsed = JSON.parse(raw);
+      if (Date.now() - parsed.ts < PRAYER_CACHE_TTL) cached = parsed.data;
+    }
+  } catch(e) {}
+  if (cached) {
+    var t = cached;
+    set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
+    set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
+    hlPrayer(t); schedulePrayer(t);
+    return;
+  }
+
   var err = function() {
     set('ft', 'Err'); set('srt', 'Err'); set('dt', 'Err');
     set('at', 'Err'); set('mt', 'Err'); set('it', 'Err');
@@ -273,6 +292,8 @@ function loadPrayer() {
     fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(r => r.json()).then(d => {
         const t = d.data.timings;
+        // Cache the result
+        try { localStorage.setItem('prayer_cache', JSON.stringify({ts: Date.now(), data: t})); } catch(e) {}
         set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
         set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
         hlPrayer(t); schedulePrayer(t);
@@ -404,8 +425,27 @@ window.doLogout = function() {
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('username');
-  window.location.href = 'login.html';
+  localStorage.removeItem('prayer_cache');
+  // Smart redirect: detect if we're inside /pages/ subdirectory
+  const isInPages = window.location.pathname.includes('/pages/');
+  window.location.href = isInPages ? 'login.html' : 'pages/login.html';
 };
+
+// ── LANGUAGE MENU ──
+window.toggleLanguageMenu = function() {
+  var existing = document.getElementById('lang-panel');
+  if (existing) { existing.remove(); return; }
+  var panel = document.createElement('div');
+  panel.id = 'lang-panel';
+  panel.style.cssText = 'position:fixed;bottom:80px;right:16px;background:rgba(15,20,40,.97);border:1px solid rgba(168,192,232,.25);border-radius:14px;padding:16px 20px;z-index:10000;backdrop-filter:blur(16px);min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
+  var langs = [{code:'en',label:'English 🇬🇧'},{code:'ru',label:'Русский 🇷🇺'},{code:'uz',label:"O'zbek 🇺🇿"}];
+  var saved = localStorage.getItem('lang') || 'en';
+  panel.innerHTML = '<div style="color:var(--gold,#d4a017);font-size:.75rem;font-weight:700;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">Language</div>' +
+    langs.map(l => '<button onclick="window.setLanguage(\''+l.code+'\');document.getElementById(\'lang-panel\')?.remove()" style="display:block;width:100%;text-align:left;background:'+(saved===l.code?'rgba(168,192,232,.15)':'none')+';border:none;color:'+(saved===l.code?'#a8c0e8':'#ccc')+';padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:'+(saved===l.code?'700':'400')+'">'+l.label+'</button>').join('');
+  document.body.appendChild(panel);
+  setTimeout(function() { document.addEventListener('click', function handler(e) { if (!panel.contains(e.target)) { panel.remove(); document.removeEventListener('click', handler); } }); }, 10);
+};
+
 
 window.authFetch = async function(url, options = {}) {
   let token = localStorage.getItem('access_token');
@@ -529,9 +569,14 @@ function addBM(s, a) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ surah_number: s, ayah_number: a }),
   }).then(function (r) {
-    if (r.ok) { showToast('Bookmark saved! 📌'); }
-    else { r.json().then(function (e) { /* error handled */ }); }
-  }).catch(function () { showToast('Bookmark saved locally! 📌'); });
+    if (r.status === 201) {
+      showToast('Bookmark saved! 📌');
+    } else if (r.status === 400) {
+      showToast('Already bookmarked ✓');
+    } else {
+      showToast('Could not save bookmark. Try again.');
+    }
+  }).catch(function () { showToast('No connection. Bookmark not saved.'); });
 }
 
 function showToast(msg) {
@@ -832,6 +877,10 @@ function checkAuthVisibility() {
   var token = localStorage.getItem('access_token');
   if (token) {
     document.body.classList.add('is-logged-in');
+    var username = localStorage.getItem('username');
+    if (username) {
+      document.querySelectorAll('[data-username]').forEach(function(el) { el.textContent = username; });
+    }
   } else {
     document.body.classList.remove('is-logged-in');
   }

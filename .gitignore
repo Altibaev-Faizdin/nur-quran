@@ -30,7 +30,10 @@ ENV/
 # Django
 *.log
 *.pid
+django.pid
 local_settings.py
+# Manual scratch/test scripts (not automated tests)
+backend/test_rate_limit.py
 db.sqlite3
 db.sqlite3-journal
 /media
@@ -55,3 +58,26 @@ package-lock.json
 
 # Frontend
 frontend/node_modules/
+
+# Frontend dev helper scripts (one-time maintenance scripts, not needed in repo)
+frontend/add_fstrip.py
+frontend/apply_fixes.py
+frontend/apply_mobnav.py
+frontend/bust_cache.py
+frontend/clean_html.py
+frontend/remove_langs.py
+frontend/run_audit.py
+frontend/run_local.py
+frontend/update_css.py
+frontend/proxy.log
+frontend/proxy.pid
+frontend/audit_report.md
+
+# Dev-only docs in root (keep README.md and SETUP.md)
+CHANGELOG.md
+COMPLETION_REPORT.md
+FINAL_COMPLETION_SUMMARY.md
+IMPROVEMENTS.md
+PRODUCTION_AUDIT.md
+PRODUCTION_READY_REPORT.md
+RELEASE_NOTES_v1.md

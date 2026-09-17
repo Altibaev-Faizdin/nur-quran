@@ -118,8 +118,8 @@
               <div class="bm-meta">Saved on: ${new Date(bm.created_at).toLocaleDateString()}</div>
             </div>
             <div class="bm-actions">
-              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Action Button">Read</button>
-              <button class="bm-btn del" onclick="deleteBM(${bm.id})" aria-label="Action Button">Delete</button>
+              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" >Read</button>
+              <button class="bm-btn del" onclick="deleteBM(${bm.id})" >Delete</button>
             </div>
           </div>
         `).join('');

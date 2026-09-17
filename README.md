@@ -1,26 +1,27 @@
 # 🌙 Noor Al-Quran — نور القرآن
 
-A comprehensive web application providing Quranic texts, audio recitations, prayer times, and more. 
+A comprehensive Islamic web application providing Quranic texts, audio recitations, prayer times, and more.
 Built with a **Django REST Framework** backend and a lightweight **Vanilla HTML/CSS/JS** frontend.
 
 ---
 
 ## ✨ Features
 - 📖 **Quran** — All 114 Surahs with Arabic text, translations (EN, RU, UZ), and deep-linking support.
-- 🎙️ **10 Reciters** — High-quality audio recitations (e.g. Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, etc).
+- 🎙️ **9 Reciters** — High-quality MP3 audio recitations (Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, and more).
 - 🕐 **Prayer Times** — Geolocation-based prayer times with Adhan notifications.
 - 📜 **Hadith** — Read Hadiths from various collections.
-- 📿 **Tasbih Counter** — Digital dhikr counter with auto-saving.
+- 📿 **Tasbih Counter** — Digital dhikr counter.
 - 🔖 **Bookmarks** — Save your favorite ayahs with secure JWT authentication.
-- 🤲 **Daily Dua & 99 Names of Allah** — Essential supplications.
+- 🤲 **Daily Dua & 99 Names of Allah** — Essential supplications and divine names.
 - 🕋 **Qibla Compass** — Find the direction to Mecca.
+- 🌍 **Multilingual** — English, Russian, Uzbek UI.
 
 ---
 
 ## 🛠️ Requirements
-- **Python 3.8+** (Tested on Python 3.11)
-- **PostgreSQL** (Recommended for Production) or SQLite (Development)
-- **Redis** (Optional, for caching external API calls)
+- **Python 3.11+**
+- **PostgreSQL** (production) or SQLite (development)
+- **Redis** (optional, for caching external API responses)
 
 ---
 
@@ -28,7 +29,7 @@ Built with a **Django REST Framework** backend and a lightweight **Vanilla HTML/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/yourusername/nur-quran.git
+git clone https://github.com/Altibaev-Faizdin/nur-quran.git
 cd nur-quran
 ```
 
@@ -41,7 +42,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Configure your `.env` file (see Environment Variables section). Then apply migrations and start the server:
+Edit `.env` with your values, then:
 ```bash
 python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
@@ -49,50 +50,77 @@ python manage.py runserver 0.0.0.0:8000
 ✅ Backend running at: **http://localhost:8000**
 
 ### 3. Frontend Setup (New Terminal)
-The frontend requires a proxy to avoid CORS issues locally while communicating with the backend. Use the provided proxy script:
 ```bash
 cd frontend
-python3 run_local.py
+python3 -m http.server 3000
 ```
-✅ Frontend available at: **http://localhost:8080**
+✅ Frontend available at: **http://localhost:3000**
 
 ---
 
-## 🐳 Docker Setup (Optional)
-If you prefer using Docker, you can create a `docker-compose.yml` that builds the backend using gunicorn and serves the static frontend via Nginx. *(Dockerfiles not included by default to keep the repo lightweight, but standard Python/Nginx images work out-of-the-box).*
+## 🔐 Environment Variables
+
+Copy `backend/.env.example` to `backend/.env` and fill in the values:
+
+| Variable | Required | Description | Example |
+|----------|----------|-------------|---------|
+| `SECRET_KEY` | **Yes** | Django secret key | `your-50+-char-random-string` |
+| `DEBUG` | **Yes** | Enable debug mode | `False` |
+| `DATABASE_URL` | **Yes** | Database connection string | `postgres://user:pass@host:5432/db` |
+| `ALLOWED_HOSTS` | **Yes (prod)** | Comma-separated allowed domains | `api.nurquran.com` |
+| `CORS_ALLOWED_ORIGINS` | **Yes (prod)** | Allowed frontend origins | `https://nurquran.com` |
+| `REDIS_URL` | No | Redis URL for caching | `redis://127.0.0.1:6379/1` |
+| `SECURE_SSL_REDIRECT` | No | Set `False` behind a reverse proxy (Render/Railway) | `False` |
 
 ---
 
 ## 🚀 Deployment (Production)
 
-This project is fully ready for deployment on platforms like **Render**, **Railway**, or a standard **Ubuntu VPS**.
+Fully ready for deployment on **Render**, **Railway**, or any standard Linux VPS.
 
 ### Deployment Checklist:
-1. Set `DEBUG=False` in your production environment.
-2. Set a secure, random `SECRET_KEY`.
-3. Provide your `DATABASE_URL` (PostgreSQL).
-4. Provide `ALLOWED_HOSTS` (e.g. `yourdomain.com`).
-5. Run migrations: `python manage.py migrate`.
-6. Collect static files: `python manage.py collectstatic`.
+1. Set `DEBUG=False`.
+2. Set a secure, random `SECRET_KEY` (50+ characters).
+3. Provide `DATABASE_URL` (PostgreSQL).
+4. Provide `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`.
+5. Run: `python manage.py migrate`
+6. Run: `python manage.py collectstatic --noinput`
 
-**Procfile (For Render/Railway):**
+**Procfile:**
 ```text
 web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
 ```
-The backend uses **WhiteNoise** to automatically serve static files.
+
+The backend uses **WhiteNoise** to serve static files automatically.
+
+**Frontend:** Deploy the `frontend/` directory to Netlify. Update `netlify.toml` to proxy `/api/*` to your backend URL.
 
 ---
 
-## 🔐 Environment Variables (.env)
-
-| Variable | Description | Example |
-|----------|-------------|---------|
-| `SECRET_KEY` | Django secret key (Required in Prod) | `your-long-random-string` |
-| `DEBUG` | Enable debug mode (True/False) | `False` |
-| `DATABASE_URL` | Database connection string | `postgres://user:pass@host:5432/db` |
-| `REDIS_URL` | Redis URL for caching (Optional) | `redis://127.0.0.1:6379/1` |
-| `ALLOWED_HOSTS` | Comma-separated allowed domains | `api.nurquran.com,localhost` |
-| `CORS_ALLOWED_ORIGINS`| Allowed frontend origins | `https://nurquran.com` |
+## 🧪 Running Tests
+```bash
+cd backend
+source venv/bin/activate
+python manage.py test
+```
 
 ---
-Made with ❤️ for the Ummah · Free Forever
+
+## 🏗️ Architecture
+
+```
+nur-quran/
+├── backend/          # Django REST Framework API
+│   ├── api/          # Models, views, serializers, tests
+│   ├── config/       # Django settings, WSGI, root URLs
+│   └── requirements.txt
+├── frontend/         # Static Vanilla HTML/CSS/JS
+│   ├── pages/        # Individual feature pages
+│   ├── shared.js     # Global logic, auth, API calls
+│   ├── shared.css    # Global styles
+│   └── i18n.js       # Multilingual support
+└── netlify.toml      # Frontend deployment + API proxy config
+```
+
+---
+Made with ❤️ for the Ummah · Free Forever · No Ads

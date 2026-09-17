@@ -187,9 +187,9 @@
           <div class="player-ayah-info" id="playerAyahInfo"></div>
 
           <div class="play-btn-wrap">
-            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" title="Previous" disabled aria-label="Action Button">◀◀</button>
-            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" title="Play / Pause" aria-label="Action Button">▶</button>
-            <button class="prev-next-btn" id="nextBtn" onclick="playNext()" title="Next" aria-label="Action Button">▶▶</button>
+            <button class="prev-next-btn" id="prevBtn" onclick="playPrev()" title="Previous" disabled >◀◀</button>
+            <button class="big-play-btn" id="playerPlayBtn" onclick="togPlayReciter()" title="Play / Pause" >▶</button>
+            <button class="prev-next-btn" id="nextBtn" onclick="playNext()" title="Next" >▶▶</button>
           </div>
 
           <div class="progress-section">
@@ -206,13 +206,13 @@
           <div class="vol-row">
             <span class="vol-icon" onclick="toggleMute()" id="volIcon">🔊</span>
             <input type="range" class="vol-slider" id="volSlider" min="0" max="100" value="85" oninput="setVolume()" aria-label="Volume">
-            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" title="Playback speed" aria-label="Action Button">1×</button>
-            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat" aria-label="Action Button">⟳</button>
+            <button class="speed-btn" id="speedBtn" onclick="cycleSpeed()" title="Playback speed" >1×</button>
+            <button class="repeat-btn" id="repeatBtn" onclick="toggleRepeat()" title="Repeat" >⟳</button>
           </div>
 
           <div class="ctrl-row" style="margin-top:18px">
-            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()" aria-label="Action Button">⏹ Stop</button>
-            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()" aria-label="Action Button">✕ Close Bar</button>
+            <button class="ctrl-btn ctrl-stop" onclick="stopReciter()" >⏹ Stop</button>
+            <button class="ctrl-btn ctrl-close" onclick="closePlayerBar()" >✕ Close Bar</button>
           </div>
         </div>
       </div>
@@ -244,9 +244,9 @@
         <div class="abar-sub">Mishary Alafasy</div>
       </div>
       <div class="abar-controls">
-        <button id="plbtn" onclick="togPlayReciter()" class="abar-play-btn" title="Play/Pause" aria-label="Action Button">▶</button>
-        <button onclick="stopReciter()" class="abar-stop-btn" title="Stop" aria-label="Action Button">⏹</button>
-        <button onclick="closePlayerBar()" class="abar-close-btn" title="Close" aria-label="Action Button">✕</button>
+        <button id="plbtn" onclick="togPlayReciter()" class="abar-play-btn" title="Play/Pause" >▶</button>
+        <button onclick="stopReciter()" class="abar-stop-btn" title="Stop" >⏹</button>
+        <button onclick="closePlayerBar()" class="abar-close-btn" title="Close" >✕</button>
       </div>
     </div>
     <div class="abar-seek" style="padding:0 20px 14px">
@@ -260,9 +260,7 @@
   <audio id="aud"></audio>
 
   
-          </a>
-      <a href="../pages/reciters.html" class="fitem">
-        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+          <div class="flb">Reciters</div>
       </a>
       <a href="../pages/prayer.html" class="fitem">
         <div class="fic">🕐</div><div class="flb">Prayer</div>
@@ -289,25 +287,7 @@
 
 <!-- MOBILE NAV -->
 
-    <div>Home</div>
-  </a>
-  <a href="quran.html">
-    <div class="mn-ic">📖</div>
-    <div>Quran</div>
-  </a>
-  <a href="reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div>Reciters</div>
-  </a>
-  <a href="prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div>Prayer</div>
-  </a>
-  <a href="bookmarks.html">
-    <div class="mn-ic">🔖</div>
-    <div>Saved</div>
-  </a>
-</div>
+    
 
 <div class="mob-nav">
   <a href="../index.html">

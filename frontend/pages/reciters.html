@@ -86,7 +86,7 @@
             style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:250px">
             <option value="">Loading Surahs...</option>
           </select>
-          <button class="btn bp" onclick="quickPlay()" style="white-space:nowrap" aria-label="Action Button">▶ Play</button>
+          <button class="btn bp" onclick="quickPlay()" style="white-space:nowrap" >▶ Play</button>
         </div>
         <div id="nowPlaying"
           style="font-family:'Amiri',serif;font-size:1.1rem;color:var(--goldL);min-height:28px;margin-bottom:14px">
@@ -102,13 +102,13 @@
       <div class="arc" id="arcn">—</div>
     </div>
     <div class="actl">
-      <button class="cb cpl" id="plbtn" onclick="togPlay()" aria-label="Action Button">▶</button>
-      <button class="cb csk" onclick="stopSurah()" aria-label="Action Button">⏹</button>
+      <button class="cb cpl" id="plbtn" onclick="togPlay()" >▶</button>
+      <button class="cb csk" onclick="stopSurah()" >⏹</button>
     </div>
     <div class="prog">
-      <input type="range" id="seekSlider" class="sk-sl" min="0" max="100" value="0" oninput="seekAudio()">
+      <input aria-label="Seek Slider" type="range" id="seekSlider" class="sk-sl" min="0" max="100" value="0" oninput="seekAudio()">
     </div>
-    <button class="cb csk" onclick="closeAudio()" aria-label="Action Button">✕</button>
+    <button class="cb csk" onclick="closeAudio()" >✕</button>
   </div>
   <audio id="aud" ontimeupdate="updP()" onended="onEnd()"></audio>
 
@@ -120,12 +120,10 @@
         <div class="ads" id="ads">—</div>
       </div>
     </div>
-    <div class="adr"><button class="adcl" onclick="closeAdhan()" aria-label="Action Button">✕</button></div>
+    <div class="adr"><button class="adcl" onclick="closeAdhan()" >✕</button></div>
   </div>
   
-          </a>
-      <a href="../pages/reciters.html" class="fitem">
-        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+          <div class="flb">Reciters</div>
       </a>
       <a href="../pages/prayer.html" class="fitem">
         <div class="fic">🕐</div><div class="flb">Prayer</div>
@@ -154,25 +152,7 @@
 
 <!-- MOBILE NAV -->
 
-    <div>Home</div>
-  </a>
-  <a href="quran.html">
-    <div class="mn-ic">📖</div>
-    <div>Quran</div>
-  </a>
-  <a href="reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div>Reciters</div>
-  </a>
-  <a href="prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div>Prayer</div>
-  </a>
-  <a href="bookmarks.html">
-    <div class="mn-ic">🔖</div>
-    <div>Saved</div>
-  </a>
-</div>
+    
 
 <div class="mob-nav">
   <a href="../index.html">

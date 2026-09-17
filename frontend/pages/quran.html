@@ -62,18 +62,18 @@
   <div class="pi" id="ai"><span class="pn">Asr</span><span class="pt" id="at">—:—</span></div>
   <div class="pi" id="mi"><span class="pn">Maghrib</span><span class="pt" id="mt">—:—</span></div>
   <div class="pi" id="ii"><span class="pn">Isha</span><span class="pt" id="it">—:—</span></div>
-  <button class="btn bo bsm" onclick="loadPrayer()" aria-label="Action Button">📍 My Location</button>
+  <button class="btn bo bsm" onclick="loadPrayer()" >📍 My Location</button>
 </div>
 
 <section class="sec">
-  <div class="sw fi"><input class="si2" id="srch" type="text" placeholder="Search surah by name or number..." oninput="filterS(this.value)"><svg class="sic" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#a8c0e8" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
+  <div class="sw fi"><input aria-label="Search surah by name or number" class="si2" id="srch" type="text" placeholder="Search surah by name or number..." oninput="filterS(this.value)"><svg class="sic" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#a8c0e8" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
   <div class="sg fi" id="grid"></div>
 </section>
 </div>
 
 <!-- READER -->
 <div class="reader" id="reader">
-  <button class="rcls" onclick="closeR()" aria-label="Action Button">✕</button>
+  <button class="rcls" onclick="closeR()" >✕</button>
   <div class="rh">
     <div class="rhn" id="rn">SURAH —</div>
     <div class="rhar" id="rar">—</div>
@@ -87,25 +87,23 @@
 <div class="abar" id="abar">
   <div class="ainf"><div class="asn" id="asn">—</div><div class="arc" id="arcn">Mishary Alafasy</div></div>
   <div class="actl">
-    <button class="cb csk" onclick="prevA()" aria-label="Action Button">⏮</button>
-    <button class="cb cpl" id="plbtn" onclick="togPlay()" aria-label="Action Button">▶</button>
-    <button class="cb csk" onclick="nextA()" aria-label="Action Button">⏭</button>
+    <button class="cb csk" onclick="prevA()" >⏮</button>
+    <button class="cb cpl" id="plbtn" onclick="togPlay()" >▶</button>
+    <button class="cb csk" onclick="nextA()" >⏭</button>
   </div>
   <div class="prog"><div class="pb"><div class="pf" id="pf"></div></div></div>
-  <button class="cb csk" onclick="closeAudio()" style="font-size:.85rem" aria-label="Action Button">✕</button>
+  <button class="cb csk" onclick="closeAudio()" style="font-size:.85rem" >✕</button>
 </div>
 <audio id="aud" ontimeupdate="updProg()" onended="nextA()"></audio>
 
 <!-- ADHAN -->
 <div class="adhan" id="adhan">
   <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
-  <div class="adr"><select class="adsel"><option>Mishary Alafasy</option></select><button class="adcl" onclick="closeAdhan()" aria-label="Action Button">✕</button></div>
+  <div class="adr"><select class="adsel"><option>Mishary Alafasy</option></select><button class="adcl" onclick="closeAdhan()" >✕</button></div>
 </div>
 
 
-          </a>
-      <a href="../pages/reciters.html" class="fitem">
-        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+          <div class="flb">Reciters</div>
       </a>
       <a href="../pages/prayer.html" class="fitem">
         <div class="fic">🕐</div><div class="flb">Prayer</div>
@@ -290,8 +288,8 @@ async function openS(n){
           <div class="at">
             <span class="anum">${a.numberInSurah}</span>
             <div class="aact">
-              <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Action Button">🔊</button>
-              <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Action Button">🔖</button>
+              <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" >🔊</button>
+              <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" >🔖</button>
             </div>
           </div>
           <div class="aarb">${a.text}</div>
@@ -322,25 +320,7 @@ document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);})
 
 <!-- MOBILE NAV -->
 
-    <div>Home</div>
-  </a>
-  <a href="quran.html">
-    <div class="mn-ic">📖</div>
-    <div>Quran</div>
-  </a>
-  <a href="reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div>Reciters</div>
-  </a>
-  <a href="prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div>Prayer</div>
-  </a>
-  <a href="bookmarks.html">
-    <div class="mn-ic">🔖</div>
-    <div>Saved</div>
-  </a>
-</div>
+    
 
 <div class="mob-nav">
   <a href="../index.html">

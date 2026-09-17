@@ -24,11 +24,6 @@ urlpatterns = [
     # ── Quran ──
     path('surahs/',                                  views.surah_list,               name='surah-list'),
     path('surahs/<int:surah_number>/',               views.surah_detail,             name='surah-detail'),
-
-    # ── Audio ──
-    path('audio/<int:surah_number>/<int:ayah_number>/',                       views.ayah_audio,                name='ayah-audio'),
-
-
     # ── Prayer times ──
     path('prayer-times/', views.prayer_times, name='prayer-times'),
     path('hijri-date/',   views.hijri_date,   name='hijri-date'),

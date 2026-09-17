@@ -10,13 +10,15 @@ from django.utils.decorators import method_decorator
 from django.views.decorators.cache import cache_page
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import exceptions, filters, status, viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import api_view, permission_classes, throttle_classes
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+import re
 
 from .models import Bookmark, PrayerNotification
 from .serializers import (
@@ -47,6 +49,7 @@ MP3QURAN_SERVERS = {
     'sherif_mostafa':     'https://server6.mp3quran.net/shrf/',
     'yasser_dosari':      'https://server11.mp3quran.net/yasser/',
     'abdurrahman_mossad': 'https://server16.mp3quran.net/mossad/',
+    'raad_kurdi':         'https://server6.mp3quran.net/kurdi/',
 }
 
 
@@ -114,50 +117,6 @@ def surah_detail(request, surah_number: int):
 
 
 @api_view(['GET'])
-@cache_page(60 * 60 * 24)
-def ayah_audio(request, surah_number: int, ayah_number: int):
-    """
-    GET /api/audio/<surah>/<ayah>/?reciter=alafasy
-    Return the audio URL for a specific ayah.
-
-    For reciters on alquran.cloud: fetches full metadata + audio URL.
-    For mp3quran.net reciters (saud_juma): returns direct MP3 URL.
-    """
-    if not (1 <= surah_number <= 114):
-        return Response(
-            {'error': 'Surah number must be between 1 and 114.'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-    if not (1 <= ayah_number <= 286):
-        return Response(
-            {'error': 'Ayah number must be between 1 and 286.'},
-            status=status.HTTP_400_BAD_REQUEST,
-        )
-
-    reciter = request.query_params.get('reciter', 'abdulbasit')
-
-    # Handle mp3quran.net reciters separately
-    if reciter in MP3QURAN_SERVERS:
-        server = MP3QURAN_SERVERS[reciter]
-        # mp3quran.net provides full-surah files only
-        audio_url = f"{server}{str(surah_number).zfill(3)}.mp3"
-        return Response({
-            'reciter': reciter,
-            'surah': surah_number,
-            'ayah': ayah_number,
-            'audio': audio_url,
-            'note': 'Full-surah MP3. Per-ayah timestamps unavailable for this reciter.',
-        }, status=status.HTTP_200_OK)
-
-    edition = RECITER_EDITIONS.get(reciter, 'ar.alafasy')
-    url = f"{ALQURAN_BASE}/ayah/{surah_number}:{ayah_number}/{edition}"
-    data = fetch_external_api(url)
-    return Response(data, status=status.HTTP_200_OK)
-
-
-
-
-@api_view(['GET'])
 @cache_page(60 * 30) # Cache for 30 minutes
 def prayer_times(request):
     """
@@ -218,6 +177,20 @@ class BookmarkViewSet(viewsets.ModelViewSet):
 
     def perform_create(self, serializer):
         serializer.save(user=self.request.user)
+
+    def create(self, request, *args, **kwargs):
+        """Override create to return 400 on duplicate bookmark instead of 500 IntegrityError."""
+        from django.db import IntegrityError, transaction
+        from rest_framework.exceptions import ValidationError
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        try:
+            with transaction.atomic():
+                self.perform_create(serializer)
+        except IntegrityError:
+            raise ValidationError({'non_field_errors': ['You have already bookmarked this ayah.']})
+        headers = self.get_success_headers(serializer.data)
+        return Response(serializer.data, status=status.HTTP_201_CREATED, headers=headers)
 
 
 # ─── 99 NAMES OF ALLAH ─────────────────────────────────────────────────────
@@ -332,9 +305,8 @@ def names_of_allah(request):
     GET /api/names/
     Return all 99 Names of Allah (Asmaul Husna) — cached static data.
     """
-    serializer = NameOfAllahSerializer(data=NAMES_OF_ALLAH, many=True)
-    serializer.is_valid()
-    return Response({'count': len(NAMES_OF_ALLAH), 'names': serializer.data}, status=status.HTTP_200_OK)
+    # Return static data directly — no user input to validate
+    return Response({'count': len(NAMES_OF_ALLAH), 'names': NAMES_OF_ALLAH}, status=status.HTTP_200_OK)
 
 # ─── AUTHENTICATION ─────────────────────────────────────────────────────────
 
@@ -346,16 +318,40 @@ def health_check(request):
     """
     return Response({'status': 'ok'})
 
+class RegisterRateThrottle(AnonRateThrottle):
+    """Strict rate limit for registration to prevent abuse."""
+    rate = '10/hour'
+    scope = 'register'
+
+
 @api_view(['POST'])
 @permission_classes([AllowAny])
+@throttle_classes([RegisterRateThrottle])
 def register_user(request):
-    username = request.data.get('username')
-    password = request.data.get('password')
+    username = request.data.get('username', '').strip()
+    password = request.data.get('password', '')
+
+    # Field presence check
     if not username or not password:
-        return Response({'error': 'Username and password required'}, status=status.HTTP_400_BAD_REQUEST)
+        return Response({'error': 'Username and password are required.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Username length validation
+    if len(username) < 3 or len(username) > 30:
+        return Response(
+            {'error': 'Username must be between 3 and 30 characters.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Username format: only letters, digits, underscores, hyphens
+    if not re.match(r'^[\w\-]+$', username):
+        return Response(
+            {'error': 'Username may only contain letters, digits, underscores, and hyphens.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
     if User.objects.filter(username=username).exists():
-        return Response({'error': 'Username already exists'}, status=status.HTTP_400_BAD_REQUEST)
-    
+        return Response({'error': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         validate_password(password)
     except DjangoValidationError as e:
@@ -366,4 +362,5 @@ def register_user(request):
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
+        'username': user.username,
     }, status=status.HTTP_201_CREATED)

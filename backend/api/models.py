@@ -32,7 +32,7 @@ class PrayerNotification(models.Model):
         ('asr', 'Asr'),
         ('maghrib', 'Maghrib'),
     ]
-    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications', default=1)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
     prayer_name = models.CharField(max_length=20, choices=PRAYER_CHOICES)
     adhan_reciter = models.CharField(max_length=50, default='mishary')
     is_enabled = models.BooleanField(default=True)

@@ -35,6 +35,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'rest_framework',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'django_filters',
     'rest_framework_simplejwt',
@@ -128,16 +129,20 @@ REST_FRAMEWORK = {
     ],
     'DEFAULT_THROTTLE_CLASSES': [
         'rest_framework.throttling.AnonRateThrottle',
+        'rest_framework.throttling.UserRateThrottle',
     ],
     'DEFAULT_THROTTLE_RATES': {
         'anon': '200/hour',
+        'user': '1000/hour',
     },
 }
 
 SIMPLE_JWT = {
-    'ACCESS_TOKEN_LIFETIME': timedelta(days=7),
+    'ACCESS_TOKEN_LIFETIME': timedelta(minutes=15),   # Short-lived for security
     'REFRESH_TOKEN_LIFETIME': timedelta(days=30),
     'ROTATE_REFRESH_TOKENS': True,
+    'BLACKLIST_AFTER_ROTATION': True,   # Invalidate old refresh tokens after rotation
+    'UPDATE_LAST_LOGIN': False,
 }
 
 # ─── CORS CONFIGURATION ──────────────────────────────────────────────────────
@@ -149,7 +154,8 @@ if not CORS_ALLOWED_ORIGINS and not DEBUG:
 
 CSRF_TRUSTED_ORIGINS = CORS_ALLOWED_ORIGINS
 
-CORS_ALLOW_ALL_ORIGINS = DEBUG  # Allow all in dev mode for file:// access
+# Never allow all origins in production — even if DEBUG is True on a server
+CORS_ALLOW_ALL_ORIGINS = DEBUG and os.getenv('RENDER_EXTERNAL_HOSTNAME') is None
 CORS_ALLOW_CREDENTIALS = True
 CORS_ALLOW_HEADERS = [
     'accept',
@@ -165,13 +171,18 @@ CORS_ALLOW_HEADERS = [
 
 # ─── SECURITY HEADERS (PRODUCTION) ───────────────────────────────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT = True
+    # Allow configuring SECURE_SSL_REDIRECT via env, defaulting to True for standard VPS.
+    # Set to False if behind a load balancer that terminates SSL (like Render/Railway).
+    SECURE_SSL_REDIRECT = os.getenv('SECURE_SSL_REDIRECT', 'True') == 'True'
     SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
     SESSION_COOKIE_SECURE = True
     CSRF_COOKIE_SECURE = True
-    SECURE_HSTS_SECONDS = 31536000 # 1 year
+    SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
+    SECURE_CONTENT_TYPE_NOSNIFF = True
+    SECURE_BROWSER_XSS_FILTER = True
+    X_FRAME_OPTIONS = 'DENY'
 
 
 # ─── LOGGING CONFIGURATION ───────────────────────────────────────────────────

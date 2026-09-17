@@ -117,18 +117,18 @@
 
         <!-- Search -->
         <div class="search-container">
-          <input type="text" class="search-input" id="searchInput" placeholder="Search duas...">
+          <input aria-label="Search duas" type="text" class="search-input" id="searchInput" placeholder="Search duas...">
           <span class="search-icon">🔍</span>
         </div>
 
         <!-- Category Filters -->
         <div class="category-tabs">
-          <button class="tab-btn active" onclick="filterCategory('all',this)" aria-label="Action Button">All Duas</button>
-          <button class="tab-btn" onclick="filterCategory('morning',this)" aria-label="Action Button">🌅 Morning</button>
-          <button class="tab-btn" onclick="filterCategory('evening',this)" aria-label="Action Button">🌙 Evening</button>
-          <button class="tab-btn" onclick="filterCategory('protection',this)" aria-label="Action Button">🛡️ Protection</button>
-          <button class="tab-btn" onclick="filterCategory('forgiveness',this)" aria-label="Action Button">🤲 Forgiveness</button>
-          <button class="tab-btn" onclick="filterCategory('blessing',this)" aria-label="Action Button">✨ Blessing</button>
+          <button class="tab-btn active" onclick="filterCategory('all',this)" >All Duas</button>
+          <button class="tab-btn" onclick="filterCategory('morning',this)" >🌅 Morning</button>
+          <button class="tab-btn" onclick="filterCategory('evening',this)" >🌙 Evening</button>
+          <button class="tab-btn" onclick="filterCategory('protection',this)" >🛡️ Protection</button>
+          <button class="tab-btn" onclick="filterCategory('forgiveness',this)" >🤲 Forgiveness</button>
+          <button class="tab-btn" onclick="filterCategory('blessing',this)" >✨ Blessing</button>
         </div>
 
         <!-- Duas Grid -->
@@ -139,9 +139,7 @@
   </div>
 
   
-          </a>
-      <a href="../pages/reciters.html" class="fitem">
-        <div class="fic">🎙️</div><div class="flb">Reciters</div>
+          <div class="flb">Reciters</div>
       </a>
       <a href="../pages/prayer.html" class="fitem">
         <div class="fic">🕐</div><div class="flb">Prayer</div>
@@ -212,7 +210,7 @@
           <div class="dua-ar">${d.ar}</div>
           <div class="dua-en">${d.en}</div>
           <div class="dua-ru">${d.ru}</div>
-          <button class="copy-btn" onclick="copyDua('${d.ar}')" aria-label="Action Button">📋 Copy Dua</button>
+          <button class="copy-btn" onclick="copyDua('${d.ar}')" >📋 Copy Dua</button>
         `;
         grid.appendChild(card);
       });
@@ -246,25 +244,7 @@
 
 <!-- MOBILE NAV -->
 
-    <div>Home</div>
-  </a>
-  <a href="quran.html">
-    <div class="mn-ic">📖</div>
-    <div>Quran</div>
-  </a>
-  <a href="reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div>Reciters</div>
-  </a>
-  <a href="prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div>Prayer</div>
-  </a>
-  <a href="bookmarks.html">
-    <div class="mn-ic">🔖</div>
-    <div>Saved</div>
-  </a>
-</div>
+    
 
 <div class="mob-nav">
   <a href="../index.html">

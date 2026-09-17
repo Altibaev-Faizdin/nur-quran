@@ -7,6 +7,7 @@
   --bg0:    #020818;
   --bg1:    #060f2e;
   --bg2:    #0a1a4a;
+  --bg:     #020818;   /* alias for --bg0, used in various components */
   --blue:   #0d2680;
   --blue2:  #1a3a8f;
   --gold:   #d4a017;
@@ -16,6 +17,7 @@
   --white:  #f0f4ff;
   --soft:   #a8c0e8;
   --card:   rgba(10,26,74,0.55);
+  --surface: rgba(10,26,74,0.65); /* card background for bookmarks, sheets */
   --border: rgba(212,160,23,0.25);
   --glass:  rgba(6,15,46,0.75);
   --r:      0.3s cubic-bezier(.4,0,.2,1);
