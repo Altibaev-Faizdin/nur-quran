@@ -56,31 +56,13 @@ python3 -m http.server 3000
 ```
 ✅ Frontend available at: **http://localhost:3000**
 
----
-
-## 🔐 Environment Variables
-
-Copy `backend/.env.example` to `backend/.env` and fill in the values:
-
-| Variable | Required | Description | Example |
-|----------|----------|-------------|---------|
-| `SECRET_KEY` | **Yes** | Django secret key | `your-50+-char-random-string` |
-| `DEBUG` | **Yes** | Enable debug mode | `False` |
-| `DATABASE_URL` | **Yes** | Database connection string | `postgres://user:pass@host:5432/db` |
-| `ALLOWED_HOSTS` | **Yes (prod)** | Comma-separated allowed domains | `api.nurquran.com` |
-| `CORS_ALLOWED_ORIGINS` | **Yes (prod)** | Allowed frontend origins | `https://nurquran.com` |
-| `REDIS_URL` | No | Redis URL for caching | `redis://127.0.0.1:6379/1` |
-| `SECURE_SSL_REDIRECT` | No | Set `False` behind a reverse proxy (Render/Railway) | `False` |
-
----
-
 ## 🚀 Deployment (Production)
 
 Fully ready for deployment on **Render**, **Railway**, or any standard Linux VPS.
 
 ### Deployment Checklist:
 1. Set `DEBUG=False`.
-2. Set a secure, random `SECRET_KEY` (50+ characters).
+2. Set a secure, random `SECRET_KEY` .
 3. Provide `DATABASE_URL` (PostgreSQL).
 4. Provide `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`.
 5. Run: `python manage.py migrate`
