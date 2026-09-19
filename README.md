@@ -1,27 +1,26 @@
 # 🌙 Noor Al-Quran — نور القرآن
 
-A comprehensive Islamic web application providing Quranic texts, audio recitations, prayer times, and more.
+A comprehensive web application providing Quranic texts, audio recitations, prayer times, and more. 
 Built with a **Django REST Framework** backend and a lightweight **Vanilla HTML/CSS/JS** frontend.
 
 ---
 
 ## ✨ Features
 - 📖 **Quran** — All 114 Surahs with Arabic text, translations (EN, RU, UZ), and deep-linking support.
-- 🎙️ **9 Reciters** — High-quality MP3 audio recitations (Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, and more).
+- 🎙️ **9 Reciters** — High-quality audio recitations (e.g. Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, etc).
 - 🕐 **Prayer Times** — Geolocation-based prayer times with Adhan notifications.
 - 📜 **Hadith** — Read Hadiths from various collections.
-- 📿 **Tasbih Counter** — Digital dhikr counter.
+- 📿 **Tasbih Counter** — Digital dhikr counter with auto-saving.
 - 🔖 **Bookmarks** — Save your favorite ayahs with secure JWT authentication.
-- 🤲 **Daily Dua & 99 Names of Allah** — Essential supplications and divine names.
+- 🤲 **Daily Dua & 99 Names of Allah** — Essential supplications.
 - 🕋 **Qibla Compass** — Find the direction to Mecca.
-- 🌍 **Multilingual** — English, Russian, Uzbek UI.
 
 ---
 
 ## 🛠️ Requirements
-- **Python 3.11+**
-- **PostgreSQL** (production) or SQLite (development)
-- **Redis** (optional, for caching external API responses)
+- **Python 3.8+** (Tested on Python 3.11)
+- **PostgreSQL** (Recommended for Production) or SQLite (Development)
+- **Redis** (Optional, for caching external API calls)
 
 ---
 
@@ -29,7 +28,7 @@ Built with a **Django REST Framework** backend and a lightweight **Vanilla HTML/
 
 ### 1. Clone the repository
 ```bash
-git clone https://github.com/Altibaev-Faizdin/nur-quran.git
+git clone https://github.com/yourusername/nur-quran.git
 cd nur-quran
 ```
 
@@ -42,7 +41,7 @@ pip install -r requirements.txt
 cp .env.example .env
 ```
 
-Edit `.env` with your values, then:
+Configure your `.env` file (see Environment Variables section). Then apply migrations and start the server:
 ```bash
 python manage.py migrate
 python manage.py runserver 0.0.0.0:8000
@@ -50,59 +49,38 @@ python manage.py runserver 0.0.0.0:8000
 ✅ Backend running at: **http://localhost:8000**
 
 ### 3. Frontend Setup (New Terminal)
+Serve the static frontend files using a local HTTP server:
 ```bash
 cd frontend
 python3 -m http.server 3000
 ```
 ✅ Frontend available at: **http://localhost:3000**
 
+---
+
+## 🐳 Docker Setup (Optional)
+If you prefer using Docker, you can create a `docker-compose.yml` that builds the backend using gunicorn and serves the static frontend via Nginx. *(Dockerfiles not included by default to keep the repo lightweight, but standard Python/Nginx images work out-of-the-box).*
+
+---
+
 ## 🚀 Deployment (Production)
 
-Fully ready for deployment on **Render**, **Railway**, or any standard Linux VPS.
+This project is fully ready for deployment on platforms like **Render**, **Railway**, or a standard **Ubuntu VPS**.
 
 ### Deployment Checklist:
-1. Set `DEBUG=False`.
-2. Set a secure, random `SECRET_KEY` .
-3. Provide `DATABASE_URL` (PostgreSQL).
-4. Provide `ALLOWED_HOSTS` and `CORS_ALLOWED_ORIGINS`.
-5. Run: `python manage.py migrate`
-6. Run: `python manage.py collectstatic --noinput`
+1. Set `DEBUG=False` in your production environment.
+2. Set a secure, random `SECRET_KEY`.
+3. Provide your `DATABASE_URL` (PostgreSQL).
+4. Provide `ALLOWED_HOSTS` (e.g. `yourdomain.com`).
+5. Run migrations: `python manage.py migrate`.
+6. Collect static files: `python manage.py collectstatic`.
 
-**Procfile:**
+**Procfile (For Render/Railway):**
 ```text
 web: gunicorn config.wsgi:application --bind 0.0.0.0:$PORT
 ```
+The backend uses **WhiteNoise** to automatically serve static files.
 
-The backend uses **WhiteNoise** to serve static files automatically.
-
-**Frontend:** Deploy the `frontend/` directory to Netlify. Update `netlify.toml` to proxy `/api/*` to your backend URL.
 
 ---
-
-## 🧪 Running Tests
-```bash
-cd backend
-source venv/bin/activate
-python manage.py test
-```
-
----
-
-## 🏗️ Architecture
-
-```
-nur-quran/
-├── backend/          # Django REST Framework API
-│   ├── api/          # Models, views, serializers, tests
-│   ├── config/       # Django settings, WSGI, root URLs
-│   └── requirements.txt
-├── frontend/         # Static Vanilla HTML/CSS/JS
-│   ├── pages/        # Individual feature pages
-│   ├── shared.js     # Global logic, auth, API calls
-│   ├── shared.css    # Global styles
-│   └── i18n.js       # Multilingual support
-└── netlify.toml      # Frontend deployment + API proxy config
-```
-
----
-Made with ❤️ for the Ummah · Free Forever · No Ads
+Made with ❤️ for the Ummah · Free Forever
