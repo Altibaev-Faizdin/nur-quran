@@ -4,27 +4,266 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Register — Noor Al-Quran</title>
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
+  <meta name="description" content="Create your Noor Al-Quran account to save bookmarks and personalize your Quran experience.">
+  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
   <link rel="stylesheet" href="../shared.css?v=5">
   <style>
-    .auth-container { max-width: 400px; margin: 60px auto; padding: 30px 20px; text-align: center; }
-    .auth-title { font-family: 'Cinzel Decorative', serif; font-size: 2.2rem; color: var(--goldL); margin-bottom: 10px; }
-    .auth-sub { font-size: 0.9rem; color: var(--soft); margin-bottom: 30px; }
-    .auth-form { display: flex; flex-direction: column; gap: 15px; }
-    .auth-input { width: 100%; background: rgba(13,38,128,0.3); border: 1px solid rgba(212,160,23,0.3); color: var(--white); padding: 14px 18px; border-radius: 25px; font-size: 1rem; outline: none; font-family: 'Lato', sans-serif; transition: var(--r); }
-    .auth-input:focus { border-color: var(--gold); box-shadow: 0 0 12px rgba(212,160,23,0.3); }
-    .auth-input::placeholder { color: rgba(168,192,232,0.5); }
-    .auth-btn { width: 100%; background: linear-gradient(135deg, var(--gold), var(--goldL)); border: none; color: var(--bg0); padding: 15px; border-radius: 25px; font-weight: bold; font-size: 1rem; cursor: pointer; transition: var(--r); box-shadow: 0 4px 15px rgba(212,160,23,0.3); margin-top: 10px; }
-    .auth-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(212,160,23,0.5); }
-    .auth-btn:disabled { opacity: 0.7; cursor: not-allowed; transform: none; }
-    .auth-links { margin-top: 25px; font-size: 0.9rem; color: var(--silver); }
-    .auth-links a { color: var(--goldL); text-decoration: none; font-weight: bold; }
-    .auth-error { color: #ff6b6b; font-size: 0.9rem; margin-bottom: 15px; display: none; background: rgba(255, 107, 107, 0.1); padding: 10px; border-radius: 8px; border: 1px solid rgba(255, 107, 107, 0.3); }
+    /* ── AUTH PAGE LAYOUT ── */
+    .auth-page {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 100px 20px 40px;
+      position: relative;
+      z-index: 2;
+    }
+
+    .auth-card {
+      width: 100%;
+      max-width: 440px;
+      background: rgba(6,15,46,0.75);
+      border: 1px solid rgba(212,160,23,0.25);
+      border-radius: 28px;
+      padding: 48px 40px 40px;
+      backdrop-filter: blur(20px);
+      -webkit-backdrop-filter: blur(20px);
+      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-card::before {
+      content: '';
+      position: absolute;
+      top: -60px;
+      right: -60px;
+      width: 180px;
+      height: 180px;
+      background: radial-gradient(circle, rgba(212,160,23,0.08), transparent 70%);
+      pointer-events: none;
+    }
+    .auth-card::after {
+      content: '';
+      position: absolute;
+      bottom: -40px;
+      left: -40px;
+      width: 120px;
+      height: 120px;
+      background: radial-gradient(circle, rgba(13,38,128,0.3), transparent 70%);
+      pointer-events: none;
+    }
+
+    .auth-icon {
+      width: 72px;
+      height: 72px;
+      background: linear-gradient(135deg, rgba(212,160,23,0.2), rgba(13,38,128,0.4));
+      border: 1px solid rgba(212,160,23,0.35);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 2rem;
+      margin: 0 auto 24px;
+      box-shadow: 0 0 30px rgba(212,160,23,0.15);
+    }
+
+    .auth-title {
+      font-family: 'Cinzel Decorative', serif;
+      font-size: 1.6rem;
+      color: var(--goldL);
+      margin-bottom: 8px;
+      text-align: center;
+      text-shadow: 0 0 20px rgba(240,192,64,0.3);
+      line-height: 1.3;
+    }
+    .auth-sub {
+      font-size: 0.85rem;
+      color: var(--soft);
+      margin-bottom: 36px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .auth-divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 28px;
+    }
+    .auth-divider::before, .auth-divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, rgba(212,160,23,0.3), transparent);
+    }
+    .auth-divider span {
+      font-family: 'Amiri', serif;
+      font-size: 1.1rem;
+      color: var(--gold);
+    }
+
+    .auth-form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .input-group {
+      position: relative;
+    }
+    .input-icon {
+      position: absolute;
+      left: 18px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+      color: var(--gold);
+      opacity: 0.7;
+    }
+    .auth-input {
+      width: 100%;
+      background: rgba(10,26,74,0.4);
+      border: 1px solid rgba(212,160,23,0.2);
+      color: var(--white);
+      padding: 15px 18px 15px 48px;
+      border-radius: 14px;
+      font-size: 0.95rem;
+      outline: none;
+      font-family: 'Lato', sans-serif;
+      transition: var(--r);
+      letter-spacing: 0.3px;
+    }
+    .auth-input:focus {
+      border-color: var(--gold);
+      background: rgba(10,26,74,0.6);
+      box-shadow: 0 0 0 3px rgba(212,160,23,0.1), 0 0 20px rgba(212,160,23,0.1);
+    }
+    .auth-input::placeholder { color: rgba(168,192,232,0.4); }
+
+    .password-hint {
+      font-size: 0.72rem;
+      color: var(--soft);
+      margin-top: 4px;
+      padding-left: 4px;
+      opacity: 0.75;
+    }
+
+    .auth-btn {
+      width: 100%;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--goldL) 50%, #f5c842 100%);
+      border: none;
+      color: var(--bg0);
+      padding: 16px;
+      border-radius: 14px;
+      font-weight: 700;
+      font-size: 0.95rem;
+      cursor: pointer;
+      transition: var(--r);
+      box-shadow: 0 6px 25px rgba(212,160,23,0.35);
+      margin-top: 6px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      font-family: 'Lato', sans-serif;
+      position: relative;
+      overflow: hidden;
+    }
+    .auth-btn::before {
+      content: '';
+      position: absolute;
+      top: 0; left: -100%;
+      width: 100%; height: 100%;
+      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
+      transition: left 0.5s;
+    }
+    .auth-btn:hover::before { left: 100%; }
+    .auth-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 10px 35px rgba(212,160,23,0.5);
+    }
+    .auth-btn:active { transform: translateY(0); }
+    .auth-btn:disabled {
+      opacity: 0.65;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .auth-links {
+      margin-top: 28px;
+      text-align: center;
+      font-size: 0.88rem;
+      color: var(--soft);
+      line-height: 1.6;
+    }
+    .auth-links a {
+      color: var(--goldL);
+      text-decoration: none;
+      font-weight: 700;
+      transition: color 0.2s;
+    }
+    .auth-links a:hover { color: var(--goldG); text-decoration: underline; }
+
+    .auth-error {
+      color: #ff8080;
+      font-size: 0.875rem;
+      display: none;
+      background: rgba(255,80,80,0.08);
+      border: 1px solid rgba(255,80,80,0.25);
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .auth-error.show { display: block; }
+
+    .auth-success {
+      color: #6bff9e;
+      font-size: 0.875rem;
+      display: none;
+      background: rgba(107,255,158,0.08);
+      border: 1px solid rgba(107,255,158,0.25);
+      padding: 12px 16px;
+      border-radius: 12px;
+      text-align: center;
+      line-height: 1.5;
+    }
+    .auth-success.show { display: block; }
+
+    .auth-benefits {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      margin-top: 28px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(212,160,23,0.12);
+    }
+    .benefit-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      font-size: 0.8rem;
+      color: var(--soft);
+    }
+    .benefit-item .b-ic { font-size: 1.1rem; }
+    .benefit-item strong { color: var(--silver); }
+
+    /* ── RESPONSIVE ── */
+    @media (max-width: 480px) {
+      .auth-card {
+        padding: 36px 24px 32px;
+        border-radius: 22px;
+      }
+      .auth-title { font-size: 1.35rem; }
+    }
   </style>
 </head>
 <body>
-  <!-- HEADER -->
-    <nav>
+  <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+
+  <!-- NAV -->
+  <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
     <ul class="nav-links">
       <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
@@ -55,51 +294,50 @@
   </nav>
 
   <!-- CONTENT -->
-  <div class="auth-container">
-    <div class="auth-title" data-i18n="auth_register_title">Join Noor Al-Quran</div>
-    <div class="auth-sub" data-i18n="auth_register_sub">Create an account to save bookmarks</div>
-    
-    <div id="register-error" class="auth-error"></div>
+  <main class="auth-page">
+    <div class="auth-card">
+      <div class="auth-icon">✨</div>
+      <div class="auth-title" data-i18n="auth_register_title">Join Noor Al-Quran</div>
+      <div class="auth-sub" data-i18n="auth_register_sub">Create your account — it's free forever</div>
 
-    <form class="auth-form" id="registerForm">
-      <input aria-label="Choose a username" type="text" id="username" class="auth-input" placeholder="Choose a username" required minlength="3">
-      <input aria-label="Create a password" type="password" id="password" class="auth-input" placeholder="Create a password" required minlength="6">
-      <button type="submit" class="auth-btn" id="registerBtn" data-i18n="auth_register_btn">Create Account</button>
-    </form>
+      <div class="auth-divider"><span>بِسْمِ اللَّه</span></div>
 
-    <div class="auth-links">
-      <span data-i18n="auth_have_account">Already have an account?</span> <a href="login.html" data-i18n="auth_login_link">Log in here</a>
+      <div id="register-error" class="auth-error"></div>
+      <div id="register-success" class="auth-success">Account created! Signing you in...</div>
+
+      <form class="auth-form" id="registerForm" novalidate>
+        <div class="input-group">
+          <span class="input-icon">👤</span>
+          <input aria-label="Choose a username" type="text" id="username" class="auth-input" placeholder="Choose a username" required minlength="3" autocomplete="username">
+        </div>
+        <div>
+          <div class="input-group">
+            <span class="input-icon">🔒</span>
+            <input aria-label="Create a password" type="password" id="password" class="auth-input" placeholder="Create a password" required minlength="6" autocomplete="new-password">
+          </div>
+          <div class="password-hint">Minimum 6 characters</div>
+        </div>
+        <button type="submit" class="auth-btn" id="registerBtn" data-i18n="auth_register_btn">Create Account</button>
+      </form>
+
+      <div class="auth-links">
+        <span data-i18n="auth_have_account">Already have an account?</span> <a href="login.html" data-i18n="auth_login_link">Log in here</a>
+      </div>
+
+      <div class="auth-benefits">
+        <div class="benefit-item"><span class="b-ic">🔖</span><span><strong>Save bookmarks</strong> across all devices</span></div>
+        <div class="benefit-item"><span class="b-ic">🌍</span><span><strong>Sync your language</strong> preference</span></div>
+        <div class="benefit-item"><span class="b-ic">📖</span><span><strong>Track your reading</strong> progress</span></div>
+      </div>
     </div>
-  </div>
-
-  <!-- MOBILE NAV -->
-  
-      <div data-i18n="mn_home">Home</div>
-    </a>
-    <a href="quran.html">
-      <div class="mn-ic">📖</div>
-      <div data-i18n="mn_quran">Quran</div>
-    </a>
-    <a href="reciters.html">
-      <div class="mn-ic">🎙️</div>
-      <div data-i18n="mn_reciters">Audio</div>
-    </a>
-    <a href="prayer.html">
-      <div class="mn-ic">🕐</div>
-      <div data-i18n="mn_prayer">Prayer</div>
-    </a>
-    <a href="bookmarks.html" class="active" id="mn-saved">
-      <div class="mn-ic">👤</div>
-      <div data-i18n="mn_profile">Profile</div>
-    </a>
-  </div>
+  </main>
 
   <script src="../shared.js?v=5"></script>
   <script>
     document.addEventListener('DOMContentLoaded', () => {
-      // If already logged in, redirect
-      if(localStorage.getItem('access_token')) {
+      if (localStorage.getItem('access_token')) {
         window.location.href = 'bookmarks.html';
+        return;
       }
 
       document.getElementById('registerForm').addEventListener('submit', async (e) => {
@@ -107,87 +345,92 @@
         const u = document.getElementById('username').value.trim();
         const p = document.getElementById('password').value;
         const errDiv = document.getElementById('register-error');
+        const sucDiv = document.getElementById('register-success');
         const btn = document.getElementById('registerBtn');
 
         if (!u || !p) return;
 
         btn.disabled = true;
-        btn.textContent = 'Creating...';
-        errDiv.style.display = 'none';
+        btn.textContent = '⏳ Creating account...';
+        errDiv.classList.remove('show');
+        sucDiv.classList.remove('show');
 
         try {
           const res = await fetch(`${API_BASE}/auth/register/`, {
-            method: 'POST', 
+            method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username: u, password: p})
           });
-          
+
           const data = await res.json();
-          
+
           if (res.ok && data.access) {
             localStorage.setItem('access_token', data.access);
             localStorage.setItem('refresh_token', data.refresh);
             localStorage.setItem('username', u);
-            window.location.href = 'bookmarks.html';
+            sucDiv.classList.add('show');
+            btn.textContent = '✓ Account Created!';
+            setTimeout(() => { window.location.href = 'bookmarks.html'; }, 800);
           } else {
-            // DRF usually returns errors as objects
             let errorMsg = 'Registration failed. Username might be taken.';
             if (data.username) errorMsg = `Username: ${data.username[0]}`;
             else if (data.password) errorMsg = `Password: ${data.password[0]}`;
             else if (data.detail) errorMsg = data.detail;
 
             errDiv.textContent = errorMsg;
-            errDiv.style.display = 'block';
+            errDiv.classList.add('show');
             btn.disabled = false;
             btn.textContent = 'Create Account';
           }
         } catch (err) {
-          errDiv.textContent = 'Network error. Please try again.';
-          errDiv.style.display = 'block';
+          errDiv.textContent = 'Network error. Please check your connection.';
+          errDiv.classList.add('show');
           btn.disabled = false;
           btn.textContent = 'Create Account';
         }
       });
     });
   </script>
-<div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
-</div>
 
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
-<div id="mobAccountSheet" class="bottom-sheet">
-  <div class="sheet-content">
-    <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
-    <div class="sheet-links">
-      <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
-      <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+  <!-- MOBILE NAV -->
+  <div class="mob-nav">
+    <a href="../index.html">
+      <div class="mn-ic">🏠</div>
+      <div data-i18n="mn_home">Home</div>
+    </a>
+    <a href="../pages/quran.html">
+      <div class="mn-ic">📖</div>
+      <div data-i18n="mn_quran">Quran</div>
+    </a>
+    <a href="../pages/reciters.html">
+      <div class="mn-ic">🎙️</div>
+      <div data-i18n="mn_reciters">Audio</div>
+    </a>
+    <a href="../pages/prayer.html">
+      <div class="mn-ic">🕐</div>
+      <div data-i18n="mn_prayer">Prayer</div>
+    </a>
+    <a href="javascript:void(0)" onclick="toggleMobileAccount()">
+      <div class="mn-ic">👤</div>
+      <div data-i18n="mn_account">Account</div>
+    </a>
+  </div>
+
+  <!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
+  <div id="mobAccountSheet" class="bottom-sheet">
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <h3 data-i18n="mn_account_title">My Account</h3>
+      <div class="sheet-links">
+        <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
+        <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
+        <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+      </div>
     </div>
   </div>
-</div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js"></script>
+  <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
+  <script src="../i18n.js"></script>
 </body>
 </html>

@@ -3,17 +3,110 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>99 Names — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+<title>99 Names of Allah — Noor Al-Quran</title>
+  <meta name="description" content="Discover the 99 Beautiful Names of Allah (Asmaul Husna) with Arabic, transliteration, and meaning in English and Russian.">
+  <meta property="og:title" content="99 Names of Allah — Noor Al-Quran">
+  <meta property="og:description" content="Discover Asmaul Husna — the 99 Beautiful Names of Allah with Arabic, transliteration, English and Russian meanings.">
   <meta property="og:image" content="/assets/img/og-image.png">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="/manifest.json">
-
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
 <link rel="stylesheet" href="../shared.css?v=4">
+<style>
+  .names-search-wrap {
+    max-width: 480px;
+    margin: 0 auto 36px;
+    position: relative;
+  }
+  .names-search {
+    width: 100%;
+    background: rgba(10,26,74,0.45);
+    border: 1px solid rgba(212,160,23,0.3);
+    color: var(--white);
+    padding: 13px 20px 13px 46px;
+    border-radius: 50px;
+    font-size: 0.9rem;
+    outline: none;
+    font-family: 'Lato', sans-serif;
+    transition: var(--r);
+    backdrop-filter: blur(8px);
+  }
+  .names-search:focus {
+    border-color: var(--gold);
+    box-shadow: 0 0 20px rgba(212,160,23,0.2);
+  }
+  .names-search::placeholder { color: rgba(168,192,232,0.45); }
+  .names-search-icon {
+    position: absolute;
+    left: 17px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--gold);
+    font-size: 1rem;
+    pointer-events: none;
+  }
+  .ng { display: grid; grid-template-columns: repeat(auto-fill, minmax(155px, 1fr)); gap: 14px; max-width: 1200px; margin: 0 auto; }
+  .nc {
+    padding: 22px 16px 18px;
+    text-align: center;
+    cursor: default;
+    position: relative;
+    overflow: hidden;
+    transition: var(--r);
+  }
+  .nc::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(135deg, rgba(212,160,23,0.05), transparent);
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+  .nc:hover::before { opacity: 1; }
+  .nc:hover { transform: translateY(-4px); border-color: rgba(212,160,23,0.5); box-shadow: 0 8px 32px rgba(212,160,23,0.15); }
+  .nn2 {
+    position: absolute;
+    top: 10px;
+    left: 14px;
+    font-size: 0.62rem;
+    color: var(--gold);
+    font-weight: 700;
+    background: rgba(212,160,23,0.1);
+    border: 1px solid rgba(212,160,23,0.25);
+    border-radius: 20px;
+    padding: 1px 7px;
+    letter-spacing: 0.5px;
+  }
+  .na {
+    font-family: 'Amiri', serif;
+    font-size: 1.55rem;
+    color: var(--goldL);
+    line-height: 1.3;
+    margin-bottom: 8px;
+    margin-top: 14px;
+    text-shadow: 0 0 16px rgba(240,192,64,0.3);
+  }
+  .nt {
+    font-size: 0.72rem;
+    color: var(--silver);
+    letter-spacing: 0.5px;
+    margin-bottom: 5px;
+    font-weight: 700;
+  }
+  .nm {
+    font-size: 0.72rem;
+    color: var(--soft);
+    line-height: 1.4;
+  }
+  .no-results {
+    text-align: center;
+    color: var(--soft);
+    padding: 60px 20px;
+    font-size: 1rem;
+    grid-column: 1 / -1;
+  }
+</style>
 </head>
 <body>
 <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
@@ -35,7 +128,7 @@
           <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
         </div>
       </li>
-      <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
+      <li><a href="../pages/names.html" class="on" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
         <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
         <div class="dropdown-content">
@@ -49,15 +142,17 @@
     </ul>
   </nav>
 <div class="wrap">
-<div class="ph fi"><div class="stag">أسماء الله الحسنى</div><h1 class="st">99 Names of <span>Allah</span></h1><div class="sl"></div><p style="color:var(--soft);font-size:.82rem;margin-top:12px">Asmaul Husna · Arabic · English · Russian</p></div>
-<section class="sec">
-<div class="ng fi" id="ng"></div>
-</section>
+  <div class="ph fi"><div class="stag">أسماء الله الحسنى</div><h1 class="st">99 Names of <span>Allah</span></h1><div class="sl"></div><p style="color:var(--soft);font-size:.82rem;margin-top:12px">Asmaul Husna · Arabic · English · Russian</p></div>
+  <section class="sec">
+    <div class="names-search-wrap">
+      <span class="names-search-icon">🔍</span>
+      <input type="search" class="names-search" id="namesSearch" placeholder="Search by name or meaning...">
+    </div>
+    <div class="ng fi" id="ng"></div>
+  </section>
 </div>
+
 <!-- MOBILE NAV -->
-
-    
-
 <div class="mob-nav">
   <a href="../index.html">
     <div class="mn-ic">🏠</div>
@@ -96,6 +191,43 @@
   </div>
 </div>
 <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
+
+<script src="../shared.js?v=4"></script>
+<script>
+  // Load names on page ready
+  document.addEventListener('DOMContentLoaded', function() {
+    loadNames();
+
+    // Search functionality
+    var searchInput = document.getElementById('namesSearch');
+    if (searchInput) {
+      searchInput.addEventListener('input', function() {
+        var q = this.value.toLowerCase().trim();
+        var cards = document.querySelectorAll('.nc');
+        var found = 0;
+        cards.forEach(function(card) {
+          var text = card.textContent.toLowerCase();
+          if (!q || text.includes(q)) {
+            card.style.display = '';
+            found++;
+          } else {
+            card.style.display = 'none';
+          }
+        });
+        // Show no results message
+        var noRes = document.getElementById('noResults');
+        if (!noRes) {
+          noRes = document.createElement('div');
+          noRes.id = 'noResults';
+          noRes.className = 'no-results';
+          noRes.textContent = 'No names found. Try a different search.';
+          document.getElementById('ng').appendChild(noRes);
+        }
+        noRes.style.display = found === 0 ? 'block' : 'none';
+      });
+    }
+  });
+</script>
 <script src="../i18n.js"></script>
 </body>
 </html>
