@@ -28,10 +28,21 @@ class BookmarkSerializer(serializers.ModelSerializer):
 class PrayerNotificationSerializer(serializers.ModelSerializer):
     """Serialize PrayerNotification model"""
 
+    VALID_RECITERS = ['mishary', 'abdulbasit', 'ghamdi', 'minshawi', 'maher',
+                      'islam_sobhi', 'yasser_dosari', 'sherif_mostafa',
+                      'abdurrahman_mossad', 'raad_kurdi']
+
     class Meta:
         model = PrayerNotification
         fields = ('id', 'prayer_name', 'adhan_reciter', 'is_enabled', 'created_at', 'updated_at')
         read_only_fields = ('id', 'created_at', 'updated_at')
+
+    def validate_adhan_reciter(self, value):
+        if value not in self.VALID_RECITERS:
+            raise serializers.ValidationError(
+                f"Invalid reciter. Valid choices: {', '.join(self.VALID_RECITERS)}"
+            )
+        return value
 
 
 

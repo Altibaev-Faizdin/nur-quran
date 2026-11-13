@@ -110,10 +110,11 @@ window.setLanguage = function(lang) {
 
 window.applyLanguage = function(lang) {
   if (!i18n[lang]) return;
+  document.documentElement.lang = lang;
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
     if (i18n[lang][key]) {
-      if (el.tagName === 'INPUT' && el.type === 'placeholder') {
+      if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.placeholder !== undefined) {
         el.placeholder = i18n[lang][key];
       } else {
         el.textContent = i18n[lang][key];

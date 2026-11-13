@@ -106,12 +106,12 @@
         }
 
         const data = await res.json();
-        if (!data || data.length === 0) {
+        if (!data || !data.results || data.results.length === 0) {
           container.innerHTML = '<div class="bm-empty">You have no bookmarks yet.</div>';
           return;
         }
 
-        container.innerHTML = data.map(bm => `
+        container.innerHTML = data.results.map(bm => `
           <div class="bm-card" id="bm-${bm.id}">
             <div class="bm-info">
               <div class="bm-title">Surah ${bm.surah_number}, Ayah ${bm.ayah_number}</div>
