@@ -247,11 +247,14 @@
       </div>
     </div>
     <div class="adr">
-      <select class="adsel">
-        <option>Mishary Alafasy</option>
-        <option>Abdul Basit</option>
+      <select class="adsel" id="adhanReciterSel" onchange="changeAdhanReciter(this.value)">
+        <option value="mishary_alafasy">Mishary Alafasy</option>
+        <option value="abdulbasit">Abdul Basit</option>
+        <option value="ghamdi">Saad Al-Ghamdi</option>
+        <option value="maher">Maher Al Muaiqly</option>
+        <option value="minshawi">El-Minshawi</option>
       </select>
-      <button class="adcl" onclick="closeAdhan()" >✕</button>
+      <button class="adcl" onclick="closeAdhan()" aria-label="Close adhan">✕</button>
     </div>
   </div>
 

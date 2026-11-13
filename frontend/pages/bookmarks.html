@@ -112,10 +112,10 @@
         }
 
         container.innerHTML = data.results.map(bm => `
-          <div class="bm-card" id="bm-${bm.id}">
+          <div class="bm-card" id="bm-${parseInt(bm.id, 10)}">
             <div class="bm-info">
-              <div class="bm-title">Surah ${bm.surah_number}, Ayah ${bm.ayah_number}</div>
-              <div class="bm-meta">Saved on: ${new Date(bm.created_at).toLocaleDateString()}</div>
+              <div class="bm-title">Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}</div>
+              <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at).toLocaleDateString())}</div>
             </div>
             <div class="bm-actions">
               <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" >Read</button>

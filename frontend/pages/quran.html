@@ -117,6 +117,7 @@ function renderS(list){
       <div class="sinf">
         <div class="sar">${safeHTML(s.ar)}</div>
         <div class="sen">${safeHTML(s.en)}</div>
+        ${s.v ? `<div class="sv">${safeHTML(String(s.v))} verses</div>` : ''}
       </div>
     </div>`).join('');
 }

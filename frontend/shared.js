@@ -7,9 +7,10 @@
 // ── XSS PROTECTION HELPER ──
 function safeHTML(str) {
   var d = document.createElement('div');
-  d.textContent = str;
+  d.textContent = (str === undefined || str === null) ? '' : str;
   return d.innerHTML;
 }
+window.safeHTML = safeHTML;
 
 // ── PRAYER TIMER TRACKER ──
 var _prayerTimers = [];
@@ -184,6 +185,7 @@ var SURAHS = [
   { n: 109, ar: 'الكافرون', en: 'Al-Kafirun', v: 6 }, { n: 110, ar: 'النصر', en: 'An-Nasr', v: 3 }, { n: 111, ar: 'المسد', en: 'Al-Masad', v: 5 },
   { n: 112, ar: 'الإخلاص', en: 'Al-Ikhlas', v: 4 }, { n: 113, ar: 'الفلق', en: 'Al-Falaq', v: 5 }, { n: 114, ar: 'الناس', en: 'An-Nas', v: 6 },
 ];
+window.SURAHS = SURAHS;
 
 const MOSSAD_AVAILABLE = [
   10, 19, 23, 29, 32, 49, 73, 78, 87, 88, 100, 107
@@ -351,10 +353,13 @@ function schedulePrayer(t) {
 function showAdhan(nm, time) {
   const b = document.getElementById('adhan'); if (!b) return;
   set('adn', `Time for ${nm} Prayer`); set('ads', `${time} — ${nm} prayer time`);
+  var savedReciter = localStorage.getItem('adhan_reciter') || 'mishary_alafasy';
+  var sel = document.getElementById('adhanReciterSel');
+  if (sel) sel.value = savedReciter;
   b.classList.add('show');
   // Play adhan audio for selected reciter
-  var reciter = localStorage.getItem('adhan_reciter') || 'mishary_alafasy';
-  var reciterObj = RECITERS.find(function(r) { return r.id === reciter; });
+  var reciter = savedReciter;
+  var reciterObj = RECITERS.find(function(r) { return r.id === reciter || (reciter === 'mishary' && r.id === 'mishary_alafasy'); });
   if (reciterObj) {
     var adhanAud = document.getElementById('adhan-audio');
     if (!adhanAud) {
@@ -366,10 +371,17 @@ function showAdhan(nm, time) {
     adhanAud.play().catch(function() {});
   }
 }
-function closeAdhan() { const b = document.getElementById('adhan'); if (b) b.classList.remove('show'); }
+function closeAdhan() {
+  const b = document.getElementById('adhan');
+  if (b) b.classList.remove('show');
+  var adhanAud = document.getElementById('adhan-audio');
+  if (adhanAud) { adhanAud.pause(); adhanAud.currentTime = 0; }
+}
 
 function changeAdhanReciter(val) {
   localStorage.setItem('adhan_reciter', val);
+  var sel = document.getElementById('adhanReciterSel');
+  if (sel && sel.value !== val) sel.value = val;
 }
 
 // ── QIBLA ──
@@ -430,6 +442,9 @@ function setLang(l, btn) {
 document.addEventListener('DOMContentLoaded', function () {
   // Global init
   checkAuthVisibility();
+  var savedAdhan = localStorage.getItem('adhan_reciter');
+  var adhanSel = document.getElementById('adhanReciterSel');
+  if (adhanSel && savedAdhan) adhanSel.value = savedAdhan;
   
   document.addEventListener('click', function (e) {
     var dropLink = e.target.closest('.dropdown > a');
