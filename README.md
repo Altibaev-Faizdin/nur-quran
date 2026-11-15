@@ -1,19 +1,27 @@
 # 🌙 Noor Al-Quran — نور القرآن
 
-A comprehensive web application providing Quranic texts, audio recitations, prayer times, and more. 
-Built with a **Django REST Framework** backend and a lightweight **Vanilla HTML/CSS/JS** frontend.
+[![Release](https://img.shields.io/badge/release-v1.0.0--production-gold.svg)](https://github.com/Altibaev-Faizdin/nur-quran/releases)
+[![PWA Ready](https://img.shields.io/badge/PWA-Ready-success.svg)](frontend/manifest.json)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
+
+A high-performance, production-ready web application providing Quranic texts, audio recitations, prayer times, Qibla compass, and more. 
+Built with a **Django REST Framework** backend and a modern, accessible **Vanilla HTML5/CSS3/ES6+** frontend.
 
 ---
 
 ## ✨ Features
-- 📖 **Quran** — All 114 Surahs with Arabic text, translations (EN, RU, UZ), and deep-linking support.
-- 🎙️ **9 Reciters** — High-quality audio recitations (e.g. Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, etc).
-- 🕐 **Prayer Times** — Geolocation-based prayer times with Adhan notifications.
-- 📜 **Hadith** — Read Hadiths from various collections.
-- 📿 **Tasbih Counter** — Digital dhikr counter with auto-saving.
-- 🔖 **Bookmarks** — Save your favorite ayahs with secure JWT authentication.
-- 🤲 **Daily Dua & 99 Names of Allah** — Essential supplications.
-- 🕋 **Qibla Compass** — Find the direction to Mecca.
+
+- 📖 **Quran Reader** — All 114 Surahs with verified Uthmani Arabic text, translations (EN, RU, UZ), transliteration, and deep-linking.
+- 🎛️ **Reading Controls** — Dynamic font resizer (A- / A+), Tashkeel ligatures (`Amiri`, `Scheherazade New`), and view toggles (*Arabic only*, *With translation*, *Transliteration*).
+- 🎧 **Sticky Global Audio Player** — Continuous playback with active ayah highlighting (`.ac.playing`), smooth scroll tracking, playback speed cycling (`0.75x`, `1x`, `1.25x`, `1.5x`), memorization repeat modes (1x, 3x, ∞), and full **MediaSession API** integration for lockscreen control.
+- 🎙️ **Reciters Catalog** — High-quality recitations from Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, Maher Al Muaiqly, El-Minshawi, and more.
+- 🕐 **Prayer Times & Offline Fallback** — Automatic location-based prayer calculation with astronomical mathematical fallback in pure JS when offline.
+- ⚡ **PWA & Offline First** — Service Worker (`sw.js`) with Stale-While-Revalidate caching for instant loads and network-first API caching.
+- 🛡️ **Hardened Security** — Content Security Policy (CSP), strict CORS/CSRF cookies, rate-limiting (5 req/min on `/api/auth/`), and seamless JWT Token Rotation.
+- 💎 **Premium UI/UX** — CSS Shimmer skeleton loading screens, state boundary screens, iOS/Android glassmorphic bottom navigation with haptic feedback, and a unified Toast notification system.
+- 🔖 **Cloud Bookmarks** — Secure user bookmarks synced via JWT authentication.
+- 📿 **Tasbih & Tools** — Digital dhikr counter with vibration feedback, Qibla compass with GPS/manual coordinates, Hijri calendar, and Daily Duas.
+- 📤 **Social Sharing** — One-click Ayah and Qibla sharing with Web Share API and clipboard fallback.
 
 ---
 
