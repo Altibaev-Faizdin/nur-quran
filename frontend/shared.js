@@ -17,7 +17,7 @@ var _prayerTimers = [];
 
 // ── API BASE ──
 const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const API_BASE = isLocal ? 'http://localhost:8000/api' : '/api'; // Handled by Netlify proxy in production
+const API_BASE = localStorage.getItem('api_base') || (isLocal ? 'https://nur-quran.onrender.com/api' : '/api');
 
 // ── RECITERS DATA ──
 // Alafasy removed; Sherif Mostafa and Sheikh Saud Al-Juma'a added.
