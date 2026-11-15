@@ -7,7 +7,7 @@
   <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
   <meta property="og:title" content="Noor Al-Quran — نور القرآن">
   <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:image" content="/assets/images/logo.svg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="/manifest.json">
@@ -80,6 +80,22 @@
     <div class="rhen" id="ren">—</div>
   </div>
   <div class="rbis" id="rbis">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
+
+  <!-- FLOATING READING CONTROLS -->
+  <div class="reading-controls">
+    <div class="rc-group">
+      <span class="rc-label">Font:</span>
+      <button class="rc-btn rc-size-btn" onclick="changeAyahFontSize(-0.15)" title="Decrease font size" aria-label="Decrease font size">A−</button>
+      <button class="rc-btn rc-size-btn" onclick="changeAyahFontSize(0.15)" title="Increase font size" aria-label="Increase font size">A+</button>
+    </div>
+    <div class="rc-group">
+      <span class="rc-label">View:</span>
+      <button class="rc-btn active" data-view-mode="both" onclick="setQuranViewMode('both')">With Translation</button>
+      <button class="rc-btn" data-view-mode="arabic-only" onclick="setQuranViewMode('arabic-only')">Arabic Only</button>
+      <button class="rc-btn" data-view-mode="translit" onclick="setQuranViewMode('translit')">With Translit</button>
+    </div>
+  </div>
+
   <div class="alist" id="alist"><div class="rload">Select a surah ✨</div></div>
 </div>
 
@@ -90,11 +106,13 @@
     <button class="cb csk" onclick="prevA()" aria-label="Previous ayah">⏮</button>
     <button class="cb cpl" id="plbtn" onclick="togPlay()" aria-label="Play or pause">▶</button>
     <button class="cb csk" onclick="nextA()" aria-label="Next ayah">⏭</button>
+    <button class="abar-btn" id="speedBtn" onclick="cycleAudioSpeed()" title="Playback speed" aria-label="Playback speed">1x</button>
+    <button class="abar-btn" id="loopBtn" onclick="cycleAudioLoop()" title="Loop ayah" aria-label="Loop ayah">🔁 Off</button>
   </div>
   <div class="prog"><div class="pb"><div class="pf" id="pf"></div></div></div>
   <button class="cb csk" onclick="closeAudio()" style="font-size:.85rem" aria-label="Close player">✕</button>
 </div>
-<audio id="aud" ontimeupdate="updProg()" onended="nextA()"></audio>
+<audio id="aud" ontimeupdate="updProg()" onended="onAyahEnded()"></audio>
 
 <!-- ADHAN -->
 <div class="adhan" id="adhan">
@@ -109,9 +127,21 @@
 <script>
 
 let CUR=null,CAY=1,PLAYING=false,CLANG='en';
+let _localLoopCount=0;
 
 function renderS(list){
-  document.getElementById('grid').innerHTML=list.map(s=>`
+  const grid = document.getElementById('grid');
+  if (!list || list.length === 0) {
+    grid.innerHTML = getEmptyStateHTML({
+      icon: '🔍',
+      title: 'No Surahs Found',
+      description: 'Try searching by surah name in Arabic, English, or by chapter number.',
+      actionText: 'Show All Surahs',
+      actionFn: 'filterS("")'
+    });
+    return;
+  }
+  grid.innerHTML=list.map(s=>`
     <div class="si" onclick="openS(${s.n})">
       <div class="snum">${safeHTML(String(s.n))}</div>
       <div class="sinf">
@@ -123,13 +153,20 @@ function renderS(list){
 }
 renderS(window.SURAHS);
 
-function filterS(q){renderS(window.SURAHS.filter(s=>s.en.toLowerCase().includes(q.toLowerCase())||s.ar.includes(q)||String(s.n).includes(q)));}
+function filterS(q){
+  const query = (q || '').trim().toLowerCase();
+  if (!query) {
+    renderS(window.SURAHS);
+    return;
+  }
+  renderS(window.SURAHS.filter(s=>s.en.toLowerCase().includes(query)||s.ar.includes(query)||String(s.n).includes(query)));
+}
 
 document.addEventListener('DOMContentLoaded', () => {
   const params = new URLSearchParams(window.location.search);
   const surahParam = params.get('surah');
   if (surahParam) {
-    openS(parseInt(surahParam)).then(() => {
+    openS(parseInt(surahParam, 10)).then(() => {
       setTimeout(() => {
         if(window.location.hash) {
           const el = document.querySelector(window.location.hash);
@@ -142,51 +179,145 @@ document.addEventListener('DOMContentLoaded', () => {
 
 async function openS(n){
   const s=window.SURAHS.find(x=>x.n===n);if(!s)return;
-  CUR=s;CAY=1;
+  CUR=s;CAY=1;_localLoopCount=0;
   set('rn','SURAH '+n);set('rar',s.ar);set('ren',s.en);
   document.getElementById('rbis').style.display=n===9?'none':'block';
   document.getElementById('reader').classList.add('open');
   document.getElementById('abar').classList.add('show');
   set('asn',s.ar+' — '+s.en);
-  document.getElementById('alist').innerHTML='<div class="rload">Loading verses... 🌙</div>';
+  document.getElementById('alist').innerHTML=getAyahSkeletons(6);
+
+  applyReadingSettings();
 
   const lang = CLANG || 'en';
   try{
     const r=await fetch(`${API_BASE}/surahs/${n}/?lang=${lang}`);
+    if(!r.ok) throw new Error('Network error');
     const d=await r.json();
     if(d.code===200){
-      const ar=d.data[0].ayahs,tr=d.data[1].ayahs;
-      document.getElementById('alist').innerHTML=ar.map((a,i)=>`
+      const ar=d.data[0].ayahs;
+      const tr=(d.data[1] && d.data[1].ayahs) || [];
+      const translit=(d.data[2] && d.data[2].ayahs) || [];
+      document.getElementById('alist').innerHTML=ar.map((a,i)=>{
+        const trText = (tr[i] && tr[i].text) || '';
+        const translitText = (translit[i] && translit[i].text) || '';
+        const arEsc = (a.text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        const trEsc = trText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        return `
         <div class="ac" id="ay${a.numberInSurah}">
           <div class="at">
             <span class="anum">${safeHTML(String(a.numberInSurah))}</span>
             <div class="aact">
               <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button>
               <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">🔖</button>
+              <button class="abtn" onclick="shareAyah(${n},${a.numberInSurah},'${arEsc}','${trEsc}')" title="Share" aria-label="Share ayah">📤</button>
             </div>
           </div>
           <div class="aarb">${safeHTML(a.text)}</div>
-          <div class="aen">${safeHTML(tr[i].text)}</div>
-        </div>`).join('');
+          ${trText ? `<div class="aen">${safeHTML(trText)}</div>` : ''}
+          ${translitText ? `<div class="atrn">${safeHTML(translitText)}</div>` : ''}
+        </div>`;
+      }).join('');
+      applyReadingSettings();
+    } else {
+      throw new Error(d.message || 'Error');
     }
-  }catch(e){document.getElementById('alist').innerHTML='<div class="rload" style="color:#e05050">⚠️ Check internet connection</div>';}
+  }catch(e){
+    document.getElementById('alist').innerHTML=getErrorStateHTML({
+      title: 'Failed to load verses',
+      description: 'Unable to reach the Quran server. Please check your network connection.',
+      onRetry: `openS(${n})`
+    });
+  }
 }
 
-function closeR(){document.getElementById('reader').classList.remove('open');}
+function closeR(){
+  document.getElementById('reader').classList.remove('open');
+}
 
 function playAyahQuran(s,a){
   CAY=a;
+  if (!CUR || CUR.n !== s) {
+    CUR = (window.SURAHS || []).find(x => x.n === s) || { n: s, ar: 'سورة', en: 'Surah ' + s };
+  }
+  const sObj = (window.SURAHS || []).find(x => x.n === s);
   const num=window.SURAHS.slice(0,s-1).reduce((acc,x)=>acc+(x.v||0),0)+a;
-  document.getElementById('aud').src=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
-  document.getElementById('aud').play().catch(function(){});
+  const aud = document.getElementById('aud');
+  aud.src=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
+  if (window._audioSpeed) aud.playbackRate = window._audioSpeed;
+  aud.play().catch(function(){});
   PLAYING=true;set('plbtn','⏸');
-  document.getElementById('ay'+a)?.scrollIntoView({behavior:'smooth',block:'center'});
+  document.getElementById('abar').classList.add('show');
+  set('asn', (sObj ? sObj.ar + ' — ' + sObj.en : 'Surah ' + s) + ' : Ayah ' + a);
+  
+  highlightPlayingAyah(a);
+  updateMediaSession(sObj ? sObj.en : ('Surah ' + s), a, 'Mishary Alafasy');
 }
-function togPlay(){const a=document.getElementById('aud');if(PLAYING){a.pause();PLAYING=false;set('plbtn','▶');}else{a.play().catch(function(){});PLAYING=true;set('plbtn','⏸');}}
-function nextA(){if(CUR)playAyahQuran(CUR.n,Math.min(CAY+1,CUR.v||999));}
-function prevA(){if(CUR&&CAY>1)playAyahQuran(CUR.n,CAY-1);}
+
+function togPlay(){
+  const a=document.getElementById('aud');
+  if(PLAYING){
+    a.pause();
+    PLAYING=false;
+    set('plbtn','▶');
+  }else{
+    if(!a.src && CUR){
+      playAyahQuran(CUR.n, CAY);
+      return;
+    }
+    a.play().catch(function(){});
+    PLAYING=true;
+    set('plbtn','⏸');
+  }
+}
+
+function nextA(){
+  if(CUR){
+    const maxV = CUR.v || 999;
+    if (CAY < maxV) {
+      playAyahQuran(CUR.n, CAY + 1);
+    } else if (CUR.n < 114) {
+      openS(CUR.n + 1);
+      playAyahQuran(CUR.n + 1, 1);
+    }
+  }
+}
+
+function prevA(){
+  if(CUR && CAY > 1){
+    playAyahQuran(CUR.n, CAY - 1);
+  }
+}
+
+function onAyahEnded() {
+  const loopMode = window._audioLoopMode || 'off';
+  if (loopMode === 'inf') {
+    if (CUR) playAyahQuran(CUR.n, CAY);
+    return;
+  }
+  if (loopMode === '3x') {
+    _localLoopCount++;
+    if (_localLoopCount < 3) {
+      if (CUR) playAyahQuran(CUR.n, CAY);
+      return;
+    }
+    _localLoopCount = 0;
+  }
+  if (loopMode === '1x') {
+    PLAYING = false;
+    set('plbtn', '▶');
+    return;
+  }
+  nextA();
+}
+
 function updProg(){const a=document.getElementById('aud');if(a.duration)document.getElementById('pf').style.width=(a.currentTime/a.duration*100)+'%';}
-function closeAudio(){document.getElementById('abar').classList.remove('show');document.getElementById('aud').pause();PLAYING=false;}
+function closeAudio(){
+  document.getElementById('abar').classList.remove('show');
+  document.getElementById('aud').pause();
+  PLAYING=false;
+  document.querySelectorAll('.ac.playing').forEach(el => el.classList.remove('playing'));
+}
 
 document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);});
 </script>

@@ -7,7 +7,7 @@
   <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
   <meta property="og:title" content="Noor Al-Quran — نور القرآن">
   <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:image" content="/assets/images/logo.svg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="/manifest.json">
@@ -300,20 +300,20 @@
       if(lon===null)return;
       userLat=parseFloat(lat);
       userLon=parseFloat(lon);
-      if(isNaN(userLat)||isNaN(userLon)){alert('Invalid coordinates');return;}
+      if(isNaN(userLat)||isNaN(userLon)){showToast('Invalid coordinates', 'warning');return;}
       updateDisplay();
       document.getElementById('statusText').textContent='✓ Manual location set';
       document.querySelector('.status-indicator').className='status-indicator status-active';
     }
 
     function shareLocation(){
-      if(!userLat||!userLon){alert('Please get your location first');return;}
+      if(!userLat||!userLon){showToast('Please get your location first', 'warning');return;}
       const text=`I'm at ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°. Qibla direction: ${Math.round(calculateQiblaBearing(userLat,userLon))}°`;
       if(navigator.share){
         navigator.share({title:'My Qibla Direction',text:text}).catch(e=>console.log(e));
       }else{
         navigator.clipboard.writeText(text);
-        alert('Copied to clipboard!');
+        showToast('Qibla coordinates copied to clipboard! 📋', 'success');
       }
     }
 

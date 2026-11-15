@@ -65,7 +65,7 @@ If you prefer using Docker, you can create a `docker-compose.yml` that builds th
 
 ## 🚀 Deployment (Production)
 
-This project is fully ready for deployment on platforms like **Render**, **Railway**, or a standard **Ubuntu VPS**.
+This project is fully ready for deployment on platforms like **Render**, **Railway**, or a standard **Ubuntu / Linux VPS**.
 
 ### Deployment Checklist:
 1. Set `DEBUG=False` in your production environment.

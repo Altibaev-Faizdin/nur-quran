@@ -16,8 +16,10 @@ from rest_framework.response import Response
 from rest_framework.throttling import UserRateThrottle, AnonRateThrottle
 from django.contrib.auth.models import User
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
+from django.core.validators import validate_email
 import re
 
 from .models import Bookmark, PrayerNotification
@@ -318,18 +320,24 @@ def health_check(request):
     """
     return Response({'status': 'ok'})
 
-class RegisterRateThrottle(AnonRateThrottle):
-    """Strict rate limit for registration to prevent abuse."""
-    rate = '10/hour'
-    scope = 'register'
+class AuthRateThrottle(AnonRateThrottle):
+    """Strict rate limit of 5 requests per minute for authentication endpoints to prevent brute-force."""
+    rate = '5/min'
+    scope = 'auth'
+
+
+class CustomTokenObtainPairView(TokenObtainPairView):
+    """TokenObtainPairView with rate limiting (5 req/min)"""
+    throttle_classes = [AuthRateThrottle]
 
 
 @api_view(['POST'])
 @permission_classes([AllowAny])
-@throttle_classes([RegisterRateThrottle])
+@throttle_classes([AuthRateThrottle])
 def register_user(request):
     username = request.data.get('username', '').strip()
     password = request.data.get('password', '')
+    email = request.data.get('email', '').strip()
 
     # Field presence check
     if not username or not password:
@@ -342,25 +350,43 @@ def register_user(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    # Username format: only letters, digits, underscores, hyphens
-    if not re.match(r'^[\w\-]+$', username):
+    # Username format: only alphanumeric, underscores, hyphens (prevents script/injection chars)
+    if not re.match(r'^[a-zA-Z0-9_\-]+$', username):
         return Response(
             {'error': 'Username may only contain letters, digits, underscores, and hyphens.'},
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Strict email validation if provided
+    if email:
+        try:
+            validate_email(email)
+        except DjangoValidationError:
+            return Response({'error': 'Invalid email address format.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    # Password complexity: minimum 8 characters
+    if len(password) < 8:
+        return Response(
+            {'error': 'Password must be at least 8 characters long.'},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
     if User.objects.filter(username=username).exists():
         return Response({'error': 'Username already exists.'}, status=status.HTTP_400_BAD_REQUEST)
 
+    if email and User.objects.filter(email=email).exists():
+        return Response({'error': 'An account with this email already exists.'}, status=status.HTTP_400_BAD_REQUEST)
+
     try:
         validate_password(password)
     except DjangoValidationError as e:
         return Response({'error': list(e.messages)}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.create_user(username=username, password=password)
+    user = User.objects.create_user(username=username, password=password, email=email)
     refresh = RefreshToken.for_user(user)
     return Response({
         'refresh': str(refresh),
         'access': str(refresh.access_token),
         'username': user.username,
+        'email': user.email,
     }, status=status.HTTP_201_CREATED)

@@ -275,6 +275,66 @@ const HMA = ['مُحَرَّم', 'صَفَر', 'رَبِيع الأَوَّل', 
 // ── DOM HELPER ──
 function set(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
 
+// ── ASTRONOMICAL OFFLINE PRAYER TIMES CALCULATION ──
+function calculateOfflinePrayerTimes(latitude, longitude, date) {
+  date = date || new Date();
+  var rad = function(d) { return d * Math.PI / 180; };
+  var deg = function(r) { return r * 180 / Math.PI; };
+  var fixHour = function(h) { h = h - 24 * Math.floor(h / 24); return h < 0 ? h + 24 : h; };
+
+  var year = date.getFullYear();
+  var month = date.getMonth() + 1;
+  var day = date.getDate();
+  var D = (367 * year) - Math.floor((7 * (year + Math.floor((month + 9) / 12))) / 4) + Math.floor((275 * month) / 9) + day - 730531.5;
+
+  var L = fixHour(280.461 + 0.9856474 * D);
+  var M = fixHour(357.528 + 0.9856003 * D);
+  var Lambda = fixHour(L + 1.915 * Math.sin(rad(M)) + 0.020 * Math.sin(rad(2 * M)));
+  var obliq = 23.439 - 0.0000004 * D;
+  var alpha = deg(Math.atan2(Math.cos(rad(obliq)) * Math.sin(rad(Lambda)), Math.cos(rad(Lambda)))) / 15;
+  var delta = deg(Math.asin(Math.sin(rad(obliq)) * Math.sin(rad(Lambda))));
+  var equationOfTime = (L / 15) - fixHour(alpha);
+
+  var timezone = -date.getTimezoneOffset() / 60;
+  var noon = fixHour(12 + timezone - (longitude / 15) - equationOfTime);
+
+  var sunAngleTime = function(angle, direction) {
+    var val = (-Math.sin(rad(angle)) - Math.sin(rad(latitude)) * Math.sin(rad(delta))) /
+              (Math.cos(rad(latitude)) * Math.cos(rad(delta)));
+    if (val > 1 || val < -1) return null;
+    var hourAngle = deg(Math.acos(val)) / 15;
+    return fixHour(noon + (direction * hourAngle));
+  };
+
+  var asrTime = function() {
+    var diff = Math.abs(latitude - delta);
+    var angle = deg(Math.atan(1 + Math.tan(rad(diff))));
+    var val = (Math.sin(rad(90 - angle)) - Math.sin(rad(latitude)) * Math.sin(rad(delta))) /
+              (Math.cos(rad(latitude)) * Math.cos(rad(delta)));
+    if (val > 1 || val < -1) return fixHour(noon + 3.2);
+    var hourAngle = deg(Math.acos(val)) / 15;
+    return fixHour(noon + hourAngle);
+  };
+
+  var toHHMM = function(floatHour) {
+    if (floatHour === null || isNaN(floatHour)) return '--:--';
+    floatHour = fixHour(floatHour + 0.5 / 60);
+    var h = Math.floor(floatHour);
+    var m = Math.floor((floatHour - h) * 60);
+    return (h < 10 ? '0' : '') + h + ':' + (m < 10 ? '0' : '') + m;
+  };
+
+  return {
+    Fajr: toHHMM(sunAngleTime(18, -1)),
+    Sunrise: toHHMM(sunAngleTime(0.833, -1)),
+    Dhuhr: toHHMM(noon),
+    Asr: toHHMM(asrTime()),
+    Maghrib: toHHMM(sunAngleTime(0.833, 1)),
+    Isha: toHHMM(sunAngleTime(17, 1))
+  };
+}
+window.calculateOfflinePrayerTimes = calculateOfflinePrayerTimes;
+
 // ── PRAYER TIMES ──
 function loadPrayer() {
   // Check localStorage cache (TTL: 30 minutes)
@@ -296,12 +356,22 @@ function loadPrayer() {
   }
 
   var err = function() {
-    set('ft', 'Err'); set('srt', 'Err'); set('dt', 'Err');
-    set('at', 'Err'); set('mt', 'Err'); set('it', 'Err');
+    var lastCoords = null;
+    try {
+      var raw = localStorage.getItem('last_coords');
+      if (raw) lastCoords = JSON.parse(raw);
+    } catch(e) {}
+    var la = lastCoords ? lastCoords.lat : 21.3891;
+    var lo = lastCoords ? lastCoords.lng : 39.8579;
+    var t = calculateOfflinePrayerTimes(la, lo);
+    set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
+    set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
+    hlPrayer(t); schedulePrayer(t);
     const b = document.querySelector('.pbar .bsm');
-    if (b) b.textContent = "Allow Location";
+    if (b) b.textContent = "📍 Offline Calc";
   };
   var fetchPrayer = function (la, lo) {
+    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {}
     fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(r => r.json()).then(d => {
         const t = d.data.timings;
@@ -439,9 +509,57 @@ function setLang(l, btn) {
   document.dispatchEvent(new CustomEvent('langChange', { detail: l }));
 }
 
+// ── ONLINE / OFFLINE STATUS TRACKER ──
+function initNetworkTracker() {
+  var banner = document.getElementById('noor-offline-banner');
+  if (!banner) {
+    banner = document.createElement('div');
+    banner.id = 'noor-offline-banner';
+    banner.className = 'noor-offline-banner';
+    var text = (window.LANG === 'ru' ? 'Нет подключения к сети' : (window.LANG === 'uz' ? "Internetga ulanish yo'q" : 'No internet connection'));
+    banner.innerHTML = '<span>⚡</span> <span>' + text + '</span>';
+    document.body.prepend(banner);
+  }
+
+  function updateStatus() {
+    if (!navigator.onLine) {
+      banner.classList.add('show');
+    } else {
+      if (banner.classList.contains('show')) {
+        banner.classList.remove('show');
+        var backText = (window.LANG === 'ru' ? 'Подключение к сети восстановлено' : (window.LANG === 'uz' ? 'Internetga ulanish tiklandi' : 'Back online'));
+        showToast(backText, 'success', 3000);
+      }
+    }
+  }
+
+  window.addEventListener('online', updateStatus);
+  window.addEventListener('offline', updateStatus);
+  if (!navigator.onLine) banner.classList.add('show');
+}
+window.initNetworkTracker = initNetworkTracker;
+
+// ── SERVICE WORKER REGISTRATION ──
+if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || isLocal)) {
+  window.addEventListener('load', function() {
+    var swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
+    navigator.serviceWorker.register(swPath).catch(function() {});
+  });
+}
+
 document.addEventListener('DOMContentLoaded', function () {
   // Global init
   checkAuthVisibility();
+  initNetworkTracker();
+  applyReadingSettings();
+
+  // Mobile navigation haptic feedback
+  document.querySelectorAll('.mob-nav a').forEach(function(el) {
+    el.addEventListener('click', function() {
+      if (navigator.vibrate) navigator.vibrate(12);
+    });
+  });
+
   var savedAdhan = localStorage.getItem('adhan_reciter');
   var adhanSel = document.getElementById('adhanReciterSel');
   if (adhanSel && savedAdhan) adhanSel.value = savedAdhan;
@@ -492,41 +610,345 @@ window.toggleLanguageMenu = function() {
 };
 
 
-window.authFetch = async function(url, options = {}) {
+// ── JWT SESSION & SEAMLESS TOKEN ROTATION ──
+function parseJwt(token) {
+  if (!token || typeof token !== 'string') return null;
+  try {
+    const base64Url = token.split('.')[1];
+    if (!base64Url) return null;
+    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+      return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
+    }).join(''));
+    return JSON.parse(jsonPayload);
+  } catch (e) {
+    return null;
+  }
+}
+window.parseJwt = parseJwt;
+
+function isTokenValid(token, bufferSeconds) {
+  if (!token) return false;
+  bufferSeconds = bufferSeconds !== undefined ? bufferSeconds : 30;
+  const payload = parseJwt(token);
+  if (!payload || !payload.exp) return false;
+  const now = Math.floor(Date.now() / 1000);
+  return payload.exp > (now + bufferSeconds);
+}
+window.isTokenValid = isTokenValid;
+
+let _refreshPromise = null;
+async function refreshAccessToken() {
+  if (_refreshPromise) return _refreshPromise;
+
+  _refreshPromise = (async function() {
+    const refresh = localStorage.getItem('refresh_token');
+    if (!refresh) throw new Error('No refresh token available');
+
+    if (!isTokenValid(refresh, 5)) {
+      window.doLogout();
+      throw new Error('Refresh token expired');
+    }
+
+    let res;
+    try {
+      res = await fetch(`${API_BASE}/token/refresh/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: refresh })
+      });
+      if (!res.ok) {
+        res = await fetch(`${API_BASE}/auth/refresh/`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ refresh: refresh })
+        });
+      }
+    } catch (netErr) {
+      throw netErr;
+    }
+
+    if (res.ok) {
+      const data = await res.json();
+      if (data.access) localStorage.setItem('access_token', data.access);
+      if (data.refresh) localStorage.setItem('refresh_token', data.refresh);
+      return data.access;
+    } else {
+      window.doLogout();
+      throw new Error('Refresh rejected');
+    }
+  })().finally(function() {
+    _refreshPromise = null;
+  });
+
+  return _refreshPromise;
+}
+window.refreshAccessToken = refreshAccessToken;
+
+window.authFetch = async function(url, options) {
+  options = options || {};
   let token = localStorage.getItem('access_token');
+
+  // Preemptive validation: if access token expired or expiring soon, refresh before request
+  if (token && !isTokenValid(token, 30)) {
+    try {
+      token = await refreshAccessToken();
+    } catch (e) {
+      token = null;
+    }
+  }
+
   if (!options.headers) options.headers = {};
   if (token) options.headers['Authorization'] = `Bearer ${token}`;
-  
-  let res = await fetch(url, options);
-  
+
+  let res;
+  try {
+    res = await fetch(url, options);
+  } catch (err) {
+    throw err;
+  }
+
+  // Intercept 401: seamless Token Rotation and automatic retry
   if (res.status === 401) {
-    const refresh = localStorage.getItem('refresh_token');
-    if (refresh) {
-      const refRes = await fetch(`${API_BASE}/auth/refresh/`, {
-        method: 'POST',
-        headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({refresh: refresh})
-      });
-      if (refRes.ok) {
-        const refData = await refRes.json();
-        localStorage.setItem('access_token', refData.access);
-        options.headers['Authorization'] = `Bearer ${refData.access}`;
+    try {
+      const newToken = await refreshAccessToken();
+      if (newToken) {
+        options.headers['Authorization'] = `Bearer ${newToken}`;
         res = await fetch(url, options);
-      } else {
-        window.doLogout();
       }
-    } else {
+    } catch (e) {
       window.doLogout();
     }
   }
   return res;
 };
 
+// ── SKELETON / SHIMMER LOADERS ──
+function getSurahSkeletons(count) {
+  count = count || 12;
+  var html = '<div class="skeleton-grid">';
+  for (var i = 0; i < count; i++) {
+    html += '<div class="skeleton-card">' +
+              '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+                '<div class="skeleton skeleton-circle"></div>' +
+                '<div style="flex:1">' +
+                  '<div class="skeleton skeleton-line h-title"></div>' +
+                  '<div class="skeleton skeleton-line short"></div>' +
+                '</div>' +
+              '</div>' +
+              '<div class="skeleton skeleton-line mid"></div>' +
+            '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+window.getSurahSkeletons = getSurahSkeletons;
+
+function getAyahSkeletons(count) {
+  count = count || 6;
+  var html = '';
+  for (var i = 0; i < count; i++) {
+    html += '<div class="ac card skeleton-card" style="margin-bottom:14px">' +
+              '<div class="at" style="margin-bottom:16px">' +
+                '<div class="skeleton" style="width:28px;height:22px;border-radius:12px"></div>' +
+                '<div class="skeleton" style="width:60px;height:24px;border-radius:6px"></div>' +
+              '</div>' +
+              '<div class="skeleton skeleton-line long" style="height:26px;margin-bottom:12px"></div>' +
+              '<div class="skeleton skeleton-line mid" style="height:24px;margin-bottom:16px"></div>' +
+              '<div class="skeleton skeleton-line long" style="height:14px"></div>' +
+              '<div class="skeleton skeleton-line short" style="height:14px"></div>' +
+            '</div>';
+  }
+  return html;
+}
+window.getAyahSkeletons = getAyahSkeletons;
+
+function getNamesSkeletons(count) {
+  count = count || 16;
+  var html = '<div class="skeleton-names-grid">';
+  for (var i = 0; i < count; i++) {
+    html += '<div class="nc card skeleton-card" style="padding:24px 16px;text-align:center">' +
+              '<div class="skeleton" style="width:24px;height:16px;margin:0 auto 12px;border-radius:10px"></div>' +
+              '<div class="skeleton" style="width:70%;height:32px;margin:0 auto 10px;border-radius:8px"></div>' +
+              '<div class="skeleton skeleton-line short" style="margin:0 auto 6px"></div>' +
+              '<div class="skeleton skeleton-line mid" style="margin:0 auto"></div>' +
+            '</div>';
+  }
+  html += '</div>';
+  return html;
+}
+window.getNamesSkeletons = getNamesSkeletons;
+
+// ── EMPTY & ERROR STATE GENERATORS ──
+function getEmptyStateHTML(opts) {
+  opts = opts || {};
+  var icon = opts.icon || '📖';
+  var title = opts.title || 'No Items Found';
+  var desc = opts.description || '';
+  var actText = opts.actionText || '';
+  var actFn = opts.actionFn || '';
+  return '<div class="state-card">' +
+           '<div class="state-icon">' + icon + '</div>' +
+           '<h3 class="state-title">' + safeHTML(title) + '</h3>' +
+           (desc ? '<p class="state-desc">' + safeHTML(desc) + '</p>' : '') +
+           (actText && actFn ? '<button class="state-btn" onclick="' + actFn + '">' + safeHTML(actText) + '</button>' : '') +
+         '</div>';
+}
+window.getEmptyStateHTML = getEmptyStateHTML;
+
+function getErrorStateHTML(opts) {
+  opts = opts || {};
+  var title = opts.title || 'Something went wrong';
+  var desc = opts.description || 'Unable to load content. Please check your network connection.';
+  var onRetry = opts.onRetry || 'location.reload()';
+  return '<div class="state-card" style="border-color:rgba(231,76,60,0.3)">' +
+           '<div class="state-icon">⚠️</div>' +
+           '<h3 class="state-title">' + safeHTML(title) + '</h3>' +
+           '<p class="state-desc">' + safeHTML(desc) + '</p>' +
+           '<button class="state-btn" onclick="' + onRetry + '">↻ Retry</button>' +
+         '</div>';
+}
+window.getErrorStateHTML = getErrorStateHTML;
+
+// ── AYAH SHARING HELPER ──
+window.shareAyah = async function(surahNum, ayahNum, arText, trText) {
+  var surah = (window.SURAHS || []).find(function(s) { return s.n === surahNum; });
+  var surahName = surah ? surah.en + ' (' + surah.ar + ')' : 'Surah ' + surahNum;
+  var shareUrl = window.location.origin + '/pages/quran.html?surah=' + surahNum + '#ay' + ayahNum;
+  var shareText = '📖 ' + surahName + ' [' + surahNum + ':' + ayahNum + ']\n\n' +
+                  arText + '\n\n' +
+                  (trText ? '«' + trText + '»\n\n' : '') +
+                  '🌙 Read on Noor Al-Quran:\n' + shareUrl;
+
+  if (navigator.share) {
+    try {
+      await navigator.share({
+        title: surahName + ' — Ayah ' + ayahNum,
+        text: shareText,
+        url: shareUrl
+      });
+      return;
+    } catch (e) {
+      // User dismissed or share error
+    }
+  }
+
+  try {
+    await navigator.clipboard.writeText(shareText);
+    showToast('Ayah copied to clipboard! 📋', 'success');
+  } catch (e) {
+    var ta = document.createElement('textarea');
+    ta.value = shareText;
+    document.body.appendChild(ta);
+    ta.select();
+    document.execCommand('copy');
+    ta.remove();
+    showToast('Ayah copied to clipboard! 📋', 'success');
+  }
+};
+
+// ── READING CONTROLS ──
+var _currentFontSize = parseFloat(localStorage.getItem('quran_font_size')) || 1.7;
+var _currentViewMode = localStorage.getItem('quran_view_mode') || 'both';
+
+function applyReadingSettings() {
+  document.documentElement.style.setProperty('--ayah-font-size', _currentFontSize + 'rem');
+  var alist = document.getElementById('alist');
+  if (alist) {
+    alist.classList.remove('view-both', 'view-arabic-only', 'view-translit');
+    alist.classList.add('view-' + _currentViewMode);
+  }
+  document.querySelectorAll('[data-view-mode]').forEach(function(btn) {
+    btn.classList.toggle('active', btn.getAttribute('data-view-mode') === _currentViewMode);
+  });
+}
+window.applyReadingSettings = applyReadingSettings;
+
+window.changeAyahFontSize = function(delta) {
+  _currentFontSize = Math.min(2.8, Math.max(1.2, _currentFontSize + delta));
+  localStorage.setItem('quran_font_size', _currentFontSize.toFixed(2));
+  applyReadingSettings();
+};
+
+window.setQuranViewMode = function(mode) {
+  _currentViewMode = mode;
+  localStorage.setItem('quran_view_mode', mode);
+  applyReadingSettings();
+};
+
+// ── ADVANCED AUDIO PLAYER ENGINE ──
+var _audioSpeed = 1;
+var AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5];
+var _audioLoopMode = 'off'; // 'off' | '1x' | '3x' | 'inf'
+var _loopCounter = 0;
+
+window.cycleAudioSpeed = function() {
+  var idx = AUDIO_SPEEDS.indexOf(_audioSpeed);
+  _audioSpeed = AUDIO_SPEEDS[(idx + 1) % AUDIO_SPEEDS.length];
+  var aud = document.getElementById('aud');
+  if (aud) aud.playbackRate = _audioSpeed;
+  var btn = document.getElementById('speedBtn');
+  if (btn) btn.textContent = _audioSpeed + 'x';
+  showToast('Playback speed: ' + _audioSpeed + 'x', 'info', 1500);
+};
+
+window.cycleAudioLoop = function() {
+  var modes = ['off', '1x', '3x', 'inf'];
+  var labels = { off: 'Loop: Off', '1x': 'Loop: 1x', '3x': 'Repeat 3x', inf: 'Loop: ∞' };
+  var idx = modes.indexOf(_audioLoopMode);
+  _audioLoopMode = modes[(idx + 1) % modes.length];
+  _loopCounter = 0;
+  var btn = document.getElementById('loopBtn');
+  if (btn) {
+    btn.textContent = _audioLoopMode === 'off' ? '🔁 Off' : _audioLoopMode === 'inf' ? '🔁 ∞' : '🔁 ' + _audioLoopMode;
+    btn.classList.toggle('active', _audioLoopMode !== 'off');
+  }
+  showToast(labels[_audioLoopMode], 'info', 1500);
+};
+
+function updateMediaSession(surahTitle, ayahNum, reciterName) {
+  if ('mediaSession' in navigator && window.MediaMetadata) {
+    try {
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: (surahTitle || 'The Holy Quran') + (ayahNum ? ' — Ayah ' + ayahNum : ''),
+        artist: reciterName || 'Noor Al-Quran',
+        album: 'The Holy Quran · القرآن الكريم',
+        artwork: [
+          { src: '../assets/images/logo.png', sizes: '192x192', type: 'image/png' },
+          { src: '../assets/images/logo.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+      navigator.mediaSession.setActionHandler('play', function() { if (typeof togPlay === 'function') togPlay(); });
+      navigator.mediaSession.setActionHandler('pause', function() { if (typeof togPlay === 'function') togPlay(); });
+      navigator.mediaSession.setActionHandler('previoustrack', function() { if (typeof prevA === 'function') prevA(); });
+      navigator.mediaSession.setActionHandler('nexttrack', function() { if (typeof nextA === 'function') nextA(); });
+      navigator.mediaSession.setActionHandler('seekto', function(details) {
+        var aud = document.getElementById('aud');
+        if (aud && details.seekTime) aud.currentTime = details.seekTime;
+      });
+    } catch (e) {}
+  }
+}
+window.updateMediaSession = updateMediaSession;
+
+function highlightPlayingAyah(ayahNum) {
+  document.querySelectorAll('.ac.playing').forEach(function(el) { el.classList.remove('playing'); });
+  var target = document.getElementById('ay' + ayahNum) || document.getElementById('ayah-' + ayahNum);
+  if (target) {
+    target.classList.add('playing');
+    target.scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+}
+window.highlightPlayingAyah = highlightPlayingAyah;
+
 // ── QURAN PAGE ──
 function loadSurahs() {
+  var grid = document.getElementById('grid');
+  if (grid) grid.innerHTML = getSurahSkeletons(12);
+
   fetch(`${API_BASE}/surahs/`)
     .then(function (r) { return r.json(); }).then(function (d) {
-      var grid = document.getElementById('grid'); if (!grid) return;
+      if (!grid) return;
       grid.innerHTML = '';
       d.data.forEach(function (s) {
         var div = document.createElement('div'); div.className = 'si card';
@@ -548,14 +970,25 @@ function loadSurahs() {
           }, 1000);
         }
       }
-    }).catch(function (e) { /* error handled */ });
+    }).catch(function (e) {
+      if (grid) {
+        grid.innerHTML = getErrorStateHTML({
+          title: 'Failed to load Surahs',
+          description: 'Could not fetch surah list. Please check your network connection.',
+          onRetry: 'loadSurahs()'
+        });
+      }
+    });
 }
 
 function openSurah(n, ar, en) {
   var r = document.getElementById('reader'); if (!r) return;
   set('rn', `SURAH ${n}`); set('rar', ar); set('ren', en);
-  var listEl = document.getElementById('alist'); if (listEl) listEl.innerHTML = '<div class="rload">Loading...</div>';
+  var listEl = document.getElementById('alist');
+  if (listEl) listEl.innerHTML = getAyahSkeletons(6);
   r.classList.add('open');
+  applyReadingSettings();
+
   fetch(`${API_BASE}/surahs/${n}/?lang=en`)
     .then(function (r) { return r.json(); }).then(function (d) {
       if (!listEl) return;
@@ -563,10 +996,20 @@ function openSurah(n, ar, en) {
       d.data[0].ayahs.forEach(function (a) {
         var c = document.createElement('div'); c.className = 'ac card';
         c.id = `ayah-${n}-${a.numberInSurah}`;
-        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button></div></div><div class="aarb">${safeHTML(a.text)}</div><div class="aen">${safeHTML(d.data[1]?.ayahs[a.numberInSurah - 1]?.text || '')}</div>`;
+        var trText = d.data[1]?.ayahs[a.numberInSurah - 1]?.text || '';
+        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah},\`${safeHTML(a.text).replace(/`/g, '\\`')}\`,\`${safeHTML(trText).replace(/`/g, '\\`')}\`)" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(a.text)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
         listEl.appendChild(c);
       });
-    }).catch(function () { if (listEl) listEl.innerHTML = '<div class="rload">Failed to load. Please try again.</div>'; });
+      applyReadingSettings();
+    }).catch(function () {
+      if (listEl) {
+        listEl.innerHTML = getErrorStateHTML({
+          title: 'Surah Unavailable',
+          description: 'Could not load verses for this surah. Please check your connection.',
+          onRetry: `openSurah(${n}, "${ar}", "${en}")`
+        });
+      }
+    });
 }
 function closeR() { var r = document.getElementById('reader'); if (r) r.classList.remove('open'); }
 
@@ -624,17 +1067,50 @@ function addBM(s, a) {
   }).catch(function () { showToast('No connection. Bookmark not saved.'); });
 }
 
-function showToast(msg) {
-  var t = document.getElementById('noor-toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'noor-toast';
-    t.style.cssText = 'position:fixed;bottom:90px;left:50%;transform:translateX(-50%);background:rgba(212,160,23,.95);color:#000;padding:10px 22px;border-radius:30px;font-size:.82rem;font-weight:700;z-index:9999;opacity:0;transition:opacity .3s;pointer-events:none;backdrop-filter:blur(10px)';
-    document.body.appendChild(t);
+// ── UNIFIED TOAST SYSTEM (Success, Warning, Error, Info) ──
+function showToast(msg, type, duration) {
+  type = type || 'info';
+  duration = duration !== undefined ? duration : 3500;
+
+  var container = document.getElementById('noor-toast-container');
+  if (!container) {
+    container = document.createElement('div');
+    container.id = 'noor-toast-container';
+    container.className = 'noor-toast-container';
+    document.body.appendChild(container);
   }
-  t.textContent = msg; t.style.opacity = '1';
-  setTimeout(function () { t.style.opacity = '0'; }, 2500);
+
+  var icons = {
+    success: '✓',
+    warning: '⚠',
+    error: '✕',
+    info: 'ℹ'
+  };
+
+  var toast = document.createElement('div');
+  toast.className = 'noor-toast toast-' + type;
+  toast.innerHTML = '<span class="noor-toast-icon">' + (icons[type] || '✨') + '</span>' +
+                    '<span class="noor-toast-msg">' + safeHTML(msg) + '</span>' +
+                    '<button class="noor-toast-close" aria-label="Dismiss">&times;</button>';
+
+  var closeBtn = toast.querySelector('.noor-toast-close');
+  var dismiss = function() {
+    toast.classList.remove('show');
+    setTimeout(function() { toast.remove(); }, 300);
+  };
+  if (closeBtn) closeBtn.onclick = function(e) { e.stopPropagation(); dismiss(); };
+  toast.onclick = dismiss;
+
+  container.appendChild(toast);
+  requestAnimationFrame(function() {
+    toast.classList.add('show');
+  });
+
+  if (duration > 0) {
+    setTimeout(dismiss, duration);
+  }
 }
+window.showToast = showToast;
 
 // ── RECITERS PAGE ──
 function loadReciters() {
@@ -739,12 +1215,23 @@ function onEnd() { stopSurah(); }
 // ── PRAYER PAGE ──
 function loadPrayerBig() {
   var err = function() {
-    set('bft', 'Err'); set('bst', 'Err'); set('bdt', 'Err');
-    set('bat', 'Err'); set('bmt', 'Err'); set('bit', 'Err');
+    var lastCoords = null;
+    try {
+      var raw = localStorage.getItem('last_coords');
+      if (raw) lastCoords = JSON.parse(raw);
+    } catch(e) {}
+    var la = lastCoords ? lastCoords.lat : 21.3891;
+    var lo = lastCoords ? lastCoords.lng : 39.8579;
+    var t = calculateOfflinePrayerTimes(la, lo);
+    set('bft', t.Fajr); set('bst', t.Sunrise); set('bdt', t.Dhuhr);
+    set('bat', t.Asr); set('bmt', t.Maghrib); set('bit', t.Isha);
+    updatePrayerCards(t);
+    hlPrayer(t); schedulePrayer(t);
     const msg = document.getElementById('pm-nxt');
-    if (msg) msg.textContent = "Location access blocked. Allow location to see prayer times.";
+    if (msg) msg.textContent = "Offline Mode: Prayer times calculated via astronomical math.";
   };
   var fetchPrayer = function (la, lo) {
+    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {}
     fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
       .then(function (r) { return r.json(); }).then(function (d) {
         var t = d.data.timings;
@@ -795,18 +1282,26 @@ function updatePrayerCards(t) {
 
 function loadNames() {
   var ng = document.getElementById('ng'); if (!ng) return;
-  ng.innerHTML = '<div class="rload">Loading... 🌙</div>';
+  ng.innerHTML = getNamesSkeletons(16);
   fetch(API_BASE + '/names/')
     .then(function (r) { return r.json(); })
     .then(function (d) {
       if (d.names && d.names.length) {
         renderNames(d.names);
       } else {
-        ng.innerHTML = '<div class="rload">Could not load names. Please try again.</div>';
+        ng.innerHTML = getErrorStateHTML({
+          title: 'Names Unavailable',
+          description: 'Could not load the 99 Names of Allah.',
+          onRetry: 'loadNames()'
+        });
       }
     })
     .catch(function () {
-      ng.innerHTML = '<div class="rload">No connection. Please check your internet.</div>';
+      ng.innerHTML = getErrorStateHTML({
+        title: 'Connection Error',
+        description: 'Unable to reach server to load Names of Allah.',
+        onRetry: 'loadNames()'
+      });
     });
 }
 

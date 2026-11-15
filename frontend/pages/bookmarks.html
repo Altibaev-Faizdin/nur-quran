@@ -7,7 +7,7 @@
   <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
   <meta property="og:title" content="Noor Al-Quran — نور القرآن">
   <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:image" content="/assets/img/og-image.png">
+  <meta property="og:image" content="/assets/images/logo.svg">
   <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="manifest" href="/manifest.json">
@@ -82,32 +82,48 @@
       const token = localStorage.getItem('access_token');
       if (!token) {
         container.innerHTML = `
-          <div class="bm-empty" style="padding-top:40px">
-            <div style="font-size:3rem;margin-bottom:15px">🔖</div>
-            <div style="margin-bottom:30px">Please login to view your bookmarks.</div>
-            <div style="display:flex;gap:15px;justify-content:center">
-              <button class="btn bo" onclick="window.location.href='login.html'">Login</button>
-              <button class="btn bf" onclick="window.location.href='register.html'">Register</button>
+          <div class="state-card">
+            <div class="state-icon">🔖</div>
+            <h3 class="state-title">Sign in to Access Bookmarks</h3>
+            <p class="state-desc">Your saved verses and reading progress sync securely across all your devices.</p>
+            <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
+              <button class="state-btn" onclick="window.location.href='login.html'">Login</button>
+              <button class="state-btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="window.location.href='register.html'">Register</button>
             </div>
           </div>
         `;
         return;
       }
 
+      container.innerHTML = getAyahSkeletons(4);
+
       try {
         const res = await authFetch(`${API_BASE}/bookmarks/`);
         if (!res.ok) {
           if (res.status === 401) {
-            container.innerHTML = '<div class="bm-empty">Session expired. Please login again.</div>';
+            container.innerHTML = getErrorStateHTML({
+              title: 'Session Expired',
+              description: 'Please sign in again to view your bookmarks.',
+              onRetry: "window.location.href='login.html'"
+            });
           } else {
-            container.innerHTML = '<div class="bm-empty">Failed to load bookmarks.</div>';
+            container.innerHTML = getErrorStateHTML({
+              title: 'Failed to Load Bookmarks',
+              onRetry: 'loadBookmarks()'
+            });
           }
           return;
         }
 
         const data = await res.json();
         if (!data || !data.results || data.results.length === 0) {
-          container.innerHTML = '<div class="bm-empty">You have no bookmarks yet.</div>';
+          container.innerHTML = getEmptyStateHTML({
+            icon: '🔖',
+            title: 'No Bookmarks Yet',
+            description: 'Save your favorite verses while reading to revisit them anytime.',
+            actionText: 'Explore Quran',
+            actionFn: "window.location.href='quran.html'"
+          });
           return;
         }
 
@@ -118,15 +134,19 @@
               <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at).toLocaleDateString())}</div>
             </div>
             <div class="bm-actions">
-              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" >Read</button>
-              <button class="bm-btn del" onclick="deleteBM(${bm.id})" >Delete</button>
+              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Read ayah">Read</button>
+              <button class="bm-btn del" onclick="deleteBM(${bm.id})" aria-label="Delete bookmark">Delete</button>
             </div>
           </div>
         `).join('');
 
       } catch (err) {
         console.error(err);
-        container.innerHTML = '<div class="bm-empty">An error occurred. Please check your connection.</div>';
+        container.innerHTML = getErrorStateHTML({
+          title: 'Connection Error',
+          description: 'Unable to reach the server. Please check your internet connection.',
+          onRetry: 'loadBookmarks()'
+        });
       }
     }
 
@@ -139,17 +159,24 @@
         });
         
         if (res.ok) {
-          document.getElementById(`bm-${id}`).remove();
-          showToast('Bookmark deleted');
+          const item = document.getElementById(`bm-${id}`);
+          if (item) item.remove();
+          showToast('Bookmark deleted', 'info');
           if (document.querySelectorAll('.bm-card').length === 0) {
-            document.getElementById('bm-list').innerHTML = '<div class="bm-empty">You have no bookmarks left.</div>';
+            document.getElementById('bm-list').innerHTML = getEmptyStateHTML({
+              icon: '🔖',
+              title: 'No Bookmarks Left',
+              description: 'Save verses while reading to revisit them anytime.',
+              actionText: 'Explore Quran',
+              actionFn: "window.location.href='quran.html'"
+            });
           }
         } else {
-          showToast('Failed to delete bookmark');
+          showToast('Failed to delete bookmark', 'error');
         }
       } catch (err) {
         console.error(err);
-        showToast('Network error');
+        showToast('Network error', 'error');
       }
     }
 

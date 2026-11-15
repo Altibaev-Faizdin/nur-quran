@@ -1,16 +1,20 @@
 {
-  "name": "Noor Al-Quran",
+  "name": "Noor Al-Quran — Holy Quran & Prayer Times",
   "short_name": "Noor Quran",
-  "description": "Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.",
-  "start_url": "/",
+  "description": "Read and listen to the Holy Quran, accurate prayer times, Qibla compass, Tasbih and Hadiths.",
+  "start_url": "/index.html",
+  "scope": "/",
   "display": "standalone",
-  "background_color": "#121212",
-  "theme_color": "#121212",
+  "orientation": "portrait-primary",
+  "background_color": "#020818",
+  "theme_color": "#020818",
+  "categories": ["lifestyle", "books", "education"],
   "icons": [
     {
-      "src": "data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>",
+      "src": "/assets/images/logo.svg",
       "type": "image/svg+xml",
-      "sizes": "512x512"
+      "sizes": "192x192 512x512",
+      "purpose": "any maskable"
     }
   ]
 }

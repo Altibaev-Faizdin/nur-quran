@@ -13,10 +13,12 @@ urlpatterns = [
     # Health check for Render
     path('health/', views.health_check, name='health-check'),
 
-    # Auth routes
+    # Auth routes (with rate limiting and aliases for JWT token refresh)
     path('auth/register/', views.register_user, name='auth-register'),
-    path('auth/login/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
+    path('auth/login/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair'),
     path('auth/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+    path('token/refresh/', TokenRefreshView.as_view(), name='token_refresh_alias'),
+    path('token/obtain/', views.CustomTokenObtainPairView.as_view(), name='token_obtain_pair_alias'),
 
     # ViewSet routes
     path('', include(router.urls)),
