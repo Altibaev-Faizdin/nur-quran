@@ -191,10 +191,8 @@ async function openS(n){
 
   const lang = CLANG || 'en';
   try{
-    const r=await fetch(`${API_BASE}/surahs/${n}/?lang=${lang}`);
-    if(!r.ok) throw new Error('Network error');
-    const d=await r.json();
-    if(d.code===200){
+    const d = await window.fetchSurahData(n, lang);
+    if(d && (d.code === 200 || d.data)){
       const ar=d.data[0].ayahs;
       const tr=(d.data[1] && d.data[1].ayahs) || [];
       const translit=(d.data[2] && d.data[2].ayahs) || [];
@@ -220,7 +218,7 @@ async function openS(n){
       }).join('');
       applyReadingSettings();
     } else {
-      throw new Error(d.message || 'Error');
+      throw new Error((d && d.message) || 'Error');
     }
   }catch(e){
     document.getElementById('alist').innerHTML=getErrorStateHTML({

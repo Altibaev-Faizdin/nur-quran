@@ -44,8 +44,8 @@ body{background:var(--bg0);color:var(--white);font-family:'Lato',sans-serif;min-
 
 /* ── MOON ── */
 .moon{position:fixed;top:60px;right:70px;width:100px;height:100px;z-index:1;pointer-events:none;animation:mf 8s ease-in-out infinite}
-.mc{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffde0,#f0d060 40%,#c8a020 70%,#8a6010);box-shadow:0 0 40px rgba(240,192,64,.5),0 0 80px rgba(240,192,64,.2),inset -15px -10px 30px rgba(0,0,0,.4)}
-.mcr{position:absolute;top:9px;right:9px;width:72px;height:72px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#0a1a4a,#060f2e)}
+.mc{width:100%;height:100%;border-radius:50%;background:radial-gradient(circle at 35% 35%,#fffde0,#f0d060 40%,#c8a020 70%,#8a6010);box-shadow:0 0 40px rgba(240,192,64,.5),0 0 80px rgba(240,192,64,.2),inset -15px -10px 30px rgba(0,0,0,.4);pointer-events:none}
+.mcr{position:absolute;top:9%;right:9%;width:72%;height:72%;border-radius:50%;background:radial-gradient(circle at 40% 40%,#0a1a4a,#060f2e);pointer-events:none}
 @keyframes mf{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-14px) rotate(4deg)}}
 
 /* ── NAV ── */
@@ -141,7 +141,8 @@ nav {
 .aact{display:flex;gap:6px}
 .abtn{background:none;border:none;color:var(--soft);cursor:pointer;font-size:.9rem;transition:color .2s;padding:3px 7px;border-radius:6px}
 .abtn:hover{color:var(--goldL);background:rgba(212,160,23,.08)}
-.aarb{font-family:'Amiri Quran','Amiri','Scheherazade New',serif;font-size:var(--ayah-font-size, 1.7rem);line-height:2.3;color:var(--white);text-align:right;direction:rtl;margin-bottom:14px;font-feature-settings:"cv01" on,"ss01" on,"liga" on,"calt" on;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+.aarb, .ayah-arab{font-family:'Amiri Quran','Scheherazade New','Amiri',serif;font-size:var(--ayah-font-size, 1.7rem);line-height:2.2 !important;color:var(--white);text-align:right;direction:rtl;margin-bottom:14px;font-feature-settings:"cv01" on,"ss01" on,"liga" on,"calt" on;text-rendering:optimizeLegibility;-webkit-font-smoothing:antialiased}
+.ayah-arab{margin-bottom:8px}
 .aen{font-size:.88rem;color:var(--silver);line-height:1.75;direction:ltr;margin-bottom:6px}
 .atrn{font-size:.85rem;color:var(--goldL);line-height:1.6;direction:ltr;font-style:italic;margin-bottom:6px;display:none}
 .aru{font-size:.8rem;color:var(--soft);line-height:1.7;direction:ltr;font-style:italic}
@@ -772,3 +773,10 @@ body:not(.is-logged-in) .account-dropdown [data-auth="out"] {
   border-color: var(--gold);
   background: rgba(212, 160, 23, 0.2);
 }
+
+/* ── RECITER PLAYER PAGES: HIDE GLOBAL FLOATING #ABAR TO PREVENT DUAL PLAYERS ── */
+body:has(.reciter-hero) .abar,
+body:has(.player-wrap) .abar {
+  display: none !important;
+}
+

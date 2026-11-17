@@ -79,104 +79,84 @@
 
     async function loadBookmarks() {
       const container = document.getElementById('bm-list');
+      let localBMs = [];
+      try {
+        localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
+      } catch (e) { localBMs = []; }
+
       const token = localStorage.getItem('access_token');
-      if (!token) {
-        container.innerHTML = `
-          <div class="state-card">
-            <div class="state-icon">🔖</div>
-            <h3 class="state-title">Sign in to Access Bookmarks</h3>
-            <p class="state-desc">Your saved verses and reading progress sync securely across all your devices.</p>
-            <div style="display:flex;gap:12px;justify-content:center;margin-top:16px">
-              <button class="state-btn" onclick="window.location.href='login.html'">Login</button>
-              <button class="state-btn" style="background:transparent;border:1px solid var(--gold);color:var(--gold)" onclick="window.location.href='register.html'">Register</button>
-            </div>
-          </div>
-        `;
+      let combined = [...localBMs];
+
+      if (token && token !== 'demo-session-token') {
+        try {
+          const res = await authFetch(`${API_BASE}/bookmarks/`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.results) {
+              data.results.forEach(bm => {
+                if (!combined.some(c => c.surah_number === bm.surah_number && c.ayah_number === bm.ayah_number)) {
+                  combined.push(bm);
+                }
+              });
+            }
+          }
+        } catch (e) {
+          // Local fallback
+        }
+      }
+
+      if (combined.length === 0) {
+        container.innerHTML = getEmptyStateHTML({
+          icon: '🔖',
+          title: 'No Bookmarks Yet',
+          description: 'Save your favorite verses while reading to revisit them anytime.',
+          actionText: 'Explore Quran',
+          actionFn: "window.location.href='quran.html'"
+        });
         return;
       }
 
-      container.innerHTML = getAyahSkeletons(4);
-
-      try {
-        const res = await authFetch(`${API_BASE}/bookmarks/`);
-        if (!res.ok) {
-          if (res.status === 401) {
-            container.innerHTML = getErrorStateHTML({
-              title: 'Session Expired',
-              description: 'Please sign in again to view your bookmarks.',
-              onRetry: "window.location.href='login.html'"
-            });
-          } else {
-            container.innerHTML = getErrorStateHTML({
-              title: 'Failed to Load Bookmarks',
-              onRetry: 'loadBookmarks()'
-            });
-          }
-          return;
-        }
-
-        const data = await res.json();
-        if (!data || !data.results || data.results.length === 0) {
-          container.innerHTML = getEmptyStateHTML({
-            icon: '🔖',
-            title: 'No Bookmarks Yet',
-            description: 'Save your favorite verses while reading to revisit them anytime.',
-            actionText: 'Explore Quran',
-            actionFn: "window.location.href='quran.html'"
-          });
-          return;
-        }
-
-        container.innerHTML = data.results.map(bm => `
-          <div class="bm-card" id="bm-${parseInt(bm.id, 10)}">
-            <div class="bm-info">
-              <div class="bm-title">Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}</div>
-              <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at).toLocaleDateString())}</div>
-            </div>
-            <div class="bm-actions">
-              <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Read ayah">Read</button>
-              <button class="bm-btn del" onclick="deleteBM(${bm.id})" aria-label="Delete bookmark">Delete</button>
-            </div>
+      container.innerHTML = combined.map(bm => `
+        <div class="bm-card" id="bm-${safeHTML(String(bm.id))}">
+          <div class="bm-info">
+            <div class="bm-title">Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}</div>
+            <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at || Date.now()).toLocaleDateString())}</div>
           </div>
-        `).join('');
-
-      } catch (err) {
-        console.error(err);
-        container.innerHTML = getErrorStateHTML({
-          title: 'Connection Error',
-          description: 'Unable to reach the server. Please check your internet connection.',
-          onRetry: 'loadBookmarks()'
-        });
-      }
+          <div class="bm-actions">
+            <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Read ayah">Read</button>
+            <button class="bm-btn del" onclick="deleteBM('${safeHTML(String(bm.id))}', ${bm.surah_number}, ${bm.ayah_number})" aria-label="Delete bookmark">Delete</button>
+          </div>
+        </div>
+      `).join('');
     }
 
-    async function deleteBM(id) {
-      if (!confirm('Are you sure you want to delete this bookmark?')) return;
-      
+    async function deleteBM(id, s, a) {
+      let localBMs = [];
       try {
-        const res = await authFetch(`${API_BASE}/bookmarks/${id}/`, {
-          method: 'DELETE'
+        localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
+        localBMs = localBMs.filter(b => !(b.id === id || (b.surah_number === s && b.ayah_number === a)));
+        localStorage.setItem('nq_local_bookmarks', JSON.stringify(localBMs));
+      } catch (e) {}
+
+      const token = localStorage.getItem('access_token');
+      if (token && token !== 'demo-session-token' && !String(id).startsWith('local_')) {
+        try {
+          await authFetch(`${API_BASE}/bookmarks/${id}/`, { method: 'DELETE' });
+        } catch (e) {}
+      }
+
+      const item = document.getElementById(`bm-${id}`);
+      if (item) item.remove();
+      showToast('Bookmark deleted', 'info');
+
+      if (document.querySelectorAll('.bm-card').length === 0) {
+        document.getElementById('bm-list').innerHTML = getEmptyStateHTML({
+          icon: '🔖',
+          title: 'No Bookmarks Left',
+          description: 'Save verses while reading to revisit them anytime.',
+          actionText: 'Explore Quran',
+          actionFn: "window.location.href='quran.html'"
         });
-        
-        if (res.ok) {
-          const item = document.getElementById(`bm-${id}`);
-          if (item) item.remove();
-          showToast('Bookmark deleted', 'info');
-          if (document.querySelectorAll('.bm-card').length === 0) {
-            document.getElementById('bm-list').innerHTML = getEmptyStateHTML({
-              icon: '🔖',
-              title: 'No Bookmarks Left',
-              description: 'Save verses while reading to revisit them anytime.',
-              actionText: 'Explore Quran',
-              actionFn: "window.location.href='quran.html'"
-            });
-          }
-        } else {
-          showToast('Failed to delete bookmark', 'error');
-        }
-      } catch (err) {
-        console.error(err);
-        showToast('Network error', 'error');
       }
     }
 
