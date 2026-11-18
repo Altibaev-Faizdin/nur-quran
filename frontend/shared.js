@@ -311,27 +311,67 @@ const SHERIF_AVAILABLE = [
   const d = document.getElementById('cur'), t = document.getElementById('cur-t');
   if (!d || !t) return;
   let mx = 0, my = 0, tx = 0, ty = 0;
+  let rafId = null;
   document.addEventListener('mousemove', e => {
     mx = e.clientX; my = e.clientY;
     d.style.left = mx - 5 + 'px'; d.style.top = my - 5 + 'px';
-  });
-  setInterval(() => {
-    tx += (mx - tx) * 0.12; ty += (my - ty) * 0.12;
-    t.style.left = tx - 14 + 'px'; t.style.top = ty - 14 + 'px';
-  }, 16);
+    if (!rafId) {
+      rafId = requestAnimationFrame(updateTrailingCursor);
+    }
+  }, { passive: true });
+
+  function updateTrailingCursor() {
+    tx += (mx - tx) * 0.12;
+    ty += (my - ty) * 0.12;
+    t.style.left = tx - 14 + 'px';
+    t.style.top = ty - 14 + 'px';
+    if (Math.abs(mx - tx) > 0.1 || Math.abs(my - ty) > 0.1) {
+      rafId = requestAnimationFrame(updateTrailingCursor);
+    } else {
+      rafId = null;
+    }
+  }
 })();
 
 // ── HIJRI DATE ──
-function toHijri(date) {
-  const jd = Math.floor(date.getTime() / 86400000) + 2440587.5;
-  let l = Math.floor(jd) - 1948440 + 10632, n = Math.floor((l - 1) / 10631);
-  l = l - 10631 * n + 354;
-  const j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719) + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
-  l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
-  return { day: l - Math.floor((709 * Math.floor((24 * l) / 709)) / 24), month: Math.floor((24 * l) / 709) - 1, year: 30 * n + j - 30 };
+function toHijri(date, adjustment) {
+  date = date || new Date();
+  if (typeof adjustment !== 'number') {
+    try {
+      adjustment = parseInt(localStorage.getItem('nq_hijri_adj') || '0', 10);
+      if (isNaN(adjustment)) adjustment = 0;
+    } catch (e) {
+      adjustment = 0;
+    }
+  }
+  const d = new Date(date.getTime() + adjustment * 86400000);
+  try {
+    const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    }).formatToParts(d);
+    let y = 1445, m = 1, day = 1;
+    parts.forEach(p => {
+      if (p.type === 'year') y = parseInt(p.value, 10);
+      if (p.type === 'month') m = parseInt(p.value, 10);
+      if (p.type === 'day') day = parseInt(p.value, 10);
+    });
+    return { day: day, month: m - 1, year: y };
+  } catch (err) {
+    const jd = Math.floor(d.getTime() / 86400000) + 2440587.5;
+    let l = Math.floor(jd) - 1948440 + 10632, n = Math.floor((l - 1) / 10631);
+    l = l - 10631 * n + 354;
+    const j = Math.floor((10985 - l) / 5316) * Math.floor((50 * l) / 17719) + Math.floor(l / 5670) * Math.floor((43 * l) / 15238);
+    l = l - Math.floor((30 - j) / 15) * Math.floor((17719 * j) / 50) - Math.floor(j / 16) * Math.floor((15238 * j) / 43) + 29;
+    return { day: l - Math.floor((709 * Math.floor((24 * l) / 709)) / 24), month: Math.floor((24 * l) / 709) - 1, year: 30 * n + j - 30 };
+  }
 }
+window.toHijri = toHijri;
 const HM = ['Muharram', 'Safar', 'Rabi I', 'Rabi II', 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhul Qa'dah", 'Dhul Hijjah'];
 const HMA = ['مُحَرَّم', 'صَفَر', 'رَبِيع الأَوَّل', 'رَبِيع الآخِر', 'جُمَادَى الأُولَى', 'جُمَادَى الآخِرَة', 'رَجَب', 'شَعْبَان', 'رَمَضَان', 'شَوَّال', 'ذُو القَعْدَة', 'ذُو الحِجَّة'];
+window.HM = HM;
+window.HMA = HMA;
 
 // ── CLOCK ──
 (function () {
@@ -353,26 +393,42 @@ const HMA = ['مُحَرَّم', 'صَفَر', 'رَبِيع الأَوَّل', 
 function set(id, v) { const e = document.getElementById(id); if (e) e.textContent = v; }
 
 // ── ASTRONOMICAL OFFLINE PRAYER TIMES CALCULATION ──
-function calculateOfflinePrayerTimes(latitude, longitude, date) {
+function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
   date = date || new Date();
+  options = options || {};
   var rad = function(d) { return d * Math.PI / 180; };
   var deg = function(r) { return r * 180 / Math.PI; };
   var fixHour = function(h) { h = h - 24 * Math.floor(h / 24); return h < 0 ? h + 24 : h; };
+  var fixAngle = function(a) { a = a - 360 * Math.floor(a / 360); return a < 0 ? a + 360 : a; };
+
+  var methods = {
+    1: { fajr: 18, isha: 18 },           // Karachi
+    2: { fajr: 15, isha: 15 },           // ISNA
+    3: { fajr: 18, isha: 17 },           // MWL (default)
+    4: { fajr: 18.5, ishaInterval: 90 }, // Makkah Umm al-Qura
+    5: { fajr: 19.5, isha: 17.5 },       // Egyptian Authority
+    13: { fajr: 18, isha: 17 },          // Diyanet
+    14: { fajr: 16, isha: 15 }           // SAMRF Russia
+  };
+
+  var methodId = options.method || 3;
+  var method = methods[methodId] || methods[3];
+  var asrHanafi = !!options.hanafi;
 
   var year = date.getFullYear();
   var month = date.getMonth() + 1;
   var day = date.getDate();
   var D = (367 * year) - Math.floor((7 * (year + Math.floor((month + 9) / 12))) / 4) + Math.floor((275 * month) / 9) + day - 730531.5;
 
-  var L = fixHour(280.461 + 0.9856474 * D);
-  var M = fixHour(357.528 + 0.9856003 * D);
-  var Lambda = fixHour(L + 1.915 * Math.sin(rad(M)) + 0.020 * Math.sin(rad(2 * M)));
+  var L = fixAngle(280.461 + 0.9856474 * D);
+  var M = fixAngle(357.528 + 0.9856003 * D);
+  var Lambda = fixAngle(L + 1.915 * Math.sin(rad(M)) + 0.020 * Math.sin(rad(2 * M)));
   var obliq = 23.439 - 0.0000004 * D;
   var alpha = deg(Math.atan2(Math.cos(rad(obliq)) * Math.sin(rad(Lambda)), Math.cos(rad(Lambda)))) / 15;
   var delta = deg(Math.asin(Math.sin(rad(obliq)) * Math.sin(rad(Lambda))));
   var equationOfTime = (L / 15) - fixHour(alpha);
 
-  var timezone = -date.getTimezoneOffset() / 60;
+  var timezone = typeof options.timezone === 'number' ? options.timezone : -date.getTimezoneOffset() / 60;
   var noon = fixHour(12 + timezone - (longitude / 15) - equationOfTime);
 
   var sunAngleTime = function(angle, direction) {
@@ -385,13 +441,31 @@ function calculateOfflinePrayerTimes(latitude, longitude, date) {
 
   var asrTime = function() {
     var diff = Math.abs(latitude - delta);
-    var angle = deg(Math.atan(1 + Math.tan(rad(diff))));
+    var shadowFactor = asrHanafi ? 2 : 1;
+    var angle = deg(Math.atan(shadowFactor + Math.tan(rad(diff))));
     var val = (Math.sin(rad(90 - angle)) - Math.sin(rad(latitude)) * Math.sin(rad(delta))) /
               (Math.cos(rad(latitude)) * Math.cos(rad(delta)));
-    if (val > 1 || val < -1) return fixHour(noon + 3.2);
+    if (val > 1 || val < -1) return fixHour(noon + (asrHanafi ? 3.8 : 3.2));
     var hourAngle = deg(Math.acos(val)) / 15;
     return fixHour(noon + hourAngle);
   };
+
+  var sunriseFloat = sunAngleTime(0.833, -1);
+  var maghribFloat = sunAngleTime(0.833, 1);
+  var fajrFloat = sunAngleTime(method.fajr, -1);
+  var ishaFloat = method.ishaInterval ? fixHour(maghribFloat + method.ishaInterval / 60) : sunAngleTime(method.isha, 1);
+
+  if (sunriseFloat !== null && maghribFloat !== null) {
+    var nightPortion = fixHour(24 - maghribFloat + sunriseFloat);
+    if (fajrFloat === null || Math.abs(latitude) > 55) {
+      var fajrPortion = (method.fajr / 60) * (nightPortion / 2);
+      fajrFloat = fixHour(sunriseFloat - Math.min(nightPortion / 7, fajrPortion));
+    }
+    if (ishaFloat === null || (Math.abs(latitude) > 55 && !method.ishaInterval)) {
+      var ishaPortion = (method.isha / 60) * (nightPortion / 2);
+      ishaFloat = fixHour(maghribFloat + Math.min(nightPortion / 7, ishaPortion));
+    }
+  }
 
   var toHHMM = function(floatHour) {
     if (floatHour === null || isNaN(floatHour)) return '--:--';
@@ -402,12 +476,12 @@ function calculateOfflinePrayerTimes(latitude, longitude, date) {
   };
 
   return {
-    Fajr: toHHMM(sunAngleTime(18, -1)),
-    Sunrise: toHHMM(sunAngleTime(0.833, -1)),
+    Fajr: toHHMM(fajrFloat),
+    Sunrise: toHHMM(sunriseFloat),
     Dhuhr: toHHMM(noon),
     Asr: toHHMM(asrTime()),
-    Maghrib: toHHMM(sunAngleTime(0.833, 1)),
-    Isha: toHHMM(sunAngleTime(17, 1))
+    Maghrib: toHHMM(maghribFloat),
+    Isha: toHHMM(ishaFloat)
   };
 }
 window.calculateOfflinePrayerTimes = calculateOfflinePrayerTimes;

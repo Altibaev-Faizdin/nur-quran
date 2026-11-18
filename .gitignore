@@ -27,6 +27,14 @@ env/
 ENV/
 .venv
 
+# Test and coverage
+.coverage
+.coverage.*
+backend/.coverage
+htmlcov/
+.pytest_cache/
+.ruff_cache/
+
 # Django
 *.log
 *.pid
@@ -38,6 +46,8 @@ db.sqlite3
 db.sqlite3-journal
 /media
 /staticfiles
+backend/staticfiles/
+backend/cache/
 
 # Environment variables
 .env
@@ -73,8 +83,7 @@ frontend/proxy.log
 frontend/proxy.pid
 frontend/audit_report.md
 
-# Dev-only docs in root (keep README.md and SETUP.md)
-CHANGELOG.md
+# Dev-only docs in root (keep README.md, CHANGELOG.md and SETUP.md)
 COMPLETION_REPORT.md
 FINAL_COMPLETION_SUMMARY.md
 IMPROVEMENTS.md

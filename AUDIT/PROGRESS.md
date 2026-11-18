@@ -1,6 +1,6 @@
 # AUDIT/PROGRESS.md — Трекер выполнения задач
 
-**Текущий статус:** Фаза 0 в процессе  
+**Текущий статус:** Фаза 1 завершена, переходим к Фазе 2 (Security)  
 **Ветка:** `prod-hardening`  
 **Дата старта:** 18 ноября 2026  
 
@@ -17,17 +17,17 @@
 - [x] Зафиксировать базовую линию в `AUDIT/FIX_LOG.md` (установка, тесты, ruff, check)
 
 ### ФАЗА 1: Корректность и сборка
-- [ ] BUILD-01: Обновление psycopg2-binary / psycopg 3.x в `backend/requirements.txt`
-- [ ] BUILD-02: Безопасный dev-ключ при DEBUG=True, строгая проверка SECRET_KEY >= 50 символов без 'django-insecure-' при DEBUG=False
-- [ ] FUNC-01: Модель PrayerNotification: добавить 'isha' в PRAYER_CHOICES, создать миграцию, обновить сериализаторы, админку, фронтенд
-- [ ] Решение по уведомлениям: локальные Notification API в открытой/фоновой вкладке с честной подписью в UI
-- [ ] FUNC-08 + FUNC-02: Расчёт времени намаза в shared.js (fixHour -> fixAngle mod 360, PRAYER_METHODS, высокие широты OneSeventh, IANA timezone)
-- [ ] Верификационные Node-тесты расчёта намаза (Бишкек, Москва, Астана, Лондон, Мекка на 21 июня и 21 декабря с допуском ±2 мин)
-- [ ] FUNC-03: Проверка чтеца Гамиди и всех 10 чтецов (имя ↔ id ↔ работающий URL)
-- [ ] Закладки: валидация ayah_number по реальной таблице аятов (114 сур, сумма 6236). Индекс (user, -created_at) + миграция
-- [ ] ARCH-03: Единая функция даты Хиджры на фронтенде (шапка + hijri.html: Intl islamic-umalqura + ручная коррекция ±2 дня + fallback /api/hijri-date/)
-- [ ] Backend тесты: покрытие >= 90%, 100% зеленых тестов (prayer-times, hijri-date, names, surahs с моками, validate_adhan_reciter, refresh токенов, rate limit, isha, невалидные аяты, удаление аккаунта, смена пароля)
-- [ ] BUILD-05: `ruff check backend/ --fix` + `ruff format` (0 замечаний)
+- [x] BUILD-01: Обновление psycopg2-binary / psycopg 3.x в `backend/requirements.txt`
+- [x] BUILD-02: Безопасный dev-ключ при DEBUG=True, строгая проверка SECRET_KEY >= 50 символов без 'django-insecure-' при DEBUG=False
+- [x] FUNC-01: Модель PrayerNotification: добавить 'isha' в PRAYER_CHOICES, создать миграцию, обновить сериализаторы, админку, фронтенд
+- [x] Решение по уведомлениям: локальные Notification API в открытой/фоновой вкладке с честной подписью в UI
+- [x] FUNC-08 + FUNC-02: Расчёт времени намаза в shared.js (fixHour -> fixAngle mod 360, PRAYER_METHODS, высокие широты OneSeventh, IANA timezone)
+- [x] Верификационные Node-тесты расчёта намаза (Бишкек, Москва, Астана, Лондон, Мекка на 21 июня и 21 декабря с допуском ±2 мин)
+- [x] FUNC-03: Проверка чтеца Гамиди и всех 10 чтецов (имя ↔ id ↔ работающий URL)
+- [x] Закладки: валидация ayah_number по реальной таблице аятов (114 сур, сумма 6236). Индекс (user, -created_at) + миграция
+- [x] ARCH-03: Единая функция даты Хиджры на фронтенде (шапка + hijri.html: Intl islamic-umalqura + ручная коррекция ±2 дня + fallback /api/hijri-date/)
+- [x] Backend тесты: покрытие >= 90%, 100% зеленых тестов (prayer-times, hijri-date, names, surahs с моками, validate_adhan_reciter, refresh токенов, rate limit, isha, невалидные аяты, удаление аккаунта, смена пароля)
+- [x] BUILD-05: `ruff check backend/ --fix` + `ruff format` (0 замечаний)
 
 ### ФАЗА 2: Безопасность
 - [ ] SEC-01: Удаление всех `localhost:8000` из фронтенда. Единый API_BASE ('/api' в проде, автоопределение локально). Полное удаление demo-session-token. Закладки оффлайн с бейджем "Локально"
