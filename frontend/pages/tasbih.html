@@ -445,7 +445,9 @@
         sessions = state.sessions || 0;
         bestCount = state.bestCount || 0;
         currentGoal = state.currentGoal || TASBIH_LIST[currentDhikrIdx].goal;
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Could not load tasbih saved state:', e);
+      }
     }
 
     function _saveState() {
@@ -459,7 +461,9 @@
           sessions,
           bestCount
         }));
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Could not save tasbih state:', e);
+      }
     }
 
     function renderPresets() {

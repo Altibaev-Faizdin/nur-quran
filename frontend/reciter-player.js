@@ -126,29 +126,39 @@ function _initRefs() {
   }
 }
 
-// ── Surah Grid ─────────────────────────────────────────────────────────────
+// ── Surah Grid (FUNC-07: All 114 surahs displayed, unavailable flagged as Soon) ──
 async function buildSurahGrid() {
   const grid = document.getElementById('surahGrid');
   if (!grid || typeof SURAHS === 'undefined') return;
   
-  const displaySurahs = _getAvailableSurahsSync();
+  const availableSurahs = _getAvailableSurahsSync();
+  const availableSet = new Set(availableSurahs.map(s => s.n));
   grid.innerHTML = '';
-  
-  if (displaySurahs.length === 0) {
-    grid.innerHTML = '<div style="grid-column: 1/-1; text-align: center; color: var(--soft); padding: 40px; font-size: 0.9rem; font-family: Lato, sans-serif;">No surahs found.</div>';
-    return;
-  }
 
-  displaySurahs.forEach(s => {
+  SURAHS.forEach(s => {
+    const isAvail = availableSet.has(s.n);
     const btn = document.createElement('button');
-    btn.className = 'surah-btn';
+    btn.className = 'surah-btn' + (isAvail ? '' : ' unavailable');
     btn.id = 'sb-' + s.n;
-    btn.setAttribute('aria-label', `Surah ${s.n}: ${s.en}`);
+    btn.setAttribute('aria-label', `Surah ${s.n}: ${s.en}${isAvail ? '' : ' (Coming soon)'}`);
+    if (!isAvail) {
+      btn.style.opacity = '0.5';
+      btn.style.cursor = 'not-allowed';
+    }
     btn.innerHTML = `
       <div class="surah-num">${safeHTML(String(s.n))}</div>
       <div class="surah-name">${safeHTML(s.en)}</div>
-      <div class="playing-badge">▶ PLAYING</div>`;
-    btn.addEventListener('click', () => loadSurahAyahs(s.n));
+      ${isAvail ? '<div class="playing-badge">▶ PLAYING</div>' : '<div style="font-size:0.65rem;color:var(--soft);margin-top:4px">Soon · Скоро</div>'}`;
+    
+    btn.addEventListener('click', () => {
+      if (!isAvail) {
+        if (typeof showToast === 'function') {
+          showToast('This surah has not been recorded by this reciter yet.', 'info');
+        }
+        return;
+      }
+      loadSurahAyahs(s.n);
+    });
     grid.appendChild(btn);
   });
 }
@@ -158,13 +168,16 @@ function _getAvailableSurahsSync() {
   if (typeof RECITER_ID === 'undefined') return SURAHS;
 
   if (RECITER_ID === 'abdurrahman_mossad') {
-    const valid = [1, 10, 19, 23, 29, 32, 49, 73, 78, 87, 88, 100, 107];
+    const valid = [1, 29];
     return SURAHS.filter(s => valid.includes(s.n));
   } else if (RECITER_ID === 'sherif_mostafa') {
-    const valid = [1, 13, 15, 19, 20, 31, 32, 53, 55, 56, 57, 60, 61, 62, 63, 64, 65, 66, 67, 71, 75, 76, 77, 89];
+    const valid = [65, 66, 67, 71, 75, 76, 77, 89];
     return SURAHS.filter(s => valid.includes(s.n));
+  } else if (RECITER_ID === 'islam_sobhi') {
+    const invalid = [36, 45];
+    return SURAHS.filter(s => !invalid.includes(s.n));
   }
-  return SURAHS; // All 114 surahs for all other 8 reciters!
+  return SURAHS;
 }
 
 function filterSurahs(q) {
@@ -174,19 +187,22 @@ function filterSurahs(q) {
   });
 }
 
-// ── Audio Cascading Fallback Player ───────────────────────────────────────
+// ── Audio Cascading Fallback Player (FUNC-06: race condition safe) ──
 let _currentFallbackUrls = [];
 let _currentFallbackIdx = 0;
+let _cascadeReqId = 0;
 
 function _playWithCascade(urls, onFail) {
   if (!urls || !urls.length) {
     if (onFail) onFail();
     return;
   }
+  const thisReq = ++_cascadeReqId;
   _currentFallbackUrls = urls;
   _currentFallbackIdx = 0;
 
   function attemptPlay() {
+    if (thisReq !== _cascadeReqId) return;
     if (_currentFallbackIdx >= _currentFallbackUrls.length) {
       if (onFail) onFail();
       return;
@@ -201,10 +217,21 @@ function _playWithCascade(urls, onFail) {
     if (promise !== undefined) {
       promise
         .then(() => {
+          if (thisReq !== _cascadeReqId) return;
           PlayerState.isPlaying = true;
           _updatePlayBtn(true);
         })
         .catch(err => {
+          if (thisReq !== _cascadeReqId) return;
+          if (err.name === 'AbortError') return;
+          if (err.name === 'NotAllowedError') {
+            PlayerState.isPlaying = false;
+            _updatePlayBtn(false);
+            if (typeof showToast === 'function') {
+              showToast('Autoplay blocked. Tap play to listen.', 'info');
+            }
+            return;
+          }
           console.debug('Audio stream failed: ' + targetUrl + ', trying mirror...', err);
           attemptPlay();
         });

@@ -106,6 +106,17 @@
       <button class="rc-btn" data-view-mode="arabic-only" onclick="setQuranViewMode('arabic-only')">Arabic Only</button>
       <button class="rc-btn" data-view-mode="translit" onclick="setQuranViewMode('translit')">With Translit</button>
     </div>
+    <div class="rc-group">
+      <span class="rc-label">Reciter:</span>
+      <select id="quranReciterSel" class="rc-btn" style="padding:4px 8px;cursor:pointer" aria-label="Select Reciter" onchange="changeQuranReciter(this.value)">
+        <option value="mishary_alafasy">Mishary Alafasy</option>
+        <option value="abdulbasit">Abdul Basit</option>
+        <option value="ghamdi">Saad Al-Ghamdi</option>
+        <option value="minshawi">El-Minshawi</option>
+        <option value="maher">Maher Al-Muaiqly</option>
+        <option value="yasser_dosari">Yasser Ad-Dossari</option>
+      </select>
+    </div>
   </div>
 
   <div class="alist" id="alist"><div class="rload">Select a surah ✨</div></div>
@@ -314,91 +325,56 @@ function closeR(){
   document.getElementById('reader').classList.remove('open');
 }
 
-function playAyahQuran(s,a){
-  CAY=a;
+function playAyahQuran(s, a) {
+  CAY = a;
   if (!CUR || CUR.n !== s) {
     CUR = (window.SURAHS || []).find(x => x.n === s) || { n: s, ar: 'سورة', en: 'Surah ' + s };
   }
-  const sObj = (window.SURAHS || []).find(x => x.n === s);
-  const num=window.SURAHS.slice(0,s-1).reduce((acc,x)=>acc+(x.v||0),0)+a;
-  const aud = document.getElementById('aud');
-  aud.src=`https://cdn.islamic.network/quran/audio/128/ar.alafasy/${num}.mp3`;
-  if (window._audioSpeed) aud.playbackRate = window._audioSpeed;
-  aud.play().catch(function(){});
-  PLAYING=true;set('plbtn','⏸');
-  document.getElementById('abar').classList.add('show');
-  set('asn', (sObj ? sObj.ar + ' — ' + sObj.en : 'Surah ' + s) + ' : Ayah ' + a);
-  
-  highlightPlayingAyah(a);
-  updateMediaSession(sObj ? sObj.en : ('Surah ' + s), a, 'Mishary Alafasy');
+  const sel = document.getElementById('quranReciterSel');
+  const reciter = (sel && sel.value) || localStorage.getItem('nq_quran_reciter') || 'mishary_alafasy';
+  NoorAudioManager.playAyah(s, a, reciter);
 }
 
-function togPlay(){
-  const a=document.getElementById('aud');
-  if(PLAYING){
-    a.pause();
-    PLAYING=false;
-    set('plbtn','▶');
-  }else{
-    if(!a.src && CUR){
-      playAyahQuran(CUR.n, CAY);
-      return;
-    }
-    a.play().catch(function(){});
-    PLAYING=true;
-    set('plbtn','⏸');
-  }
+function togPlay() {
+  NoorAudioManager.togglePlay();
 }
 
-function nextA(){
-  if(CUR){
-    const maxV = CUR.v || 999;
-    if (CAY < maxV) {
-      playAyahQuran(CUR.n, CAY + 1);
-    } else if (CUR.n < 114) {
-      openS(CUR.n + 1);
-      playAyahQuran(CUR.n + 1, 1);
-    }
-  }
+function nextA() {
+  NoorAudioManager.next();
 }
 
-function prevA(){
-  if(CUR && CAY > 1){
-    playAyahQuran(CUR.n, CAY - 1);
-  }
+function prevA() {
+  NoorAudioManager.prev();
 }
 
 function onAyahEnded() {
-  const loopMode = window._audioLoopMode || 'off';
-  if (loopMode === 'inf') {
-    if (CUR) playAyahQuran(CUR.n, CAY);
-    return;
-  }
-  if (loopMode === '3x') {
-    _localLoopCount++;
-    if (_localLoopCount < 3) {
-      if (CUR) playAyahQuran(CUR.n, CAY);
-      return;
-    }
-    _localLoopCount = 0;
-  }
-  if (loopMode === '1x') {
-    PLAYING = false;
-    set('plbtn', '▶');
-    return;
-  }
-  nextA();
+  NoorAudioManager.next();
 }
 
-function updProg(){const a=document.getElementById('aud');if(a.duration)document.getElementById('pf').style.width=(a.currentTime/a.duration*100)+'%';}
-function closeAudio(){
+function updProg() {
+  // Handled by NoorAudioManager internally
+}
+
+function closeAudio() {
   document.getElementById('abar').classList.remove('show');
-  document.getElementById('aud').pause();
-  PLAYING=false;
+  NoorAudioManager.pause();
   document.querySelectorAll('.ac.playing').forEach(el => el.classList.remove('playing'));
 }
 
-document.addEventListener('langChange',e=>{CLANG=e.detail;if(CUR)openS(CUR.n);});
+function changeQuranReciter(val) {
+  localStorage.setItem('nq_quran_reciter', val);
+  if (NoorAudioManager.state.isPlaying) {
+    NoorAudioManager.playAyah(NoorAudioManager.state.surahNum, NoorAudioManager.state.ayahNum, val);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  const savedReciter = localStorage.getItem('nq_quran_reciter') || 'mishary_alafasy';
+  const sel = document.getElementById('quranReciterSel');
+  if (sel) sel.value = savedReciter;
+});
+
+document.addEventListener('langChange', e => { CLANG = e.detail; if (CUR) openS(CUR.n); });
 </script>
 
 <!-- MOBILE NAV -->

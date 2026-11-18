@@ -54,15 +54,15 @@
 - [x] CODE-08: Курсор на requestAnimationFrame со спящим режимом, отключение на touch и prefers-reduced-motion
 
 ### ФАЗА 4: Аудио и Чтецы
-- [ ] ARCH-01: Единый NoorAudioManager (один HTMLAudioElement, очередь, режимы ayah/surah, MediaSession, повтор, скорость)
-- [ ] CODE-04: Обработка всех пустых catch (play().catch, NotAllowedError, автоплей)
-- [ ] PERF-05: Каскад аудио-зеркал для всех 10 чтецов (проверено на сурах 1, 2, 114)
-- [ ] quran.html: воспроизведение выбранным пользователем чтецом
-- [ ] Устранение race condition при переходах между аятами и сурами (await openS, AbortController)
-- [ ] FUNC-07: Доступность сур для каждого чтеца (data/reciter-availability.json, блокировка в UI недоступных сур)
-- [ ] reciters.html Quick Play: корректный автопереход
-- [ ] FUNC-04: Басмала на уровне отображения (Сура 1 - аят 1 без дубля; Сура 9 - без басмалы; остальные - один раз в заголовке)
-- [ ] ARCH-02: Единая страница reciter.html?id=... и 301 редиректы со старых 10 страниц
+- [x] ARCH-01: Единый NoorAudioManager (один HTMLAudioElement, очередь, режимы ayah/surah, MediaSession, повтор, скорость)
+- [x] CODE-04: Обработка всех пустых catch (play().catch, NotAllowedError, автоплей)
+- [x] PERF-05: Каскад аудио-зеркал для всех 10 чтецов (проверено на сурах 1, 2, 114)
+- [x] quran.html: воспроизведение выбранным пользователем чтецом
+- [x] Устранение race condition при переходах между аятами и сурами (await openS, AbortController, request ID)
+- [x] FUNC-07: Доступность сур для каждого чтеца (data/reciter-availability.json, блокировка в UI недоступных сур)
+- [x] reciters.html Quick Play: корректный автопереход
+- [x] FUNC-04: Басмала на уровне отображения (Сура 1 - аят 1 без дубля; Сура 9 - без басмалы; остальные - один раз в заголовке)
+- [x] ARCH-02: Единая страница reciter.html?id=... и 301 редиректы со старых 10 страниц
 
 ### ФАЗА 5: UX, i18n, A11y, SEO, Legal
 - [ ] UX-01: shared.css .abar/.adhan: разделение padding и safe-area-inset; viewport-fit=cover

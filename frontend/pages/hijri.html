@@ -190,7 +190,9 @@
       val = Math.max(-2, Math.min(2, val));
       try {
         localStorage.setItem('nq_hijri_adj', String(val));
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Could not save hijri adjustment:', e);
+      }
       renderAll();
     }
 

@@ -106,6 +106,7 @@ const i18n = {
 window.setLanguage = function(lang) {
   localStorage.setItem('lang', lang);
   applyLanguage(lang);
+  document.dispatchEvent(new CustomEvent('langChange', { detail: lang }));
 };
 
 window.applyLanguage = function(lang) {

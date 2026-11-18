@@ -163,13 +163,17 @@
         localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
         localBMs = localBMs.filter(b => !(b.id === id || (b.surah_number === s && b.ayah_number === a)));
         localStorage.setItem('nq_local_bookmarks', JSON.stringify(localBMs));
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Failed to update local bookmarks after deletion:', e);
+      }
 
       const token = localStorage.getItem('access_token');
       if (token && !String(id).startsWith('local_')) {
         try {
           await authFetch(`${API_BASE}/bookmarks/${id}/`, { method: 'DELETE' });
-        } catch (e) {}
+        } catch (e) {
+          console.warn('Failed to delete bookmark on server:', e);
+        }
       }
 
       const item = document.getElementById(`bm-${id}`);
