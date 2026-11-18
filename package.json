@@ -1,0 +1,25 @@
+{
+  "name": "nur-quran",
+  "version": "2.0.0",
+  "description": "Noor Al-Quran — Market-ready Islamic digital platform (Django REST Framework + Vanilla JS/HTML/CSS)",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "test": "node scripts/test-runner.mjs && node scripts/verify-security.mjs",
+    "test:audio": "node scripts/verify-audio.mjs",
+    "version-assets": "node scripts/version-assets.mjs",
+    "generate-icons": "python3 scripts/generate-icons.py",
+    "update-meta": "python3 scripts/update-meta-and-footers.py",
+    "serve": "python3 -m http.server 3000 --directory frontend"
+  },
+  "keywords": [
+    "quran",
+    "islamic",
+    "prayer-times",
+    "hadith",
+    "pwa",
+    "audio-streaming"
+  ],
+  "author": "Noor Al-Quran Team",
+  "license": "MIT"
+}

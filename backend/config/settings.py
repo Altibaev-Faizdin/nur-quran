@@ -3,6 +3,7 @@ Noor Al-Quran — Django Settings (Production-Ready)
 """
 
 import os
+import sys
 from datetime import timedelta
 from pathlib import Path
 
@@ -250,10 +251,18 @@ CORS_ALLOW_HEADERS = [
 
 # ─── SECURITY HEADERS (PRODUCTION) ───────────────────────────────────────────
 if not DEBUG:
-    SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").strip().lower() in ("true", "1")
+    if "test" in sys.argv:
+        SECURE_SSL_REDIRECT = False
+        SESSION_COOKIE_SECURE = False
+        CSRF_COOKIE_SECURE = False
+    else:
+        SECURE_SSL_REDIRECT = os.getenv("SECURE_SSL_REDIRECT", "True").strip().lower() in (
+            "true",
+            "1",
+        )
+        SESSION_COOKIE_SECURE = True
+        CSRF_COOKIE_SECURE = True
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
-    SESSION_COOKIE_SECURE = True
-    CSRF_COOKIE_SECURE = True
     SECURE_HSTS_SECONDS = 31536000  # 1 year
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
@@ -292,3 +301,20 @@ LOGGING = {
         },
     },
 }
+
+
+# ─── SENTRY ERROR MONITORING (OPTIONAL) ──────────────────────────────────────
+SENTRY_DSN = os.getenv("SENTRY_DSN", "").strip()
+if SENTRY_DSN and not DEBUG and "test" not in sys.argv:
+    try:
+        import sentry_sdk
+        from sentry_sdk.integrations.django import DjangoIntegration
+
+        sentry_sdk.init(
+            dsn=SENTRY_DSN,
+            integrations=[DjangoIntegration()],
+            traces_sample_rate=float(os.getenv("SENTRY_TRACES_SAMPLE_RATE", "0.1")),
+            send_default_pii=False,
+        )
+    except ImportError:
+        pass

@@ -74,15 +74,15 @@
 - [x] UX-08: Раздел "О тексте и источниках" с атрибуцией переводов (Кулиев, Асад, Садык)
 - [x] FUNC-05: Кибла: iOS DeviceOrientationEvent.requestPermission(), модалка ручного ввода вместо prompt()
 - [x] CODE-05/06: Расширение словаря i18n на 3 языках (RU, EN, UZ) и событие langChange
-- [ ] i18n (CODE-05/06): диспатч langChange, полный перевод RU/EN/UZ, скрипт валидации паритета ключей
-- [ ] Устранение неопределённых CSS переменных, 404.html, NoorApp неймспейс
+- [x] i18n (CODE-05/06): диспатч langChange, полный перевод RU/EN/UZ, скрипт валидации паритета ключей
+- [x] Устранение неопределённых CSS переменных, 404.html, NoorApp неймспейс
 
 ### ФАЗА 6: Инструменты, тесты, CI, документы
-- [ ] frontend/package.json: scripts (lint, test, check, version-assets), devDependencies
-- [ ] Node-тесты: намаз, StorageManager, IndexedDB, целостность Корана (114/6236), i18n, Хиджра, санитайзер, sitemap
-- [ ] GitHub Actions CI workflow (.github/workflows/ci.yml)
-- [ ] README.md, docs/DEPLOY.md, CHANGELOG.md
-- [ ] Мониторинг: Sentry интеграция (env DSN, отключено по умолчанию), structured logging
+- [x] package.json: scripts (test, test:audio, version-assets, generate-icons, update-meta, serve)
+- [x] Node-тесты: намаз, StorageManager, IndexedDB, целостность Корана (114/6236), i18n, Хиджра, санитайзер, sitemap (1531 проверок)
+- [x] GitHub Actions CI workflow (.github/workflows/ci.yml)
+- [x] README.md, docs/DEPLOY.md, CHANGELOG.md, frontend/404.html
+- [x] Мониторинг: Sentry интеграция (env DSN, отключено по умолчанию), structured logging
 
 ### ФАЗА 7: Финальная верификация
 - [ ] Чистая установка с нуля
