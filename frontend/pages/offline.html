@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Offline Mode — Noor Al-Quran</title>
+  <link rel="stylesheet" href="../shared.css?v=d8791635">
+  <link rel="manifest" href="/manifest.json">
+  <style>
+    body {
+      display: flex;
+      flex-direction: column;
+      min-height: 100vh;
+      background: linear-gradient(135deg, #060913 0%, #0c1222 100%);
+      color: var(--text, #e8edf5);
+      font-family: 'Lato', sans-serif;
+      text-align: center;
+      margin: 0;
+    }
+    .offline-wrap {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 20px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .offline-icon {
+      font-size: 4rem;
+      margin-bottom: 20px;
+      animation: pulse 2s infinite ease-in-out;
+    }
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); opacity: 0.9; }
+      50% { transform: scale(1.08); opacity: 1; }
+    }
+    .offline-title {
+      font-family: 'Cinzel Decorative', 'Amiri', serif;
+      font-size: 2rem;
+      color: var(--gold, #d4a017);
+      margin-bottom: 12px;
+    }
+    .offline-desc {
+      color: var(--soft, #a8c0e8);
+      font-size: 1rem;
+      line-height: 1.6;
+      margin-bottom: 30px;
+    }
+    .offline-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 15px;
+      width: 100%;
+      margin-bottom: 30px;
+    }
+    .offline-card {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(212, 175, 55, 0.25);
+      border-radius: 12px;
+      padding: 18px 12px;
+      text-decoration: none;
+      color: var(--text, #fff);
+      transition: all 0.25s ease;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 8px;
+    }
+    .offline-card:hover {
+      background: rgba(212, 175, 55, 0.12);
+      border-color: var(--gold, #d4a017);
+      transform: translateY(-3px);
+    }
+    .offline-card .ic {
+      font-size: 1.8rem;
+    }
+    .offline-card .lb {
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
+    .retry-btn {
+      background: linear-gradient(135deg, #d4a017 0%, #aa7c11 100%);
+      color: #000;
+      border: none;
+      padding: 12px 28px;
+      border-radius: 30px;
+      font-weight: bold;
+      cursor: pointer;
+      font-size: 0.95rem;
+      box-shadow: 0 4px 16px rgba(212, 160, 23, 0.3);
+      transition: all 0.2s ease;
+    }
+    .retry-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(212, 160, 23, 0.45);
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-wrap">
+    <div class="offline-icon">📡</div>
+    <h1 class="offline-title" data-i18n="offline_title">You Are Offline</h1>
+    <p class="offline-desc" data-i18n="offline_desc">
+      No internet connection detected. But you can still read saved Surahs, calculate prayer times, use the Tasbih counter, and view your saved bookmarks.
+    </p>
+
+    <div class="offline-grid">
+      <a href="quran.html" class="offline-card">
+        <span class="ic">📖</span>
+        <span class="lb" data-i18n="nav_quran">Quran</span>
+      </a>
+      <a href="prayer.html" class="offline-card">
+        <span class="ic">🕐</span>
+        <span class="lb" data-i18n="nav_prayer">Prayer Times</span>
+      </a>
+      <a href="tasbih.html" class="offline-card">
+        <span class="ic">📿</span>
+        <span class="lb" data-i18n="nav_tasbih">Tasbih</span>
+      </a>
+      <a href="bookmarks.html" class="offline-card">
+        <span class="ic">🔖</span>
+        <span class="lb" data-i18n="nav_bookmarks">Bookmarks</span>
+      </a>
+    </div>
+
+    <button class="retry-btn" onclick="window.location.reload()" data-i18n="offline_retry">
+      🔄 Try Reconnecting
+    </button>
+  </div>
+
+  <script src="../shared.js?v=9a7edcd1"></script>
+  <script src="../i18n.js?v=8bef4116"></script>
+</body>
+</html>

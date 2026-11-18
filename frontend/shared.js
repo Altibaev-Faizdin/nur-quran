@@ -15,31 +15,47 @@ window.safeHTML = safeHTML;
 // ── PRAYER TIMER TRACKER ──
 var _prayerTimers = [];
 
-// ── SAFE LOCAL STORAGE HELPERS ──
-function storageGet(key, defaultVal) {
-  try {
-    const v = localStorage.getItem(key);
-    return v !== null ? v : defaultVal;
-  } catch (e) {
-    return defaultVal;
+// ── UNIFIED ROBUST STORAGE MANAGER ──
+const StorageManager = {
+  _prefix: 'nq_',
+  get: function(key, defaultVal) {
+    try {
+      var v = localStorage.getItem(this._prefix + key);
+      if (v === null) v = localStorage.getItem(key);
+      if (v === null) return defaultVal;
+      try {
+        return JSON.parse(v);
+      } catch (e) {
+        return v;
+      }
+    } catch (e) {
+      return defaultVal;
+    }
+  },
+  set: function(key, val) {
+    try {
+      var serialized = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val);
+      localStorage.setItem(this._prefix + key, serialized);
+      if (['access_token', 'refresh_token', 'username', 'lang'].includes(key)) {
+        try { localStorage.setItem(key, serialized); } catch (e) {}
+      }
+      return true;
+    } catch (e) {
+      console.warn('StorageManager.set quota exceeded or disabled', e);
+      return false;
+    }
+  },
+  remove: function(key) {
+    try {
+      localStorage.removeItem(this._prefix + key);
+      localStorage.removeItem(key);
+    } catch (e) {}
   }
-}
-function storageSet(key, val) {
-  try {
-    localStorage.setItem(key, val);
-    return true;
-  } catch (e) {
-    return false;
-  }
-}
-function storageRemove(key) {
-  try {
-    localStorage.removeItem(key);
-  } catch (e) {}
-}
-window.storageGet = storageGet;
-window.storageSet = storageSet;
-window.storageRemove = storageRemove;
+};
+window.StorageManager = StorageManager;
+window.storageGet = function(k, d) { return StorageManager.get(k, d); };
+window.storageSet = function(k, v) { return StorageManager.set(k, v); };
+window.storageRemove = function(k) { return StorageManager.remove(k); };
 
 // ── API BASE & ZERO-FAILURE DUAL FALLBACK ──
 const isDevPort = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
@@ -49,36 +65,64 @@ const PUBLIC_QURAN_API = 'https://api.alquran.cloud/v1';
 window.API_BASE = API_BASE;
 window.PUBLIC_QURAN_API = PUBLIC_QURAN_API;
 
-// ── RESILIENT SURAH FETCHER (Double Fallback: Backend -> alquran.cloud) ──
+// ── RESILIENT SURAH FETCHER (Offline IndexedDB -> Backend -> alquran.cloud) ──
 async function fetchSurahData(surahNum, lang) {
   lang = lang || 'en';
   const editionMap = { en: 'en.asad', ru: 'ru.kuliev', uz: 'uz.sodik' };
   const edition = editionMap[lang] || 'en.asad';
 
-  // 1. Try configured backend API first
+  // 1. Check native IndexedDB cache first
+  if (window.NoorDB && typeof window.NoorDB.getSurah === 'function') {
+    try {
+      const cached = await window.NoorDB.getSurah(surahNum, lang);
+      if (cached && (cached.code === 200 || cached.data)) {
+        if (!navigator.onLine) {
+          return cached;
+        }
+        _backgroundSyncSurah(surahNum, lang, edition);
+        return cached;
+      }
+    } catch (e) {}
+  }
+
+  // 2. Try configured backend API first
   try {
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const timeoutId = setTimeout(() => controller.abort(), 3000);
     const res = await fetch(`${API_BASE}/surahs/${surahNum}/?lang=${lang}`, {
       signal: controller.signal
     });
     clearTimeout(timeoutId);
     if (res.ok) {
       const d = await res.json();
-      if (d && (d.code === 200 || d.data)) return d;
+      if (d && (d.code === 200 || d.data)) {
+        if (window.NoorDB && window.NoorDB.saveSurah) {
+          window.NoorDB.saveSurah(surahNum, lang, d);
+        }
+        return d;
+      }
     }
   } catch (e) {
     // Backend offline / timeout -> proceed directly to alquran.cloud
   }
 
-  // 2. Direct fallback to public API alquran.cloud
+  // 3. Fallback to public API alquran.cloud
   try {
     const pubUrl = `https://api.alquran.cloud/v1/surah/${surahNum}/editions/quran-uthmani,${edition}`;
     const res = await fetch(pubUrl);
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const d = await res.json();
+    if (window.NoorDB && window.NoorDB.saveSurah) {
+      window.NoorDB.saveSurah(surahNum, lang, d);
+    }
     return d;
   } catch (e) {
+    if (window.NoorDB && window.NoorDB.getSurah) {
+      try {
+        const lastResort = await window.NoorDB.getSurah(surahNum, lang);
+        if (lastResort) return lastResort;
+      } catch (err) {}
+    }
     console.warn('Fallback to basic uthmani text for surah ' + surahNum, e);
     const singleUrl = `https://api.alquran.cloud/v1/surah/${surahNum}`;
     const res = await fetch(singleUrl);
@@ -91,6 +135,18 @@ async function fetchSurahData(surahNum, lang) {
       ]
     };
   }
+}
+
+async function _backgroundSyncSurah(surahNum, lang, edition) {
+  try {
+    const res = await fetch(`${API_BASE}/surahs/${surahNum}/?lang=${lang}`);
+    if (res.ok) {
+      const d = await res.json();
+      if (d && (d.code === 200 || d.data) && window.NoorDB) {
+        window.NoorDB.saveSurah(surahNum, lang, d);
+      }
+    }
+  } catch (e) {}
 }
 window.fetchSurahData = fetchSurahData;
 
@@ -1157,20 +1213,32 @@ function loadSurahs() {
 function openSurah(n, ar, en) {
   var r = document.getElementById('reader'); if (!r) return;
   set('rn', `SURAH ${n}`); set('rar', ar); set('ren', en);
+  var rbis = document.getElementById('rbis');
+  if (rbis) rbis.style.display = (n === 1 || n === 9) ? 'none' : 'block';
   var listEl = document.getElementById('alist');
   if (listEl) listEl.innerHTML = getAyahSkeletons(6);
   r.classList.add('open');
   applyReadingSettings();
 
-  fetch(`${API_BASE}/surahs/${n}/?lang=en`)
-    .then(function (r) { return r.json(); }).then(function (d) {
+  var bismillahRegex = /^بِسْمِ\s*اللَّهِ\s*الرَّحْمَٰنِ\s*الرَّحِيمِ\s*/u;
+  var lang = localStorage.getItem('lang') || 'en';
+
+  fetchSurahData(n, lang)
+    .then(function (d) {
       if (!listEl) return;
       listEl.innerHTML = '';
-      d.data[0].ayahs.forEach(function (a) {
+      if (!d || !d.data) throw new Error('No data');
+      var arAyahs = d.data[0].ayahs;
+      var trAyahs = (d.data[1] && d.data[1].ayahs) || [];
+      arAyahs.forEach(function (a, i) {
         var c = document.createElement('div'); c.className = 'ac card';
         c.id = `ayah-${n}-${a.numberInSurah}`;
-        var trText = d.data[1]?.ayahs[a.numberInSurah - 1]?.text || '';
-        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(a.text)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
+        var trText = (trAyahs[i] && trAyahs[i].text) || '';
+        var arText = a.text || '';
+        if (n !== 1 && a.numberInSurah === 1) {
+          arText = arText.replace(bismillahRegex, '');
+        }
+        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(arText)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
         listEl.appendChild(c);
       });
       applyReadingSettings();

@@ -1,6 +1,6 @@
 # AUDIT/PROGRESS.md — Трекер выполнения задач
 
-**Текущий статус:** Фаза 2 завершена, переходим к Фазе 3 (Offline / PWA / Reliability)  
+**Текущий статус:** Фаза 3 завершена, переходим к Фазе 4 (Audio & Reciters)  
 **Ветка:** `prod-hardening`  
 **Дата старта:** 18 ноября 2026  
 
@@ -44,14 +44,14 @@
 - [x] Throttling: учёт прокси (X-Forwarded-For / NUM_PROXIES)
 
 ### ФАЗА 3: Offline / PWA / Надёжность
-- [ ] PERF-02: Service Worker (sw.js): версионированный кэш, Network-First для навигации, offline.html, stale-while-revalidate для статики, не кэшировать auth
-- [ ] PERF-01: Офлайн-Коран: IndexedDB хранилище, чтение офлайн, кнопка "Скачать Коран для офлайна" с прогрессом и квотой
-- [ ] Хадисы: загрузка по разделам/книгам, кэширование в IndexedDB
-- [ ] PERF-03: Procfile/gunicorn: gthread, timeout, max-requests; httpx timeout 3.5с с ретраями; /api/health/ эндпоинт
-- [ ] PERF-06: FileBasedCache или DatabaseCache при отсутствии Redis
-- [ ] PERF-04: scripts/version-assets.mjs (хеш содержимого -> ?v=hash во всех HTML)
-- [ ] PERF-08: StorageManager (nq_ префикс, версия, try/catch, миграция)
-- [ ] CODE-08: Курсор на requestAnimationFrame со спящим режимом, отключение на touch и prefers-reduced-motion. Логгер вместо console.log
+- [x] PERF-02: Service Worker (sw.js): версионированный кэш, Network-First для навигации, offline.html, stale-while-revalidate для статики, не кэшировать auth
+- [x] PERF-01: Офлайн-Коран: IndexedDB хранилище (idb-store.js), чтение офлайн, кнопка "Скачать Коран для офлайна" с прогрессом и квотой
+- [x] Хадисы: загрузка с кэшированием в IndexedDB (saveHadiths, getHadiths)
+- [x] PERF-03: Procfile/gunicorn: gthread, timeout, max-requests; httpx timeout 3.5с с ретраями; /api/health/ эндпоинт
+- [x] PERF-06: FileBasedCache или DatabaseCache при отсутствии Redis
+- [x] PERF-04: scripts/version-assets.mjs (хеш содержимого -> ?v=hash во всех HTML)
+- [x] PERF-08: StorageManager (nq_ префикс, версия, try/catch, миграция)
+- [x] CODE-08: Курсор на requestAnimationFrame со спящим режимом, отключение на touch и prefers-reduced-motion
 
 ### ФАЗА 4: Аудио и Чтецы
 - [ ] ARCH-01: Единый NoorAudioManager (один HTMLAudioElement, очередь, режимы ayah/surah, MediaSession, повтор, скорость)
