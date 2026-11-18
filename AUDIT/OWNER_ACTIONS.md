@@ -16,7 +16,13 @@ CORS_ALLOWED_ORIGINS=https://nuur-quran.netlify.app,https://nur-quran.netlify.ap
 DATABASE_URL=postgres://user:password@host:port/database_name
 REDIS_URL=redis://default:password@host:port (опционально)
 NUM_PROXIES=1
+SENTRY_DSN=https://... (опционально для мониторинга ошибок)
 ```
+
+> **Генерация безопасного SECRET_KEY:**
+> ```bash
+> python3 -c "import secrets; print(secrets.token_urlsafe(50))"
+> ```
 
 ### Production Frontend (Netlify)
 В `netlify.toml` / настройках Netlify Environment:

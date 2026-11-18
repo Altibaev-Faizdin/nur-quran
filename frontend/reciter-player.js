@@ -274,7 +274,9 @@ async function loadSurahAyahs(n) {
   if (typeof window.fetchSurahData === 'function') {
     try {
       data = await window.fetchSurahData(n, 'en');
-    } catch (e) {}
+    } catch (e) {
+      console.warn('fetchSurahData error in reciter-player:', e);
+    }
   }
 
   // 2. Direct fallback to alquran.cloud if fetchSurahData didn't return data
@@ -282,7 +284,9 @@ async function loadSurahAyahs(n) {
     try {
       const res = await fetch(`https://api.alquran.cloud/v1/surah/${n}/editions/quran-uthmani,en.asad`);
       if (res.ok) data = await res.json();
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Direct alquran.cloud fetch error in reciter-player:', e);
+    }
   }
 
   // 3. Fallback to offline placeholder verses so AUDIO NEVER FAILS TO PLAY

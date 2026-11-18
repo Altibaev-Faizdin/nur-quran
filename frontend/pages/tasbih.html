@@ -404,7 +404,7 @@
     <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
   </footer>
 
-  <script src="../shared.js?v=88855fc6"></script>
+  <script src="../shared.js?v=c1a047af"></script>
   <script>
     const TASBIH_LIST = [
       { ar: 'سُبْحَانَ اللَّهِ', en: "Subhan'Allah (Glory be to Allah)", goal: 33 },
@@ -612,7 +612,9 @@
         gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
         osc.start(ctx.currentTime);
         osc.stop(ctx.currentTime + 0.08);
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Audio click synth failed:', e);
+      }
     }
 
     document.addEventListener('DOMContentLoaded', () => {

@@ -190,7 +190,7 @@
 
 
   <script src="../idb-store.js?v=b6b783a9"></script>
-  <script src="../shared.js?v=88855fc6"></script>
+  <script src="../shared.js?v=c1a047af"></script>
   <script>
     // ── State ──
     let currentCollection = 'bukhari';
@@ -248,7 +248,9 @@
             apiCache[col] = collection;
             return collection;
           }
-        } catch (e) {}
+        } catch (e) {
+          console.warn('IndexedDB hadith lookup failed:', e);
+        }
       }
       
       const apiName = API_MAP[col];

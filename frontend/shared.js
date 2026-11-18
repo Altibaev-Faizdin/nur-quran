@@ -643,7 +643,13 @@ function showAdhan(nm, time) {
       document.body.appendChild(adhanAud);
     }
     adhanAud.src = reciterObj.server + '001.mp3';
-    adhanAud.play().catch(function() {});
+    adhanAud.play().catch(function(err) {
+      if (err && err.name === 'NotAllowedError') {
+        console.info('Adhan audio autoplay blocked by browser policy; user interaction needed.');
+      } else if (err && err.name !== 'AbortError') {
+        console.warn('Adhan audio play error:', err);
+      }
+    });
   }
 }
 function closeAdhan() {
@@ -748,7 +754,9 @@ window.initNetworkTracker = initNetworkTracker;
 if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || isLocal)) {
   window.addEventListener('load', function() {
     var swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
-    navigator.serviceWorker.register(swPath).catch(function() {});
+    navigator.serviceWorker.register(swPath).catch(function(err) {
+      console.warn('Service worker registration error:', err);
+    });
   });
 }
 
@@ -797,8 +805,12 @@ window.doLogout = function() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ refresh: refresh })
-      }).catch(function() {});
-    } catch (e) {}
+      }).catch(function(err) {
+        console.warn('Backend logout failed or was offline:', err);
+      });
+    } catch (e) {
+      console.warn('Logout exception:', e);
+    }
   }
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
@@ -2665,7 +2677,9 @@ function loadNames() {
     .then(function (d) {
       if (d && d.names && d.names.length) renderNames(d.names);
     })
-    .catch(function () {});
+    .catch(function (err) {
+      console.warn('Background names update skipped:', err);
+    });
 }
 
 function renderNames(names) {
