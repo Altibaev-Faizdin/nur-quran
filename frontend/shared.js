@@ -42,35 +42,33 @@ window.storageSet = storageSet;
 window.storageRemove = storageRemove;
 
 // ── API BASE & ZERO-FAILURE DUAL FALLBACK ──
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-const LOCAL_BACKEND_API = 'http://localhost:8000/api';
+const isDevPort = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
+                  window.location.port !== '' && window.location.port !== '8000';
+const API_BASE = window.NQ_API_BASE || (isDevPort ? 'http://localhost:8000/api' : '/api');
 const PUBLIC_QURAN_API = 'https://api.alquran.cloud/v1';
-const API_BASE = isLocal ? LOCAL_BACKEND_API : '/api';
 window.API_BASE = API_BASE;
 window.PUBLIC_QURAN_API = PUBLIC_QURAN_API;
 
-// ── RESILIENT SURAH FETCHER (Double Fallback: Local Backend -> alquran.cloud) ──
+// ── RESILIENT SURAH FETCHER (Double Fallback: Backend -> alquran.cloud) ──
 async function fetchSurahData(surahNum, lang) {
   lang = lang || 'en';
   const editionMap = { en: 'en.asad', ru: 'ru.kuliev', uz: 'uz.sodik' };
   const edition = editionMap[lang] || 'en.asad';
 
-  // 1. Try local backend if on localhost
-  if (isLocal) {
-    try {
-      const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 1200);
-      const res = await fetch(`${LOCAL_BACKEND_API}/surahs/${surahNum}/?lang=${lang}`, {
-        signal: controller.signal
-      });
-      clearTimeout(timeoutId);
-      if (res.ok) {
-        const d = await res.json();
-        if (d && (d.code === 200 || d.data)) return d;
-      }
-    } catch (e) {
-      // Local backend offline -> proceed directly to alquran.cloud
+  // 1. Try configured backend API first
+  try {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 2500);
+    const res = await fetch(`${API_BASE}/surahs/${surahNum}/?lang=${lang}`, {
+      signal: controller.signal
+    });
+    clearTimeout(timeoutId);
+    if (res.ok) {
+      const d = await res.json();
+      if (d && (d.code === 200 || d.data)) return d;
     }
+  } catch (e) {
+    // Backend offline / timeout -> proceed directly to alquran.cloud
   }
 
   // 2. Direct fallback to public API alquran.cloud
@@ -736,6 +734,16 @@ document.addEventListener('DOMContentLoaded', function () {
 });
 
 window.doLogout = function() {
+  const refresh = localStorage.getItem('refresh_token');
+  if (refresh) {
+    try {
+      fetch(`${API_BASE}/auth/logout/`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ refresh: refresh })
+      }).catch(function() {});
+    } catch (e) {}
+  }
   localStorage.removeItem('access_token');
   localStorage.removeItem('refresh_token');
   localStorage.removeItem('username');
@@ -963,6 +971,16 @@ window.getErrorStateHTML = getErrorStateHTML;
 
 // ── AYAH SHARING HELPER ──
 window.shareAyah = async function(surahNum, ayahNum, arText, trText) {
+  if (!arText) {
+    var ayahEl = document.getElementById('ay' + ayahNum) || document.getElementById('ayah-' + surahNum + '-' + ayahNum);
+    if (ayahEl) {
+      arText = ayahEl.querySelector('.aarb')?.textContent || '';
+      trText = trText || ayahEl.querySelector('.aen')?.textContent || ayahEl.querySelector('.atrn')?.textContent || '';
+    }
+  }
+  arText = arText || '';
+  trText = trText || '';
+
   var surah = (window.SURAHS || []).find(function(s) { return s.n === surahNum; });
   var surahName = surah ? surah.en + ' (' + surah.ar + ')' : 'Surah ' + surahNum;
   var shareUrl = window.location.origin + '/pages/quran.html?surah=' + surahNum + '#ay' + ayahNum;
@@ -1103,8 +1121,12 @@ function loadSurahs() {
       grid.innerHTML = '';
       d.data.forEach(function (s) {
         var div = document.createElement('div'); div.className = 'si card';
-        div.innerHTML = `<div class="snum">${safeHTML(String(s.number))}</div><div class="sinf"><div class="sar">${safeHTML(s.name)}</div><div class="sen">${safeHTML(s.englishName)}</div><div class="sv">${safeHTML(String(s.numberOfAyahs))} verses</div></div><div class="bm mec" onclick="addBM(${s.number},1);event.stopPropagation()">📌</div>`;
-        div.onclick = function () { openSurah(s.number, s.name, s.englishName); };
+        div.innerHTML = `<div class="snum">${safeHTML(String(s.number))}</div><div class="sinf"><div class="sar">${safeHTML(s.name)}</div><div class="sen">${safeHTML(s.englishName)}</div><div class="sv">${safeHTML(String(s.numberOfAyahs))} verses</div></div><div class="bm mec" title="Bookmark">📌</div>`;
+        div.addEventListener('click', function () { openSurah(s.number, s.name, s.englishName); });
+        div.querySelector('.bm')?.addEventListener('click', function (e) {
+          e.stopPropagation();
+          addBM(s.number, 1);
+        });
         grid.appendChild(div);
       });
       const params = new URLSearchParams(window.location.search);
@@ -1148,7 +1170,7 @@ function openSurah(n, ar, en) {
         var c = document.createElement('div'); c.className = 'ac card';
         c.id = `ayah-${n}-${a.numberInSurah}`;
         var trText = d.data[1]?.ayahs[a.numberInSurah - 1]?.text || '';
-        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah},\`${safeHTML(a.text).replace(/`/g, '\\`')}\`,\`${safeHTML(trText).replace(/`/g, '\\`')}\`)" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(a.text)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
+        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(a.text)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
         listEl.appendChild(c);
       });
       applyReadingSettings();
@@ -1222,7 +1244,7 @@ function addBM(s, a) {
 
   // Если пользователь авторизован на бэкенде — синхронизируем
   var token = localStorage.getItem('access_token');
-  if (token && token !== 'demo-session-token') {
+  if (token) {
     authFetch(`${API_BASE}/bookmarks/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -1290,13 +1312,13 @@ function loadReciters() {
   RECITERS.forEach(function (r) {
     var div = document.createElement('div'); div.className = 'rc card'; div.style.cursor = 'pointer';
     div.innerHTML = `
-      <div class="rav" style="background:url('${r.photo}');background-size:cover;background-position:center;color:transparent;"></div>
+      <div class="rav" style="background:url('${encodeURI(r.photo || '')}');background-size:cover;background-position:center;color:transparent;"></div>
       <div class="rna">${safeHTML(r.ar)}</div>
       <div class="rne">${safeHTML(r.en)}</div>
       <div class="rb">${safeHTML(r.style)}</div>
       <p style="font-size:.7rem;color:var(--soft);margin:8px 0">${safeHTML(r.country)}</p>
       <div style="margin-top:12px;font-size:.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px">View Full Page →</div>`;
-    div.onclick = function () { window.location.href = r.page; };
+    div.addEventListener('click', function () { window.location.href = r.page; });
     rg.appendChild(div);
   });
 
@@ -1306,7 +1328,9 @@ function loadReciters() {
 
   if (recSel && surahSel) {
     recSel.innerHTML = '';
-    RECITERS.forEach(function (r) { recSel.innerHTML += `<option value="${r.id}">${r.en}</option>`; });
+    RECITERS.forEach(function (r) {
+      recSel.add(new Option(r.en, r.id));
+    });
 
     function updateSurahSel() {
       surahSel.innerHTML = '';
@@ -1316,7 +1340,9 @@ function loadReciters() {
       } else if (recSel.value === 'abdurrahman_mossad') {
         displaySurahs = SURAHS.filter(s => MOSSAD_AVAILABLE.includes(s.n));
       }
-      displaySurahs.forEach(function (s) { surahSel.innerHTML += `<option value="${s.n}">${s.n}. ${s.en} — ${s.ar}</option>`; });
+      displaySurahs.forEach(function (s) {
+        surahSel.add(new Option(s.n + '. ' + s.en + ' — ' + s.ar, String(s.n)));
+      });
     }
 
     recSel.addEventListener('change', updateSurahSel);
@@ -2172,15 +2198,13 @@ function loadNames() {
   // Рендерим СРАЗУ из встроенных данных — 0 миллисекунд ожидания и никаких ошибок!
   renderNames(NAMES_OF_ALLAH_DATA);
 
-  // Фоновая сверка с бэкендом (если он запущен локально)
-  if (isLocal) {
-    fetch(LOCAL_BACKEND_API + '/names/')
-      .then(function (r) { return r.ok ? r.json() : null; })
-      .then(function (d) {
-        if (d && d.names && d.names.length) renderNames(d.names);
-      })
-      .catch(function () {});
-  }
+  // Фоновая сверка с бэкендом
+  fetch(API_BASE + '/names/')
+    .then(function (r) { return r.ok ? r.json() : null; })
+    .then(function (d) {
+      if (d && d.names && d.names.length) renderNames(d.names);
+    })
+    .catch(function () {});
 }
 
 function renderNames(names) {

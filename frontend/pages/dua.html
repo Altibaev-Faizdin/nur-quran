@@ -193,12 +193,13 @@
         const card=document.createElement('div');
         card.className='dua-card';
         const catLabels={morning:'🌅 Morning',evening:'🌙 Evening',protection:'🛡️ Protection',forgiveness:'🤲 Forgiveness',blessing:'✨ Blessing'};
+        const catLabel = catLabels[d.cat] || d.cat;
         card.innerHTML=`
-          <div class="dua-category">${catLabels[d.cat]}</div>
-          <div class="dua-ar">${d.ar}</div>
-          <div class="dua-en">${d.en}</div>
-          <div class="dua-ru">${d.ru}</div>
-          <button class="copy-btn" onclick="copyDua('${d.ar}')" >📋 Copy Dua</button>
+          <div class="dua-category">${safeHTML(catLabel)}</div>
+          <div class="dua-ar">${safeHTML(d.ar)}</div>
+          <div class="dua-en">${safeHTML(d.en)}</div>
+          <div class="dua-ru">${safeHTML(d.ru)}</div>
+          <button class="copy-btn" type="button" aria-label="Copy dua">📋 Copy Dua</button>
         `;
         grid.appendChild(card);
       });
@@ -212,15 +213,22 @@
       displayDuas(cat, search ? search.value : '');
     }
 
-    function copyDua(text){
-      navigator.clipboard.writeText(text).then(()=>{
-        const btn=event.target;
-        const orig=btn.textContent;
-        btn.textContent='✓ Copied!';
-        btn.classList.add('copied');
-        setTimeout(()=>{btn.textContent=orig;btn.classList.remove('copied');},2000);
-      });
-    }
+    document.getElementById('duaGrid')?.addEventListener('click', (e) => {
+      const btn = e.target.closest('.copy-btn');
+      if (btn) {
+        const card = btn.closest('.dua-card');
+        const text = card?.querySelector('.dua-ar')?.textContent || '';
+        navigator.clipboard.writeText(text).then(() => {
+          const orig = btn.textContent;
+          btn.textContent = '✓ Copied!';
+          btn.classList.add('copied');
+          setTimeout(() => {
+            btn.textContent = orig;
+            btn.classList.remove('copied');
+          }, 2000);
+        });
+      }
+    });
 
     document.addEventListener('DOMContentLoaded',()=>{
       displayDuas();

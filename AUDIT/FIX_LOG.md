@@ -92,3 +92,53 @@ TOTAL                                           301     23    92%
 - Sherif Mostafa и Abdurrahman Mossad: локальные высококачественные файлы в `frontend/audio/`.
 Матрица доступности сохранена в `frontend/data/reciter-availability.json`.
 
+---
+
+### 2.2. Фаза 2: Безопасность (Security & Hardening)
+
+#### 2.2.1. Автоматический тест безопасности (scripts/verify-security.mjs)
+```bash
+node scripts/verify-security.mjs
+```
+**Результат:**
+```text
+🔒 Starting Security & Hardening Verification...
+
+✅ All security and hardening verification checks PASSED!
+```
+- Проверено отсутствие жестко закодированных `http://localhost:8000` (заменен на динамический `API_BASE`).
+- Проверено полное удаление фиктивного токена `demo-session-token` и тихих fallback-логинов.
+- Проверено отсутствие `eval()`, `document.write()`.
+- Проверена очистка `backend/staticfiles` из индекса git (`git rm -r --cached`).
+- Проверено наличие шаблона конфигурации `.env.example`.
+
+#### 2.2.2. Проверка заголовков безопасности и CSP (netlify.toml)
+В `netlify.toml` добавлены глобальные заголовки для `/*`:
+- `Content-Security-Policy`: строгие директивы `default-src 'self'`, `frame-ancestors 'none'`, `object-src 'none'`, `base-uri 'self'`, доверенные CDN и API.
+- `X-Content-Type-Options: nosniff`
+- `X-Frame-Options: DENY`
+- `Referrer-Policy: strict-origin-when-cross-origin`
+- `Permissions-Policy: camera=(), microphone=(), geolocation=(self)`
+- `Strict-Transport-Security: max-age=31536000; includeSubDomains; preload`
+
+#### 2.2.3. Проверка продовой конфигурации Django (check --deploy)
+```bash
+DEBUG=False SECRET_KEY="<50+ char random key>" ALLOWED_HOSTS="nur-quran.onrender.com" .venv/bin/python backend/manage.py check --deploy
+```
+**Результат:**
+```text
+System check identified no issues (0 silenced).
+```
+0 предупреждений безопасности.
+
+#### 2.2.4. Повторный прогон бэкенд-тестов после Phase 2 правок
+```bash
+DEBUG=True .venv/bin/python backend/manage.py test api
+```
+**Результат:**
+```text
+Ran 36 tests in 40.090s
+OK
+```
+Все 36 тестов пройдены успешно.
+

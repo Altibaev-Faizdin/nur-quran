@@ -1,3 +1,6 @@
+[build]
+  publish = "frontend"
+
 [[redirects]]
   from = "/api/*"
   to = "https://nur-quran.onrender.com/api/:splat"
@@ -16,16 +19,84 @@
   status = 200
   force = true
 
-# HTML pages — no cache (always fresh)
+# ── Old Reciter Pages Redirects to Unified Template ──
+[[redirects]]
+  from = "/pages/reciter-mishary.html"
+  to = "/pages/reciter.html?id=mishary"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-abdulbaset.html"
+  to = "/pages/reciter.html?id=abdulbaset"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-ghamdi.html"
+  to = "/pages/reciter.html?id=ghamdi"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-menshawi.html"
+  to = "/pages/reciter.html?id=menshawi"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-minshawi-mujawwad.html"
+  to = "/pages/reciter.html?id=minshawi_mujawwad"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-husary.html"
+  to = "/pages/reciter.html?id=husary"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-sudais.html"
+  to = "/pages/reciter.html?id=sudais"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-raad-kurdi.html"
+  to = "/pages/reciter.html?id=raad_kurdi"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-islam-sobhi.html"
+  to = "/pages/reciter.html?id=islam_sobhi"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-sherif-mostafa.html"
+  to = "/pages/reciter.html?id=sherif_mostafa"
+  status = 301
+
+# ── Global Security Headers for All Routes ──
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+    X-Frame-Options = "DENY"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=(self)"
+    Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
+    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; media-src 'self' https: blob: data:; connect-src 'self' https://api.alquran.cloud https://api.aladhan.com https://cdn.islamic.network https://everyayah.com https://*.mp3quran.net https://download.quranplayermp3.com https://ipapi.co https://get.geojs.io https://nur-quran.onrender.com https://nuur-quran.onrender.com https://*.netlify.app; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+
+# ── Cache Policies by File Type ──
 [[headers]]
   for = "/*.html"
   [headers.values]
     Cache-Control = "no-cache, no-store, must-revalidate"
-    X-Content-Type-Options = "nosniff"
-    X-Frame-Options = "DENY"
-    Referrer-Policy = "strict-origin-when-cross-origin"
 
-# JavaScript & CSS — long cache (versioned via ?v= query params)
+[[headers]]
+  for = "/pages/*.html"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache, no-store, must-revalidate"
+
 [[headers]]
   for = "/*.js"
   [headers.values]
@@ -36,19 +107,16 @@
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Images & fonts — long cache
 [[headers]]
   for = "/assets/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
-# Audio files — moderate cache
 [[headers]]
   for = "/audio/*"
   [headers.values]
     Cache-Control = "public, max-age=86400"
 
-# manifest.json / robots / sitemap — short cache
 [[headers]]
   for = "/manifest.json"
   [headers.values]
@@ -56,5 +124,10 @@
 
 [[headers]]
   for = "/robots.txt"
+  [headers.values]
+    Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/sitemap.xml"
   [headers.values]
     Cache-Control = "public, max-age=86400"

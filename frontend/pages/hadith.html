@@ -325,15 +325,15 @@
       grid.innerHTML = formatted.map(h => `
         <div class="hadith-card">
           <div class="hadith-meta">
-            <span class="hadith-book">${currentCollection.replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase())}</span>
-            <span class="hadith-num">No. ${h.num}</span>
-            <span class="hadith-grade ${h.grade}">${h.gradeRaw.charAt(0).toUpperCase() + h.gradeRaw.slice(1)}</span>
+            <span class="hadith-book">${safeHTML(currentCollection.replace('-',' ').replace(/\b\w/g,l=>l.toUpperCase()))}</span>
+            <span class="hadith-num">No. ${safeHTML(String(h.num))}</span>
+            <span class="hadith-grade ${safeHTML(h.grade)}">${safeHTML(h.gradeRaw.charAt(0).toUpperCase() + h.gradeRaw.slice(1))}</span>
           </div>
-          <div class="hadith-arabic">${h.ar}</div>
-          <div class="hadith-english">${h.en}</div>
+          <div class="hadith-arabic">${safeHTML(h.ar)}</div>
+          <div class="hadith-english">${safeHTML(h.en)}</div>
           <div class="hadith-actions">
-            <button class="btn-copy-h" onclick="copyHadith('${encodeURIComponent(h.ar+'\\n\\n'+h.en)}')" >📋 Copy</button>
-            <button class="btn-share-h" onclick="shareHadith('${encodeURIComponent(h.en)}')" >📤 Share</button>
+            <button class="btn-copy-h" type="button" aria-label="Copy hadith">📋 Copy</button>
+            <button class="btn-share-h" type="button" aria-label="Share hadith">📤 Share</button>
           </div>
         </div>`).join('');
 
@@ -375,19 +375,33 @@
       }, 350);
     }
 
-    function copyHadith(encoded) {
-      const text = decodeURIComponent(encoded);
-      navigator.clipboard.writeText(text).then(() => showToast('✅ Hadith copied!'));
-    }
-
-    function shareHadith(encoded) {
-      const text = decodeURIComponent(encoded);
-      if(navigator.share) {
-        navigator.share({title:'Hadith — Noor Al-Quran', text});
-      } else {
-        navigator.clipboard.writeText(text).then(() => showToast('📋 Hadith copied for sharing!'));
+    // Grid event delegation for copy and share buttons
+    document.getElementById('hadithGrid')?.addEventListener('click', (e) => {
+      const copyBtn = e.target.closest('.btn-copy-h');
+      if (copyBtn) {
+        const card = copyBtn.closest('.hadith-card');
+        const ar = card?.querySelector('.hadith-arabic')?.textContent || '';
+        const en = card?.querySelector('.hadith-english')?.textContent || '';
+        navigator.clipboard.writeText(ar + '\n\n' + en).then(() => {
+          showToast('Hadith copied! 📋', 'success');
+        });
+        return;
       }
-    }
+      const shareBtn = e.target.closest('.btn-share-h');
+      if (shareBtn) {
+        const card = shareBtn.closest('.hadith-card');
+        const ar = card?.querySelector('.hadith-arabic')?.textContent || '';
+        const en = card?.querySelector('.hadith-english')?.textContent || '';
+        const text = ar + '\n\n' + en;
+        if (navigator.share) {
+          navigator.share({ title: 'Hadith — Noor Al-Quran', text }).catch(() => {});
+        } else {
+          navigator.clipboard.writeText(text).then(() => {
+            showToast('Hadith copied for sharing! 📋', 'info');
+          });
+        }
+      }
+    });
 
     // Init
     showDailyHadith();

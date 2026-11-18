@@ -87,7 +87,7 @@
       const token = localStorage.getItem('access_token');
       let combined = [...localBMs];
 
-      if (token && token !== 'demo-session-token') {
+      if (token) {
         try {
           const res = await authFetch(`${API_BASE}/bookmarks/`);
           if (res.ok) {
@@ -101,7 +101,7 @@
             }
           }
         } catch (e) {
-          // Local fallback
+          // Fall back to local bookmarks silently
         }
       }
 
@@ -116,18 +116,45 @@
         return;
       }
 
-      container.innerHTML = combined.map(bm => `
+      container.innerHTML = combined.map(bm => {
+        const isLocal = String(bm.id).startsWith('local_');
+        return `
         <div class="bm-card" id="bm-${safeHTML(String(bm.id))}">
           <div class="bm-info">
-            <div class="bm-title">Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}</div>
+            <div class="bm-title">
+              Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}
+              <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;margin-left:8px;background:${isLocal ? 'rgba(212,175,55,0.15)' : 'rgba(30,144,255,0.15)'};color:${isLocal ? 'var(--gold)' : 'var(--blue)'};border:1px solid ${isLocal ? 'rgba(212,175,55,0.3)' : 'rgba(30,144,255,0.3)'}">
+                ${isLocal ? '📱 Local' : '☁ Synced'}
+              </span>
+            </div>
             <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at || Date.now()).toLocaleDateString())}</div>
           </div>
           <div class="bm-actions">
-            <button class="bm-btn" onclick="goToAyah(${bm.surah_number}, ${bm.ayah_number})" aria-label="Read ayah">Read</button>
-            <button class="bm-btn del" onclick="deleteBM('${safeHTML(String(bm.id))}', ${bm.surah_number}, ${bm.ayah_number})" aria-label="Delete bookmark">Delete</button>
+            <button class="bm-btn" type="button" data-s="${safeHTML(String(bm.surah_number))}" data-a="${safeHTML(String(bm.ayah_number))}" aria-label="Read ayah">Read</button>
+            <button class="bm-btn del" type="button" data-id="${safeHTML(String(bm.id))}" data-s="${safeHTML(String(bm.surah_number))}" data-a="${safeHTML(String(bm.ayah_number))}" aria-label="Delete bookmark">Delete</button>
           </div>
         </div>
-      `).join('');
+      `;}).join('');
+
+      if (!container.dataset.hasListener) {
+        container.dataset.hasListener = 'true';
+        container.addEventListener('click', (e) => {
+          const readBtn = e.target.closest('.bm-btn:not(.del)');
+          if (readBtn) {
+            const s = readBtn.getAttribute('data-s');
+            const a = readBtn.getAttribute('data-a');
+            if (s && a) goToAyah(s, a);
+            return;
+          }
+          const delBtn = e.target.closest('.bm-btn.del');
+          if (delBtn) {
+            const id = delBtn.getAttribute('data-id');
+            const s = parseInt(delBtn.getAttribute('data-s'), 10);
+            const a = parseInt(delBtn.getAttribute('data-a'), 10);
+            if (id) deleteBM(id, s, a);
+          }
+        });
+      }
     }
 
     async function deleteBM(id, s, a) {
@@ -139,7 +166,7 @@
       } catch (e) {}
 
       const token = localStorage.getItem('access_token');
-      if (token && token !== 'demo-session-token' && !String(id).startsWith('local_')) {
+      if (token && !String(id).startsWith('local_')) {
         try {
           await authFetch(`${API_BASE}/bookmarks/${id}/`, { method: 'DELETE' });
         } catch (e) {}

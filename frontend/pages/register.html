@@ -356,13 +356,14 @@
         sucDiv.classList.remove('show');
 
         try {
-          const res = await fetch(`http://localhost:8000/api/auth/register/`, {
+          const apiBase = window.API_BASE || '/api';
+          const res = await fetch(`${apiBase}/auth/register/`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
             body: JSON.stringify({username: u, password: p})
           });
 
-          const data = await res.json();
+          const data = await res.json().catch(() => ({}));
 
           if (res.ok && data.access) {
             localStorage.setItem('access_token', data.access);
@@ -383,12 +384,13 @@
             btn.textContent = 'Create Account';
           }
         } catch (err) {
-          // Backend offline -> enable demo mode with localStorage bookmarks
-          localStorage.setItem('access_token', 'demo-session-token');
-          localStorage.setItem('username', u);
-          showToast('Бэкенд временно оффлайн. Включен демо-режим с сохранением закладок в браузере (LocalStorage)', 'warning', 4500);
-          btn.textContent = '✓ Demo Mode';
-          setTimeout(() => { window.location.href = 'bookmarks.html'; }, 1000);
+          errDiv.textContent = 'Unable to connect to the server. Please check your connection.';
+          errDiv.classList.add('show');
+          btn.disabled = false;
+          btn.textContent = 'Create Account';
+          if (typeof showToast === 'function') {
+            showToast('Unable to reach server. Please check your connection.', 'error', 4500);
+          }
         }
       });
     });

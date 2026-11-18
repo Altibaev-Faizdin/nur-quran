@@ -1,6 +1,6 @@
 # AUDIT/PROGRESS.md — Трекер выполнения задач
 
-**Текущий статус:** Фаза 1 завершена, переходим к Фазе 2 (Security)  
+**Текущий статус:** Фаза 2 завершена, переходим к Фазе 3 (Offline / PWA / Reliability)  
 **Ветка:** `prod-hardening`  
 **Дата старта:** 18 ноября 2026  
 
@@ -30,18 +30,18 @@
 - [x] BUILD-05: `ruff check backend/ --fix` + `ruff format` (0 замечаний)
 
 ### ФАЗА 2: Безопасность
-- [ ] SEC-01: Удаление всех `localhost:8000` из фронтенда. Единый API_BASE ('/api' в проде, автоопределение локально). Полное удаление demo-session-token. Закладки оффлайн с бейджем "Локально"
-- [ ] Секреты: `.env.example`, `.gitignore` (.env, db.sqlite3, staticfiles, etc.). SEC-11: `git rm -r --cached backend/staticfiles`
-- [ ] SEC-02: `netlify.toml` заголовки для `/*` (CSP, Permissions-Policy, HSTS, frame-ancestors, etc.). Устранение inline onclick и небезопасных скриптов
-- [ ] Middleware: регистрация SecurityHeadersMiddleware в MIDDLEWARE
-- [ ] SEC-03/04/09: Аудит всех innerHTML (safeHTML / textContent / createElement). Тест на проверку отсутствия небезопасного innerHTML
-- [ ] SEC-05: Обновление зависимостей (Django LTS, gunicorn >= 23, httpx, DRF, etc.)
-- [ ] SEC-06: CORS/CSRF/ALLOWED_HOSTS из env с безопасными дефолтами (nur-quran и nuur-quran, netlify и onrender)
-- [ ] SEC-08: Валидация параметров (lat, lng, method) с защитой от Cache DoS (округление до 2 знаков, 400 на невалидные)
-- [ ] SEC-07: Токены (access 15 мин, refresh 7 дней, ротация, blacklist, авто-refresh, корректный logout)
-- [ ] SEC-10: Эндпоинты смены пароля, удаления аккаунта (`DELETE /api/auth/me/`), документация SMTP для сброса пароля
-- [ ] Продовые настройки Django: `python manage.py check --deploy` -> 0 предупреждений
-- [ ] Throttling: учёт прокси (X-Forwarded-For / NUM_PROXIES)
+- [x] SEC-01: Удаление всех `localhost:8000` из фронтенда. Единый API_BASE ('/api' в проде, автоопределение локально). Полное удаление demo-session-token. Закладки оффлайн с бейджем "Локально"
+- [x] Секреты: `.env.example`, `.gitignore` (.env, db.sqlite3, staticfiles, etc.). SEC-11: `git rm -r --cached backend/staticfiles`
+- [x] SEC-02: `netlify.toml` заголовки для `/*` (CSP, Permissions-Policy, HSTS, frame-ancestors, etc.). Устранение inline onclick и небезопасных скриптов
+- [x] Middleware: регистрация SecurityHeadersMiddleware в MIDDLEWARE
+- [x] SEC-03/04/09: Аудит всех innerHTML (safeHTML / textContent / createElement). Тест на проверку отсутствия небезопасного innerHTML
+- [x] SEC-05: Обновление зависимостей (Django LTS, gunicorn >= 23, httpx, DRF, etc.)
+- [x] SEC-06: CORS/CSRF/ALLOWED_HOSTS из env с безопасными дефолтами (nur-quran и nuur-quran, netlify и onrender)
+- [x] SEC-08: Валидация параметров (lat, lng, method) с защитой от Cache DoS (округление до 2 знаков, 400 на невалидные)
+- [x] SEC-07: Токены (access 15 мин, refresh 7 дней, ротация, blacklist, авто-refresh, корректный logout)
+- [x] SEC-10: Эндпоинты смены пароля, удаления аккаунта (`DELETE /api/auth/me/`), документация SMTP для сброса пароля
+- [x] Продовые настройки Django: `python manage.py check --deploy` -> 0 предупреждений
+- [x] Throttling: учёт прокси (X-Forwarded-For / NUM_PROXIES)
 
 ### ФАЗА 3: Offline / PWA / Надёжность
 - [ ] PERF-02: Service Worker (sw.js): версионированный кэш, Network-First для навигации, offline.html, stale-while-revalidate для статики, не кэшировать auth

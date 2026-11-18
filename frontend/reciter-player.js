@@ -145,7 +145,7 @@ async function buildSurahGrid() {
     btn.id = 'sb-' + s.n;
     btn.setAttribute('aria-label', `Surah ${s.n}: ${s.en}`);
     btn.innerHTML = `
-      <div class="surah-num">${s.n}</div>
+      <div class="surah-num">${safeHTML(String(s.n))}</div>
       <div class="surah-name">${safeHTML(s.en)}</div>
       <div class="playing-badge">▶ PLAYING</div>`;
     btn.addEventListener('click', () => loadSurahAyahs(s.n));
@@ -306,12 +306,12 @@ function _renderAyahList() {
     el.id = `ayah-row-${a.num}`;
     el.setAttribute('data-ayah', a.num);
     el.innerHTML = `
-      <div class="ayah-num">${a.num}</div>
+      <div class="ayah-num">${safeHTML(String(a.num))}</div>
       <div class="ayah-content">
         <div class="ayah-arab">${safeHTML(a.arab)}</div>
         <div class="ayah-trans">${safeHTML(a.trans)}</div>
       </div>
-      <button class="ayah-play-btn" onclick="playAyahAt(${a.num})" title="Play this ayah" aria-label="Play ayah ${a.num}">▶</button>`;
+      <button class="ayah-play-btn" onclick="playAyahAt(${Number(a.num)})" title="Play this ayah" aria-label="Play ayah ${safeHTML(String(a.num))}">▶</button>`;
     el.addEventListener('click', (e) => {
       if (!e.target.closest('.ayah-play-btn')) playAyahAt(a.num);
     });

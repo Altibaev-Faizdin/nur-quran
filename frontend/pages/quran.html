@@ -199,8 +199,6 @@ async function openS(n){
       document.getElementById('alist').innerHTML=ar.map((a,i)=>{
         const trText = (tr[i] && tr[i].text) || '';
         const translitText = (translit[i] && translit[i].text) || '';
-        const arEsc = (a.text || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
-        const trEsc = trText.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         return `
         <div class="ac" id="ay${a.numberInSurah}">
           <div class="at">
@@ -208,7 +206,7 @@ async function openS(n){
             <div class="aact">
               <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button>
               <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">🔖</button>
-              <button class="abtn" onclick="shareAyah(${n},${a.numberInSurah},'${arEsc}','${trEsc}')" title="Share" aria-label="Share ayah">📤</button>
+              <button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button>
             </div>
           </div>
           <div class="aarb">${safeHTML(a.text)}</div>
