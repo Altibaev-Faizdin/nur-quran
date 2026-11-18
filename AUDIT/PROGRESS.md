@@ -65,14 +65,15 @@
 - [x] ARCH-02: Единая страница reciter.html?id=... и 301 редиректы со старых 10 страниц
 
 ### ФАЗА 5: UX, i18n, A11y, SEO, Legal
-- [ ] UX-01: shared.css .abar/.adhan: разделение padding и safe-area-inset; viewport-fit=cover
-- [ ] UX-02: Генерация PNG иконок 192/512 (any, maskable), apple-touch-icon, favicon.ico/png
-- [ ] UX-03: Растровое og-preview.png (1200x630), абсолютные URL, twitter карточки
-- [ ] UX-04: Полный sitemap.xml и robots.txt со всеми страницами
-- [ ] UX-05: privacy.html и terms.html (RU/EN/UZ) с честным описанием сбора данных
-- [ ] UX-06/07: Touch targets >= 44px, видимые `<label>`, autocomplete, focus-visible, aria-live, dir="rtl"
-- [ ] UX-08: Раздел "О тексте и источниках" с атрибуцией переводов (Кулиев, Асад, Садык)
-- [ ] FUNC-05: Кибла: iOS DeviceOrientationEvent.requestPermission(), модалка ручного ввода вместо prompt()
+- [x] UX-01: shared.css .abar/.adhan: разделение padding и safe-area-inset; viewport-fit=cover
+- [x] UX-02: Генерация PNG иконок 192/512 (any, maskable), apple-touch-icon, favicon.ico/png
+- [x] UX-03: Растровое og-preview.png (1200x630), абсолютные URL, twitter карточки
+- [x] UX-04: Полный sitemap.xml и robots.txt со всеми страницами
+- [x] UX-05: privacy.html и terms.html (RU/EN/UZ) с честным описанием сбора данных
+- [x] UX-06/07: Touch targets >= 44px, видимые `<label>`, autocomplete, focus-visible, aria-live, dir="rtl"
+- [x] UX-08: Раздел "О тексте и источниках" с атрибуцией переводов (Кулиев, Асад, Садык)
+- [x] FUNC-05: Кибла: iOS DeviceOrientationEvent.requestPermission(), модалка ручного ввода вместо prompt()
+- [x] CODE-05/06: Расширение словаря i18n на 3 языках (RU, EN, UZ) и событие langChange
 - [ ] i18n (CODE-05/06): диспатч langChange, полный перевод RU/EN/UZ, скрипт валидации паритета ключей
 - [ ] Устранение неопределённых CSS переменных, 404.html, NoorApp неймспейс
 

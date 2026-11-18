@@ -11,10 +11,34 @@
   "categories": ["lifestyle", "books", "education"],
   "icons": [
     {
+      "src": "/assets/images/icon-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/icon-maskable-192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "maskable"
+    },
+    {
+      "src": "/assets/images/icon-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any"
+    },
+    {
+      "src": "/assets/images/icon-maskable-512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "maskable"
+    },
+    {
       "src": "/assets/images/logo.svg",
       "type": "image/svg+xml",
       "sizes": "192x192 512x512",
-      "purpose": "any maskable"
+      "purpose": "any"
     }
   ]
 }
