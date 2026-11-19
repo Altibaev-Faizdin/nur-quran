@@ -272,12 +272,22 @@
   </footer>
 
   <script src="../idb-store.js?v=6bf1f19d"></script>
-  <script src="../shared.js?v=f025ec97"></script>
+  <script src="../shared.js?v=d40d020c"></script>
   <script>
     (function () {
       const params = new URLSearchParams(window.location.search);
       const recId = params.get('id') || 'mishary_alafasy';
-      const r = (window.RECITERS || []).find(x => x.id === recId) || window.RECITERS[0];
+      const list = (window.RECITERS && window.RECITERS.length) ? window.RECITERS : (typeof RECITERS !== 'undefined' ? RECITERS : []);
+      const r = list.find(x => x.id === recId) || list[0] || {
+        id: 'mishary_alafasy',
+        server: 'https://server8.mp3quran.net/afs/',
+        photo: '../assets/images/reciters/mishary_alafasy.webp?v=2',
+        ar: 'مشاري العفاسي',
+        en: 'Mishary Alafasy',
+        style: 'Murattal',
+        country: 'Kuwait',
+        bio: 'Sheikh Mishary Alafasy is a world-renowned Quran reciter from Kuwait.'
+      };
 
       window.RECITER_ID = r.id;
       window.RECITER_SERVER = r.server;

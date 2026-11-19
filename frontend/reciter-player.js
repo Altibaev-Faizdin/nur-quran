@@ -3,7 +3,7 @@
  * Noor Al-Quran — Zero-failure player for all 10 reciters
  */
 
-/* globals RECITER_ID, RECITER_SERVER, SURAHS, MOSSAD_AVAILABLE, SHERIF_AVAILABLE */
+/* globals RECITER_ID, RECITER_SERVER, SURAHS, MOSSAD_AVAILABLE, SHERIF_AVAILABLE, safeHTML */
 
 'use strict';
 
@@ -30,41 +30,100 @@ let _aud, _playerSurahName, _playerSurahAr, _playerAyahInfo,
 
 let _isInit = false;
 
-// ── 10 Reciters Audio Configurations & Fallbacks ──────────────────────────
+// ── Safe HTML Helper ───────────────────────────────────────────────────────
+const _safeHTML = (typeof safeHTML === 'function')
+  ? safeHTML
+  : (s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
+
+// ── Reciter Resolution Helpers (Ensures 100% Reliability) ──────────────────
+function _getReciterId() {
+  if (typeof window !== 'undefined' && window.RECITER_ID) return window.RECITER_ID;
+  if (typeof RECITER_ID !== 'undefined' && RECITER_ID) return RECITER_ID;
+  if (typeof window !== 'undefined' && window.location) {
+    const p = new URLSearchParams(window.location.search);
+    const idFromUrl = p.get('id');
+    if (idFromUrl) return idFromUrl;
+    const path = window.location.pathname || '';
+    const match = path.match(/reciter-([a-z0-9_-]+)\.html/);
+    if (match) {
+      const slug = match[1];
+      if (slug === 'alafasy') return 'mishary_alafasy';
+      if (slug === 'yasser') return 'yasser_dosari';
+      return slug.replace(/-/g, '_');
+    }
+  }
+  return 'mishary_alafasy';
+}
+
+function _getReciterObj() {
+  const recId = _getReciterId();
+  const list = (typeof window !== 'undefined' && window.RECITERS && window.RECITERS.length)
+    ? window.RECITERS
+    : (typeof RECITERS !== 'undefined' ? RECITERS : []);
+  return list.find(r => r.id === recId) || list[0] || null;
+}
+
+function _getReciterServer() {
+  if (typeof window !== 'undefined' && window.RECITER_SERVER) return window.RECITER_SERVER;
+  if (typeof RECITER_SERVER !== 'undefined' && RECITER_SERVER) return RECITER_SERVER;
+  const rec = _getReciterObj();
+  return rec ? rec.server : 'https://server8.mp3quran.net/afs/';
+}
+
+// ── 10 Reciters Audio Configurations & Multi-CDN Fallbacks ────────────────
 const RECITER_AUDIO_CONFIG = {
   abdulbasit: {
-    mode: 'per_ayah',
-    everyayah: 'Abdul_Basit_Murattal_192kbps',
-    servers: ['https://server7.mp3quran.net/basit/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r3/',
+      'https://server7.mp3quran.net/basit/',
+      'https://download.quranplayermp3.com/quran/mix/Abdul-Basit/'
+    ]
   },
   ghamdi: {
-    mode: 'per_ayah',
-    everyayah: 'Ghamadi_40kbps',
-    servers: ['https://server7.mp3quran.net/s_gmd/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/saad-ghamdi/r1/',
+      'https://server7.mp3quran.net/s_gmd/',
+      'https://download.quranplayermp3.com/quran/mix/Saad-Al-Ghamdi/'
+    ]
   },
   minshawi: {
-    mode: 'per_ayah',
-    everyayah: 'Minshawy_Murattal_128kbps',
-    servers: ['https://server10.mp3quran.net/minsh/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/',
+      'https://server10.mp3quran.net/minsh/',
+      'https://download.quranplayermp3.com/quran/mix/Mohamed-Siddiq-El-Minshawi/'
+    ]
   },
   maher: {
-    mode: 'per_ayah',
-    everyayah: 'MaherAlMuaiqly128kbps',
-    servers: ['https://server12.mp3quran.net/maher/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/maher-muaiqly/r1/',
+      'https://server12.mp3quran.net/maher/',
+      'https://download.quranplayermp3.com/quran/mix/Maher-Al-Muaiqly/'
+    ]
   },
   mishary_alafasy: {
-    mode: 'per_ayah',
-    everyayah: 'Alafasy_128kbps',
-    servers: ['https://server8.mp3quran.net/afs/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/mishary-alafasy/r1/',
+      'https://server8.mp3quran.net/afs/',
+      'https://download.quranplayermp3.com/quran/mix/Mishary-Rashid-Alafasy/'
+    ]
   },
   yasser_dosari: {
-    mode: 'per_ayah',
-    everyayah: 'Yasser_Ad-Dussary_128kbps',
-    servers: ['https://server11.mp3quran.net/yasser/']
+    mode: 'full_surah',
+    servers: [
+      'https://cdn.mp3quran.net/audio/yasser-dosari/r1/',
+      'https://server11.mp3quran.net/yasser/',
+      'https://download.quranplayermp3.com/quran/mix/Yasser-Al-Dosari/'
+    ]
   },
   islam_sobhi: {
     mode: 'full_surah',
     servers: [
+      'https://cdn.mp3quran.net/audio/islam-sobhi/r1/',
       'https://server14.mp3quran.net/islam/Rewayat-Hafs-A-n-Assem/',
       'https://download.quranplayermp3.com/quran/mix/Islam-Sobhi/'
     ]
@@ -72,6 +131,7 @@ const RECITER_AUDIO_CONFIG = {
   raad_kurdi: {
     mode: 'full_surah',
     servers: [
+      'https://cdn.mp3quran.net/audio/raad-kurdi/r1/',
       'https://server6.mp3quran.net/kurdi/',
       'https://download.quranplayermp3.com/quran/mix/Raad-Al-Kurdi/'
     ]
@@ -80,6 +140,7 @@ const RECITER_AUDIO_CONFIG = {
     mode: 'full_surah',
     servers: [
       '../audio/sherif_mostafa/',
+      '/audio/sherif_mostafa/',
       'https://server6.mp3quran.net/shrf/',
       'https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/'
     ]
@@ -88,11 +149,42 @@ const RECITER_AUDIO_CONFIG = {
     mode: 'full_surah',
     servers: [
       '../audio/abdurrahman_mossad/',
+      '/audio/abdurrahman_mossad/',
       'https://server16.mp3quran.net/mossad/',
       'https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/'
     ]
   }
 };
+
+function _getReciterSurahUrls(surahNum) {
+  const recId = _getReciterId();
+  const surahStr = String(surahNum).padStart(3, '0');
+  const urls = [];
+
+  const cfg = RECITER_AUDIO_CONFIG[recId];
+  const isPagesDir = typeof window !== 'undefined' && window.location && window.location.pathname.includes('/pages/');
+
+  if (cfg && cfg.servers) {
+    cfg.servers.forEach(srv => {
+      if (!srv) return;
+      if (srv.startsWith('http://') || srv.startsWith('https://')) {
+        urls.push(srv + surahStr + '.mp3');
+      } else {
+        const cleanPath = srv.replace(/^\.\.\//, '').replace(/^\//, '');
+        const relPrefix = isPagesDir ? '../' : '';
+        urls.push(relPrefix + cleanPath + surahStr + '.mp3');
+      }
+    });
+  }
+
+  const baseSrv = _getReciterServer();
+  if (baseSrv) {
+    const srvUrl = baseSrv + surahStr + '.mp3';
+    if (!urls.includes(srvUrl)) urls.push(srvUrl);
+  }
+
+  return urls;
+}
 
 function _initRefs() {
   _aud            = document.getElementById('aud');
@@ -146,8 +238,8 @@ async function buildSurahGrid() {
       btn.style.cursor = 'not-allowed';
     }
     btn.innerHTML = `
-      <div class="surah-num">${safeHTML(String(s.n))}</div>
-      <div class="surah-name">${safeHTML(s.en)}</div>
+      <div class="surah-num">${_safeHTML(String(s.n))}</div>
+      <div class="surah-name">${_safeHTML(s.en)}</div>
       ${isAvail ? '<div class="playing-badge">▶ PLAYING</div>' : '<div style="font-size:0.65rem;color:var(--soft);margin-top:4px">Soon · Скоро</div>'}`;
     
     btn.addEventListener('click', () => {
@@ -157,7 +249,7 @@ async function buildSurahGrid() {
         }
         return;
       }
-      loadSurahAyahs(s.n);
+      loadSurahAyahs(s.n, true);
     });
     grid.appendChild(btn);
   });
@@ -165,15 +257,15 @@ async function buildSurahGrid() {
 
 function _getAvailableSurahsSync() {
   if (typeof SURAHS === 'undefined') return [];
-  if (typeof RECITER_ID === 'undefined') return SURAHS;
+  const recId = _getReciterId();
 
-  if (RECITER_ID === 'abdurrahman_mossad') {
+  if (recId === 'abdurrahman_mossad') {
     const valid = [1, 29];
     return SURAHS.filter(s => valid.includes(s.n));
-  } else if (RECITER_ID === 'sherif_mostafa') {
+  } else if (recId === 'sherif_mostafa') {
     const valid = [65, 66, 67, 71, 75, 76, 77, 89];
     return SURAHS.filter(s => valid.includes(s.n));
-  } else if (RECITER_ID === 'islam_sobhi') {
+  } else if (recId === 'islam_sobhi') {
     const invalid = [36, 45];
     return SURAHS.filter(s => !invalid.includes(s.n));
   }
@@ -242,7 +334,7 @@ function _playWithCascade(urls, onFail) {
 }
 
 // ── Load Surah Ayahs ───────────────────────────────────────────────────────
-async function loadSurahAyahs(n) {
+async function loadSurahAyahs(n, autoPlay = true) {
   PlayerState.surahNum = n;
   PlayerState.ayahNum  = 0;
   PlayerState.ayahData = [];
@@ -271,7 +363,7 @@ async function loadSurahAyahs(n) {
 
   let data = null;
   // 1. Try resilient double fallback fetchSurahData
-  if (typeof window.fetchSurahData === 'function') {
+  if (typeof window !== 'undefined' && typeof window.fetchSurahData === 'function') {
     try {
       data = await window.fetchSurahData(n, 'en');
     } catch (e) {
@@ -309,23 +401,18 @@ async function loadSurahAyahs(n) {
   const transAyahs = (data.data[1] && data.data[1].ayahs) || [];
   PlayerState.totalAyahs = arabAyahs.length;
 
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) 
-              ? RECITER_AUDIO_CONFIG[RECITER_ID] 
-              : { mode: 'full_surah', servers: [typeof RECITER_SERVER !== 'undefined' ? RECITER_SERVER : ''] };
-  const isPerAyah = cfg.mode === 'per_ayah';
-
   PlayerState.ayahData = arabAyahs.map((a, i) => ({
     num: a.numberInSurah,
     arab: a.text,
     trans: transAyahs[i] ? transAyahs[i].text : '',
-    isPerAyah: isPerAyah
+    isPerAyah: false
   }));
 
   _renderAyahList();
   if (_playerAyahInfo) _playerAyahInfo.textContent = `${arabAyahs.length} Ayahs`;
 
-  // Start playback from ayah 1
-  playAyahAt(1);
+  // Stage or play from ayah 1
+  playAyahAt(1, autoPlay);
 }
 
 function _renderAyahList() {
@@ -337,79 +424,84 @@ function _renderAyahList() {
     el.id = `ayah-row-${a.num}`;
     el.setAttribute('data-ayah', a.num);
     el.innerHTML = `
-      <div class="ayah-num">${safeHTML(String(a.num))}</div>
+      <div class="ayah-num">${_safeHTML(String(a.num))}</div>
       <div class="ayah-content">
-        <div class="ayah-arab">${safeHTML(a.arab)}</div>
-        <div class="ayah-trans">${safeHTML(a.trans)}</div>
+        <div class="ayah-arab">${_safeHTML(a.arab)}</div>
+        <div class="ayah-trans">${_safeHTML(a.trans)}</div>
       </div>
-      <button class="ayah-play-btn" onclick="playAyahAt(${Number(a.num)})" title="Play this ayah" aria-label="Play ayah ${safeHTML(String(a.num))}">▶</button>`;
+      <button class="ayah-play-btn" onclick="playAyahAt(${Number(a.num)}, true)" title="Play this ayah" aria-label="Play ayah ${_safeHTML(String(a.num))}">▶</button>`;
     el.addEventListener('click', (e) => {
-      if (!e.target.closest('.ayah-play-btn')) playAyahAt(a.num);
+      if (!e.target.closest('.ayah-play-btn')) playAyahAt(a.num, true);
     });
     _ayahList.appendChild(el);
   });
 }
 
 // ── Per-Ayah & Full-Surah Playback ─────────────────────────────────────────
-function playAyahAt(ayahNum) {
+function playAyahAt(ayahNum, autoPlay = true) {
   if (!PlayerState.ayahData.length) return;
   const ayah = PlayerState.ayahData.find(a => a.num === ayahNum) || PlayerState.ayahData[0];
   if (!ayah || !_aud) return;
 
   PlayerState.ayahNum = ayah.num;
   const surahStr = String(PlayerState.surahNum).padStart(3, '0');
-  const ayahStr  = String(ayah.num).padStart(3, '0');
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) 
-              ? RECITER_AUDIO_CONFIG[RECITER_ID] 
-              : { mode: 'full_surah', servers: [typeof RECITER_SERVER !== 'undefined' ? RECITER_SERVER : ''] };
+  const urls = _getReciterSurahUrls(PlayerState.surahNum);
 
-  if (cfg.mode === 'per_ayah') {
-    const urls = [
-      `https://everyayah.com/data/${cfg.everyayah}/${surahStr}${ayahStr}.mp3`
-    ];
-    if (cfg.servers) {
-      cfg.servers.forEach(srv => urls.push(srv + surahStr + '.mp3'));
-    }
-    _playWithCascade(urls, () => {
-      _updatePlayBtn(false);
-      if (_playerSurahName) _playerSurahName.textContent = '⚠ Audio unavailable';
-    });
-  } else {
-    // Full surah mode
-    const urls = (cfg.servers || []).map(srv => srv + surahStr + '.mp3');
-    if (!_aud.src || !_aud.src.includes(surahStr + '.mp3')) {
-      _playWithCascade(urls, () => {
-        _updatePlayBtn(false);
-        if (_playerSurahName) _playerSurahName.textContent = '⚠ Audio unavailable';
-      });
-      const onMeta = () => {
-        _aud.removeEventListener('loadedmetadata', onMeta);
-        _ensureTimings();
-        if (PlayerState.ayahTimings) {
-          const timing = PlayerState.ayahTimings.find(t => t.num === ayah.num);
-          if (timing && timing.start) _aud.currentTime = timing.start;
-        }
-      };
-      _aud.addEventListener('loadedmetadata', onMeta);
-    } else {
+  if (!urls.length) {
+    if (_playerSurahName) _playerSurahName.textContent = '⚠ Audio unavailable';
+    return;
+  }
+
+  const currentSrc = _aud.src || '';
+  const isAlreadyLoaded = currentSrc.includes(surahStr + '.mp3');
+
+  if (!isAlreadyLoaded) {
+    const onMeta = () => {
+      _aud.removeEventListener('loadedmetadata', onMeta);
       _ensureTimings();
       if (PlayerState.ayahTimings) {
         const timing = PlayerState.ayahTimings.find(t => t.num === ayah.num);
         if (timing && timing.start) _aud.currentTime = timing.start;
       }
+    };
+    _aud.addEventListener('loadedmetadata', onMeta);
+
+    if (autoPlay) {
+      _playWithCascade(urls, () => {
+        _updatePlayBtn(false);
+        if (_playerSurahName) _playerSurahName.textContent = '⚠ Audio unavailable';
+      });
+    } else {
+      _currentFallbackUrls = urls;
+      _currentFallbackIdx = 1;
+      _aud.src = urls[0];
+      _aud.playbackRate = PlayerState.speed;
+      _aud.volume = PlayerState.volume;
+      PlayerState.isPlaying = false;
+      _updatePlayBtn(false);
+    }
+  } else {
+    _ensureTimings();
+    if (PlayerState.ayahTimings) {
+      const timing = PlayerState.ayahTimings.find(t => t.num === ayah.num);
+      if (timing && timing.start) _aud.currentTime = timing.start;
+    }
+    if (autoPlay) {
       if (_aud.paused) {
         _aud.play().catch(err => console.debug(err));
-        PlayerState.isPlaying = true;
-        _updatePlayBtn(true);
       }
+      PlayerState.isPlaying = true;
+      _updatePlayBtn(true);
     }
   }
 
   _highlightAyah(ayah.num);
   _updateBotBarLabel();
   _updateNavButtons();
-  _updatePlayBtn(true);
-  PlayerState.isPlaying = true;
+  if (autoPlay) {
+    _updatePlayBtn(true);
+    PlayerState.isPlaying = true;
+  }
 }
 
 function _highlightAyah(num) {
@@ -451,24 +543,14 @@ function _updateNavButtons() {
 
 // ── Controls ──────────────────────────────────────────────────────────────
 function playPrev() {
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) ? RECITER_AUDIO_CONFIG[RECITER_ID] : { mode: 'full_surah' };
-  if (cfg.mode === 'per_ayah' && PlayerState.ayahNum > 1) { 
-    playAyahAt(PlayerState.ayahNum - 1); 
-    return; 
-  }
   const avail = _getAvailableSurahsSync();
   const idx = avail.findIndex(s => s.n === PlayerState.surahNum);
-  if (idx > 0) { loadSurahAyahs(avail[idx - 1].n); }
+  if (idx > 0) { loadSurahAyahs(avail[idx - 1].n, true); }
 }
 
 function playNext() {
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) ? RECITER_AUDIO_CONFIG[RECITER_ID] : { mode: 'full_surah' };
-  if (cfg.mode === 'per_ayah' && PlayerState.ayahNum < PlayerState.totalAyahs) { 
-    playAyahAt(PlayerState.ayahNum + 1); 
-    return; 
-  }
   const nextSurah = _getNextSurah(PlayerState.surahNum);
-  if (nextSurah) { loadSurahAyahs(nextSurah); }
+  if (nextSurah) { loadSurahAyahs(nextSurah, true); }
 }
 
 function togPlayReciter() {
@@ -476,18 +558,32 @@ function togPlayReciter() {
   if (!_aud.src || _aud.src === window.location.href) {
     const avail = _getAvailableSurahsSync();
     if (avail && avail.length > 0) {
-      loadSurahAyahs(avail[0].n);
+      loadSurahAyahs(avail[0].n, true);
     }
     return;
   }
   if (_aud.paused) { 
-    _aud.play().catch(err => console.debug(err)); 
+    const p = _aud.play();
+    if (p !== undefined) {
+      p.then(() => {
+        PlayerState.isPlaying = true;
+        _updatePlayBtn(true);
+      }).catch(err => {
+        console.debug('Play rejected, cascading...', err);
+        if (_currentFallbackIdx < _currentFallbackUrls.length) {
+          const nextUrl = _currentFallbackUrls[_currentFallbackIdx++];
+          _aud.src = nextUrl;
+          _aud.play().catch(e => console.debug(e));
+        }
+      });
+    }
     PlayerState.isPlaying = true; 
+    _updatePlayBtn(true);
   } else { 
     _aud.pause(); 
     PlayerState.isPlaying = false; 
+    _updatePlayBtn(false);
   }
-  _updatePlayBtn(!_aud.paused);
 }
 
 function stopReciter() {
@@ -574,8 +670,7 @@ function _onTimeUpdate() {
   }
 
   // Auto-scroll ayah for full-surah MP3s
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) ? RECITER_AUDIO_CONFIG[RECITER_ID] : { mode: 'full_surah' };
-  if (cfg.mode === 'full_surah' && dur > 0) {
+  if (dur > 0) {
     _ensureTimings();
     if (PlayerState.ayahTimings && !PlayerState.isSeeking) {
        const currentAyah = PlayerState.ayahTimings.find(t => cur >= t.start && cur < t.end);
@@ -614,28 +709,12 @@ function _onEnded() {
     }
     return;
   }
-  const cfg = (typeof RECITER_ID !== 'undefined' && RECITER_AUDIO_CONFIG[RECITER_ID]) ? RECITER_AUDIO_CONFIG[RECITER_ID] : { mode: 'full_surah' };
-  if (cfg.mode === 'per_ayah') {
-    if (PlayerState.ayahNum < PlayerState.totalAyahs) {
-      setTimeout(() => playAyahAt(PlayerState.ayahNum + 1), 600);
-    } else {
-      const nextSurah = _getNextSurah(PlayerState.surahNum);
-      if (nextSurah) {
-        setTimeout(() => loadSurahAyahs(nextSurah), 1000);
-      } else {
-        _updatePlayBtn(false); 
-        PlayerState.isPlaying = false;
-      }
-    }
+  const nextSurah = _getNextSurah(PlayerState.surahNum);
+  if (nextSurah) {
+    setTimeout(() => loadSurahAyahs(nextSurah, true), 1000);
   } else {
-    // Full surah mode ended -> play next surah!
-    const nextSurah = _getNextSurah(PlayerState.surahNum);
-    if (nextSurah) {
-      setTimeout(() => loadSurahAyahs(nextSurah), 1000);
-    } else {
-      _updatePlayBtn(false); 
-      PlayerState.isPlaying = false;
-    }
+    _updatePlayBtn(false); 
+    PlayerState.isPlaying = false;
   }
 }
 
@@ -697,6 +776,24 @@ function _fmtTime(s) {
   return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
 }
 
+// ── Global Window Exports ──────────────────────────────────────────────────
+if (typeof window !== 'undefined') {
+  window.playAyahAt = playAyahAt;
+  window.loadSurahAyahs = loadSurahAyahs;
+  window.togPlayReciter = togPlayReciter;
+  window.stopReciter = stopReciter;
+  window.closePlayerBar = closePlayerBar;
+  window.setVolume = setVolume;
+  window.toggleMute = toggleMute;
+  window.cycleSpeed = cycleSpeed;
+  window.toggleRepeat = toggleRepeat;
+  window.seekFromPlayer = seekFromPlayer;
+  window.seekFromBar = seekFromBar;
+  window.filterSurahs = filterSurahs;
+  window.playPrev = playPrev;
+  window.playNext = playNext;
+}
+
 // ── Global Init ────────────────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
   if (_isInit) return;
@@ -705,11 +802,11 @@ document.addEventListener('DOMContentLoaded', () => {
   _initRefs();
   buildSurahGrid();
 
-  // Auto-load Surah Al-Fatiha on open!
+  // Auto-stage first available Surah on open (without autoPlay to prevent browser block)
   setTimeout(() => {
     const avail = _getAvailableSurahsSync();
     if (avail && avail.length > 0) {
-      loadSurahAyahs(avail[0].n);
+      loadSurahAyahs(avail[0].n, false);
     }
   }, 300);
 });

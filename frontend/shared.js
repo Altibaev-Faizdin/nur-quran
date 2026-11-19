@@ -286,6 +286,7 @@ const RECITERS = [
     page: 'reciter.html?id=raad_kurdi',
   }
 ];
+window.RECITERS = RECITERS;
 
 // ── SURAH DATA (114 surahs) ──
 var SURAHS = [
@@ -1322,12 +1323,31 @@ var NoorAudioManager = (function() {
     } else {
       var recObj = (window.RECITERS || []).find(function(r) { return r.id === reciterId; });
       var baseServer = recObj ? recObj.server : 'https://server8.mp3quran.net/afs/';
+      var CDN_MAP = {
+        abdulbasit: 'https://cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r3/',
+        ghamdi: 'https://cdn.mp3quran.net/audio/saad-ghamdi/r1/',
+        minshawi: 'https://cdn.mp3quran.net/audio/muhammad-minshawi/r1/',
+        maher: 'https://cdn.mp3quran.net/audio/maher-muaiqly/r1/',
+        mishary_alafasy: 'https://cdn.mp3quran.net/audio/mishary-alafasy/r1/',
+        islam_sobhi: 'https://cdn.mp3quran.net/audio/islam-sobhi/r1/',
+        yasser_dosari: 'https://cdn.mp3quran.net/audio/yasser-dosari/r1/',
+        raad_kurdi: 'https://cdn.mp3quran.net/audio/raad-kurdi/r1/'
+      };
+
+      if (CDN_MAP[reciterId]) {
+        urls.push(CDN_MAP[reciterId] + sPadded + '.mp3');
+      }
+
+      var audioDirPrefix = (typeof window !== 'undefined' && window.location && window.location.pathname.includes('/pages/')) ? '../audio/' : 'audio/';
+
       if (reciterId === 'sherif_mostafa') {
-        urls.push('../audio/sherif_mostafa/' + sPadded + '.mp3');
+        urls.push(audioDirPrefix + 'sherif_mostafa/' + sPadded + '.mp3');
+        urls.push('/audio/sherif_mostafa/' + sPadded + '.mp3');
         urls.push('https://server6.mp3quran.net/shrf/' + sPadded + '.mp3');
         urls.push('https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/' + sPadded + '.mp3');
       } else if (reciterId === 'abdurrahman_mossad') {
-        urls.push('../audio/abdurrahman_mossad/' + sPadded + '.mp3');
+        urls.push(audioDirPrefix + 'abdurrahman_mossad/' + sPadded + '.mp3');
+        urls.push('/audio/abdurrahman_mossad/' + sPadded + '.mp3');
         urls.push('https://server16.mp3quran.net/mossad/' + sPadded + '.mp3');
         urls.push('https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/' + sPadded + '.mp3');
       } else if (reciterId === 'islam_sobhi') {
@@ -1336,8 +1356,23 @@ var NoorAudioManager = (function() {
       } else if (reciterId === 'raad_kurdi') {
         urls.push('https://server6.mp3quran.net/kurdi/' + sPadded + '.mp3');
         urls.push('https://download.quranplayermp3.com/quran/mix/Raad-Al-Kurdi/' + sPadded + '.mp3');
-      } else {
-        urls.push(baseServer + sPadded + '.mp3');
+      }
+
+      var QPM_MAP = {
+        mishary_alafasy: 'https://download.quranplayermp3.com/quran/mix/Mishary-Rashid-Alafasy/',
+        abdulbasit: 'https://download.quranplayermp3.com/quran/mix/Abdul-Basit/',
+        ghamdi: 'https://download.quranplayermp3.com/quran/mix/Saad-Al-Ghamdi/',
+        minshawi: 'https://download.quranplayermp3.com/quran/mix/Mohamed-Siddiq-El-Minshawi/',
+        maher: 'https://download.quranplayermp3.com/quran/mix/Maher-Al-Muaiqly/',
+        yasser_dosari: 'https://download.quranplayermp3.com/quran/mix/Yasser-Al-Dosari/'
+      };
+      if (QPM_MAP[reciterId]) {
+        urls.push(QPM_MAP[reciterId] + sPadded + '.mp3');
+      }
+
+      if (baseServer) {
+        var baseFullUrl = baseServer + sPadded + '.mp3';
+        if (!urls.includes(baseFullUrl)) urls.push(baseFullUrl);
       }
     }
     return urls;
