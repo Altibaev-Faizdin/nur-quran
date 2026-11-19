@@ -48,3 +48,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **BUILD-03:** Added root `package.json` with automated test runners and build scripts.
 - **BUILD-04:** Expanded Django test suite to 36 tests with **92% line coverage** across views, serializers, models, and middleware.
 - **CI:** Built GitHub Actions CI pipeline running backend quality checks, Ruff PEP 8 linting, `check --deploy`, and frontend tests.
+

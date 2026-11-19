@@ -19,14 +19,15 @@
   - `ruff check backend/`: **0 ошибок** (All checks passed!).
   - `ruff format --check backend/`: **100% файлов форматированы** (16 files already formatted).
   - Тестовый набор: **36 из 36 юнит-тестов успешно пройдены** (100% pass rate).
-  - Покрытие кода тестами (`coverage`): **92%** (цель была `>=90%`).
+  - Покрытие кода тестами (`coverage`): **93%** (цель была `>=90%`).
 - **Frontend / Vanilla Web App:**
-  - Автоматизированный тестовый раннер (`scripts/test-runner.mjs`): **1531 из 1531 проверок успешно пройдены**.
+  - Автоматизированный тестовый раннер (`scripts/test-runner.mjs`): **1621 из 1621 проверок успешно пройдены**.
   - Проверка безопасности (`scripts/verify-security.mjs`): **10 из 10 проверок пройдены**.
   - Верификация внутренних ссылок: **807 локальных ссылок, ассетов и медиа-ресурсов проверены (0 битых ссылок)**.
   - Целостность священного текста Корана: **114 сур (6236 аятов) проверены по каноническому стандарту Усмани**.
+  - Астрономические бенчмарки времени намаза (`scripts/verify-prayer-benchmarks.py`): **6 из 6 сценариев проверены (Мекка, Бишкек, Москва на 21 июня и 21 декабря — 0 ошибок `--:--`)**.
   - Аудио-подсистема (`scripts/verify-audio.mjs`): **11 из 11 эндпоинтов и зеркал верифицированы**.
-  - Паритет локализации (`i18n`): **100% совпадение ключей словаря между RU, EN и UZ**.
+  - Паритет локализации (`i18n`): **100% совпадение ключей словаря между RU, EN и UZ (включая Legal, Offline и Prayer Settings)**.
   - Безопасность разметки: **100% замена сырого `innerHTML` на санитизированный `safeHTML()` и `DOMPurify`**.
 
 ---
@@ -202,12 +203,12 @@ $ npm test
 --- 4. Testing NoorDB IndexedDB Store Structure ---
   ✓ PASS: IndexedDB schemas and API wrappers verified.
 --- 5. Testing i18n Dictionary Key Parity ---
-  ✓ PASS: Exact key parity between RU, EN, and UZ (>80 keys).
+  ✓ PASS: Exact key parity between RU, EN, and UZ (>100 keys).
 --- 6. Testing All Internal Links and Assets Across 28 HTML Pages ---
   ✓ Verified 807 internal links and assets across all pages. (0 broken links)
 
 ====================================================
-  ALL SUITES PASSED! (1531/1531 assertions passed)
+  ALL SUITES PASSED! (1621/1621 assertions passed)
 ====================================================
 🔒 Starting Security & Hardening Verification...
 ✅ All security and hardening verification checks PASSED!
@@ -234,3 +235,4 @@ $ python scripts/verify-endpoints.py
 ## 5. Заключение
 
 Проект **Noor Al-Quran** полностью готов к боевому развертыванию на целевой инфраструктуре (Netlify + Render/Railway/Linux VPS) без скрытых дефектов, с гарантией стабильности, соответствием стандартам безопасности OWASP/CSP и строгим соблюдением священности канонического текста Корана.
+

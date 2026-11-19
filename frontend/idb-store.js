@@ -142,7 +142,9 @@
         const usageMB = (est.usage / (1024 * 1024)).toFixed(1);
         const quotaMB = (est.quota / (1024 * 1024)).toFixed(0);
         return { usageMB, quotaMB };
-      } catch (e) {}
+      } catch (e) {
+        console.warn('Storage estimate failed:', e);
+      }
     }
     return { usageMB: '0', quotaMB: 'Unknown' };
   }
@@ -156,3 +158,4 @@
     getStorageEstimate
   };
 })();
+

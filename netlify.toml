@@ -21,13 +21,13 @@
 
 # ── Old Reciter Pages Redirects to Unified Template ──
 [[redirects]]
-  from = "/pages/reciter-mishary.html"
-  to = "/pages/reciter.html?id=mishary"
+  from = "/pages/reciter-alafasy.html"
+  to = "/pages/reciter.html?id=mishary_alafasy"
   status = 301
 
 [[redirects]]
-  from = "/pages/reciter-abdulbaset.html"
-  to = "/pages/reciter.html?id=abdulbaset"
+  from = "/pages/reciter-abdulbasit.html"
+  to = "/pages/reciter.html?id=abdulbasit"
   status = 301
 
 [[redirects]]
@@ -36,28 +36,13 @@
   status = 301
 
 [[redirects]]
-  from = "/pages/reciter-menshawi.html"
-  to = "/pages/reciter.html?id=menshawi"
+  from = "/pages/reciter-minshawi.html"
+  to = "/pages/reciter.html?id=minshawi"
   status = 301
 
 [[redirects]]
-  from = "/pages/reciter-minshawi-mujawwad.html"
-  to = "/pages/reciter.html?id=minshawi_mujawwad"
-  status = 301
-
-[[redirects]]
-  from = "/pages/reciter-husary.html"
-  to = "/pages/reciter.html?id=husary"
-  status = 301
-
-[[redirects]]
-  from = "/pages/reciter-sudais.html"
-  to = "/pages/reciter.html?id=sudais"
-  status = 301
-
-[[redirects]]
-  from = "/pages/reciter-raad-kurdi.html"
-  to = "/pages/reciter.html?id=raad_kurdi"
+  from = "/pages/reciter-maher.html"
+  to = "/pages/reciter.html?id=maher"
   status = 301
 
 [[redirects]]
@@ -66,8 +51,23 @@
   status = 301
 
 [[redirects]]
+  from = "/pages/reciter-yasser.html"
+  to = "/pages/reciter.html?id=yasser_dosari"
+  status = 301
+
+[[redirects]]
   from = "/pages/reciter-sherif-mostafa.html"
   to = "/pages/reciter.html?id=sherif_mostafa"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-abdurrahman-mossad.html"
+  to = "/pages/reciter.html?id=abdurrahman_mossad"
+  status = 301
+
+[[redirects]]
+  from = "/pages/reciter-raad-kurdi.html"
+  to = "/pages/reciter.html?id=raad_kurdi"
   status = 301
 
 # ── Global Security Headers for All Routes ──

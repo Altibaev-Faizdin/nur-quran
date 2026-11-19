@@ -328,13 +328,13 @@ class QuranEndpointsTests(TestCase):
     def test_external_api_timeout_handling(self, mock_get):
         mock_get.side_effect = httpx.TimeoutException("Connection timed out")
         res = self.client.get(reverse("surah-list"))
-        self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(res.status_code, status.HTTP_504_GATEWAY_TIMEOUT)
 
     @patch("httpx.Client.get")
     def test_external_api_network_error_handling(self, mock_get):
         mock_get.side_effect = httpx.RequestError("DNS lookup failed")
         res = self.client.get(reverse("surah-list"))
-        self.assertEqual(res.status_code, status.HTTP_500_INTERNAL_SERVER_ERROR)
+        self.assertEqual(res.status_code, status.HTTP_502_BAD_GATEWAY)
 
 
 class PrayerTimesAndHijriTests(TestCase):
@@ -349,7 +349,8 @@ class PrayerTimesAndHijriTests(TestCase):
         mock_get.return_value = mock_resp
 
         res = self.client.get(
-            reverse("prayer-times"), {"lat": "21.42", "lng": "39.82", "method": "4"}
+            reverse("prayer-times"),
+            {"lat": "21.42", "lng": "39.82", "method": "4", "school": "1", "date": "19-11-2026"},
         )
         self.assertEqual(res.status_code, status.HTTP_200_OK)
 
@@ -367,6 +368,18 @@ class PrayerTimesAndHijriTests(TestCase):
             reverse("prayer-times"), {"lat": "21.42", "lng": "39.82", "method": "99"}
         )
         self.assertEqual(res3.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Invalid school
+        res4 = self.client.get(
+            reverse("prayer-times"), {"lat": "21.42", "lng": "39.82", "school": "5"}
+        )
+        self.assertEqual(res4.status_code, status.HTTP_400_BAD_REQUEST)
+
+        # Invalid date format
+        res5 = self.client.get(
+            reverse("prayer-times"), {"lat": "21.42", "lng": "39.82", "date": "2026-11-19"}
+        )
+        self.assertEqual(res5.status_code, status.HTTP_400_BAD_REQUEST)
 
     @patch("httpx.Client.get")
     def test_hijri_date_success(self, mock_get):

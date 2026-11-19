@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.json">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-<link rel="stylesheet" href="../shared.css?v=ee4921c0">
+<link rel="stylesheet" href="../shared.css?v=f84e13dd">
 </head>
 <body>
 <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
@@ -157,8 +157,8 @@
   <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>  <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
   </footer>
 
-<script src="../idb-store.js?v=b6b783a9"></script>
-<script src="../shared.js?v=c1a047af"></script>
+<script src="../idb-store.js?v=6bf1f19d"></script>
+<script src="../shared.js?v=f025ec97"></script>
 <script>
 
 let CUR=null,CAY=1,PLAYING=false,CLANG='en';
@@ -298,7 +298,7 @@ async function openS(n){
       const ar=d.data[0].ayahs;
       const tr=(d.data[1] && d.data[1].ayahs) || [];
       const translit=(d.data[2] && d.data[2].ayahs) || [];
-      const bismillahRegex = /^بِسْمِ\s*اللَّهِ\s*الرَّحْمَٰنِ\s*الرَّحِيمِ\s*/u;
+      const bismillahRegex = /^بِسْمِ\s*[ٱا]للَّ?[-ـ\u0640]*[ٰ\u0670]?هِ\s*[ٱا]لرَّحْمَ?[-ـ\u0640]*[ٰ\u0670]?نِ\s*[ٱا]لرَّحِيمِ\s*/u;
       document.getElementById('alist').innerHTML=ar.map((a,i)=>{
         const trText = (tr[i] && tr[i].text) || '';
         const translitText = (translit[i] && translit[i].text) || '';
@@ -432,6 +432,6 @@ document.addEventListener('langChange', e => { CLANG = e.detail; if (CUR) openS(
   </div>
 </div>
 <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=69c61cfb"></script>
+<script src="../i18n.js?v=fd6a6e40"></script>
 </body>
 </html>

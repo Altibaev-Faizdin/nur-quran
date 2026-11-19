@@ -61,3 +61,4 @@ function walkDir(dir) {
 
 walkDir(frontendDir);
 console.log('\n✅ Asset versioning completed successfully!');
+

@@ -37,7 +37,11 @@ const StorageManager = {
       var serialized = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val);
       localStorage.setItem(this._prefix + key, serialized);
       if (['access_token', 'refresh_token', 'username', 'lang'].includes(key)) {
-        try { localStorage.setItem(key, serialized); } catch (e) {}
+        try {
+          localStorage.setItem(key, serialized);
+        } catch (e) {
+          console.warn('Legacy mirror set failed:', e);
+        }
       }
       return true;
     } catch (e) {
@@ -49,7 +53,9 @@ const StorageManager = {
     try {
       localStorage.removeItem(this._prefix + key);
       localStorage.removeItem(key);
-    } catch (e) {}
+    } catch (e) {
+      console.warn('StorageManager.remove error:', e);
+    }
   }
 };
 window.StorageManager = StorageManager;
@@ -82,7 +88,9 @@ async function fetchSurahData(surahNum, lang) {
         _backgroundSyncSurah(surahNum, lang, edition);
         return cached;
       }
-    } catch (e) {}
+    } catch (e) {
+      console.warn('IndexedDB cache lookup failed for surah ' + surahNum, e);
+    }
   }
 
   // 2. Try configured backend API first
@@ -121,7 +129,9 @@ async function fetchSurahData(surahNum, lang) {
       try {
         const lastResort = await window.NoorDB.getSurah(surahNum, lang);
         if (lastResort) return lastResort;
-      } catch (err) {}
+      } catch (err) {
+        console.warn('IndexedDB last resort lookup failed for surah ' + surahNum, err);
+      }
     }
     console.warn('Fallback to basic uthmani text for surah ' + surahNum, e);
     const singleUrl = `https://api.alquran.cloud/v1/surah/${surahNum}`;
@@ -146,7 +156,9 @@ async function _backgroundSyncSurah(surahNum, lang, edition) {
         window.NoorDB.saveSurah(surahNum, lang, d);
       }
     }
-  } catch (e) {}
+  } catch (e) {
+    console.warn('Background surah sync failed for surah ' + surahNum, e);
+  }
 }
 window.fetchSurahData = fetchSurahData;
 
@@ -540,18 +552,41 @@ function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
 }
 window.calculateOfflinePrayerTimes = calculateOfflinePrayerTimes;
 
+// ── PRAYER SETTINGS & OFFLINE ENGINE ──
+function getPrayerSettings() {
+  var method = 3; // Default MWL
+  var school = 0; // Default Shafi / Standard
+  try {
+    var m = localStorage.getItem('nq_prayer_method');
+    if (m !== null && !isNaN(parseInt(m, 10))) {
+      method = parseInt(m, 10);
+    }
+    var s = localStorage.getItem('nq_prayer_school');
+    if (s !== null && !isNaN(parseInt(s, 10))) {
+      school = parseInt(s, 10);
+    }
+  } catch (e) {
+    console.warn('Error reading prayer settings from localStorage:', e);
+  }
+  return { method: method, school: school, hanafi: school === 1 };
+}
+window.getPrayerSettings = getPrayerSettings;
+
 // ── PRAYER TIMES ──
 function loadPrayer() {
-  // Check localStorage cache (TTL: 30 minutes)
+  var settings = getPrayerSettings();
+  var cacheKey = 'prayer_cache_' + settings.method + '_' + settings.school;
   var PRAYER_CACHE_TTL = 30 * 60 * 1000; // 30 minutes in ms
   var cached = null;
   try {
-    var raw = localStorage.getItem('prayer_cache');
+    var raw = localStorage.getItem(cacheKey);
     if (raw) {
       var parsed = JSON.parse(raw);
       if (Date.now() - parsed.ts < PRAYER_CACHE_TTL) cached = parsed.data;
     }
-  } catch(e) {}
+  } catch(e) {
+    console.warn('Error reading prayer cache:', e);
+  }
   if (cached) {
     var t = cached;
     set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
@@ -565,10 +600,12 @@ function loadPrayer() {
     try {
       var raw = localStorage.getItem('last_coords');
       if (raw) lastCoords = JSON.parse(raw);
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Error reading last_coords:', e);
+    }
     var la = lastCoords ? lastCoords.lat : 21.3891;
     var lo = lastCoords ? lastCoords.lng : 39.8579;
-    var t = calculateOfflinePrayerTimes(la, lo);
+    var t = calculateOfflinePrayerTimes(la, lo, new Date(), { method: settings.method, hanafi: settings.hanafi });
     set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
     set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
     hlPrayer(t); schedulePrayer(t);
@@ -576,12 +613,17 @@ function loadPrayer() {
     if (b) b.textContent = "📍 Offline Calc";
   };
   var fetchPrayer = function (la, lo) {
-    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {}
-    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
+    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {
+      console.warn('Error saving last_coords:', e);
+    }
+    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=${settings.method}&school=${settings.school}`)
       .then(r => r.json()).then(d => {
+        if (!d || !d.data || !d.data.timings) throw new Error('Invalid prayer data response');
         const t = d.data.timings;
-        // Cache the result
-        try { localStorage.setItem('prayer_cache', JSON.stringify({ts: Date.now(), data: t})); } catch(e) {}
+        // Cache the result with key matching method and school
+        try { localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), data: t})); } catch(e) {
+          console.warn('Error saving prayer cache:', e);
+        }
         set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
         set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
         hlPrayer(t); schedulePrayer(t);
@@ -593,17 +635,25 @@ function loadPrayer() {
     try {
       let r = await fetch('https://ipapi.co/json/');
       let d = await r.json();
-      if (d.latitude) return fetchPrayer(d.latitude, d.longitude);
-    } catch(e) {}
+      if (d && d.latitude && d.longitude) return fetchPrayer(d.latitude, d.longitude);
+    } catch(e) {
+      console.warn('ipapi lookup failed:', e);
+    }
     try {
       let r2 = await fetch('https://get.geojs.io/v1/ip/geo.json');
       let d2 = await r2.json();
-      if (d2.latitude) return fetchPrayer(d2.latitude, d2.longitude);
-    } catch(e) {}
+      if (d2 && d2.latitude && d2.longitude) return fetchPrayer(d2.latitude, d2.longitude);
+    } catch(e) {
+      console.warn('geojs lookup failed:', e);
+    }
     err();
   };
   if (!navigator.geolocation) return fb();
-  navigator.geolocation.getCurrentPosition(function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
+  navigator.geolocation.getCurrentPosition(
+    function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); },
+    fb,
+    { timeout: 7000 }
+  );
 }
 
 function hlPrayer(t) {
@@ -1250,25 +1300,21 @@ var NoorAudioManager = (function() {
       if (reciterId === 'mishary_alafasy') {
         urls.push('https://cdn.islamic.network/quran/audio/128/ar.alafasy/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Alafasy_128kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server8.mp3quran.net/afs/' + sPadded + '.mp3');
+        urls.push('https://everyayah.com/data/Alafasy_64kbps/' + sPadded + aPadded + '.mp3');
       } else if (reciterId === 'abdulbasit') {
         urls.push('https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Abdul_Basit_Murattal_192kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server7.mp3quran.net/basit/' + sPadded + '.mp3');
+        urls.push('https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/' + sPadded + aPadded + '.mp3');
       } else if (reciterId === 'ghamdi') {
         urls.push('https://everyayah.com/data/Ghamadi_40kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server7.mp3quran.net/s_gmd/' + sPadded + '.mp3');
       } else if (reciterId === 'minshawi') {
         urls.push('https://cdn.islamic.network/quran/audio/128/ar.minshawi/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Minshawy_Murattal_128kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server10.mp3quran.net/minsh/' + sPadded + '.mp3');
       } else if (reciterId === 'maher') {
         urls.push('https://cdn.islamic.network/quran/audio/128/ar.mahermuaiqly/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/MaherAlMuaiqly128kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server12.mp3quran.net/maher/' + sPadded + '.mp3');
       } else if (reciterId === 'yasser_dosari') {
         urls.push('https://everyayah.com/data/Yasser_Ad-Dussary_128kbps/' + sPadded + aPadded + '.mp3');
-        urls.push('https://server11.mp3quran.net/yasser/' + sPadded + '.mp3');
       } else {
         urls.push('https://cdn.islamic.network/quran/audio/128/ar.alafasy/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Alafasy_128kbps/' + sPadded + aPadded + '.mp3');
@@ -1605,7 +1651,9 @@ function updateMediaSession(surahTitle, ayahNum, reciterName) {
         var aud = document.getElementById('aud');
         if (aud && details.seekTime) aud.currentTime = details.seekTime;
       });
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Saving local bookmarks failed:', e);
+    }
   }
 }
 window.updateMediaSession = updateMediaSession;
@@ -1674,7 +1722,7 @@ function openSurah(n, ar, en) {
   r.classList.add('open');
   applyReadingSettings();
 
-  var bismillahRegex = /^بِسْمِ\s*اللَّهِ\s*الرَّحْمَٰنِ\s*الرَّحِيمِ\s*/u;
+  var bismillahRegex = /^بِسْمِ\s*[ٱا]للَّ?[-ـ\u0640]*[ٰ\u0670]?هِ\s*[ٱا]لرَّحْمَ?[-ـ\u0640]*[ٰ\u0670]?نِ\s*[ٱا]لرَّحِيمِ\s*/u;
   var lang = localStorage.getItem('lang') || 'en';
 
   fetchSurahData(n, lang)
@@ -1741,7 +1789,9 @@ function addBM(s, a) {
     });
     try {
       localStorage.setItem('nq_local_bookmarks', JSON.stringify(localBMs));
-    } catch (e) {}
+    } catch (e) {
+      console.warn('Saving local bookmarks failed:', e);
+    }
   }
 
   // Если пользователь авторизован на бэкенде — синхронизируем
@@ -1902,48 +1952,77 @@ function onEnd() {
 
 // ── PRAYER PAGE ──
 function loadPrayerBig() {
+  var settings = getPrayerSettings();
+  var cacheKey = 'prayer_cache_' + settings.method + '_' + settings.school;
   var err = function() {
     var lastCoords = null;
     try {
       var raw = localStorage.getItem('last_coords');
       if (raw) lastCoords = JSON.parse(raw);
-    } catch(e) {}
+    } catch(e) {
+      console.warn('Error reading last_coords:', e);
+    }
     var la = lastCoords ? lastCoords.lat : 21.3891;
     var lo = lastCoords ? lastCoords.lng : 39.8579;
-    var t = calculateOfflinePrayerTimes(la, lo);
+    var t = calculateOfflinePrayerTimes(la, lo, new Date(), { method: settings.method, hanafi: settings.hanafi });
     set('bft', t.Fajr); set('bst', t.Sunrise); set('bdt', t.Dhuhr);
     set('bat', t.Asr); set('bmt', t.Maghrib); set('bit', t.Isha);
+    set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
+    set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
     updatePrayerCards(t);
     hlPrayer(t); schedulePrayer(t);
     const msg = document.getElementById('pm-nxt');
     if (msg) msg.textContent = "Offline Mode: Prayer times calculated via astronomical math.";
+    const loc = document.getElementById('locLabel');
+    if (loc) loc.textContent = "📍 Calculated offline for last known position";
   };
   var fetchPrayer = function (la, lo) {
-    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {}
-    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
+    try { localStorage.setItem('last_coords', JSON.stringify({lat: la, lng: lo})); } catch(e) {
+      console.warn('Error saving last_coords:', e);
+    }
+    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=${settings.method}&school=${settings.school}`)
       .then(function (r) { return r.json(); }).then(function (d) {
+        if (!d || !d.data || !d.data.timings) throw new Error('Invalid prayer data response');
         var t = d.data.timings;
+        try { localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), data: t})); } catch(e) {
+          console.warn('Error saving prayer cache:', e);
+        }
         set('bft', t.Fajr); set('bst', t.Sunrise); set('bdt', t.Dhuhr);
         set('bat', t.Asr); set('bmt', t.Maghrib); set('bit', t.Isha);
+        set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
+        set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
         updatePrayerCards(t, d.data.date);
         hlPrayer(t); schedulePrayer(t);
+        const city = (d.data.meta && d.data.meta.timezone) || '';
+        const loc = document.getElementById('locLabel');
+        if (loc) loc.textContent = `📍 Location found · ${city}`;
       }).catch(err);
   };
   var fb = async function() {
+    const loc = document.getElementById('locLabel');
+    if (loc) loc.textContent = "Using IP Location Fallback...";
     try {
       let r = await fetch('https://ipapi.co/json/');
       let d = await r.json();
-      if (d.latitude) return fetchPrayer(d.latitude, d.longitude);
-    } catch(e) {}
+      if (d && d.latitude && d.longitude) return fetchPrayer(d.latitude, d.longitude);
+    } catch(e) {
+      console.warn('ipapi fallback failed:', e);
+    }
     try {
       let r2 = await fetch('https://get.geojs.io/v1/ip/geo.json');
       let d2 = await r2.json();
-      if (d2.latitude) return fetchPrayer(d2.latitude, d2.longitude);
-    } catch(e) {}
+      if (d2 && d2.latitude && d2.longitude) return fetchPrayer(d2.latitude, d2.longitude);
+    } catch(e) {
+      console.warn('geojs fallback failed:', e);
+    }
     err();
   };
   if (!navigator.geolocation) return fb();
-  navigator.geolocation.getCurrentPosition(function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); }, fb);
+  navigator.geolocation.getCurrentPosition(
+    function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); },
+    fb,
+    { timeout: 7000 }
+  );
 }
 
 function updatePrayerCards(t) {

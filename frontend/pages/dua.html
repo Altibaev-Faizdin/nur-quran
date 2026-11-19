@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.json">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-  <link rel="stylesheet" href="../shared.css?v=ee4921c0">
+  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
   <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <style>
     * {margin:0;padding:0;box-sizing:border-box}
@@ -155,7 +155,7 @@
   </footer>
 
 
-  <script src="../shared.js?v=c1a047af"></script>
+  <script src="../shared.js?v=f025ec97"></script>
   <script>
     const DAILY_DUAS = [
       {cat:'morning',ar:'اللَّهُمَّ بِكَ أَصْبَحْنَا وَبِكَ أَمْسَيْنَا',en:'O Allah, by You we enter the morning and by You we enter the evening.',ru:'О Аллах, с Тобой мы вошли в утро и с Тобой мы вошли в вечер.'},
@@ -224,7 +224,7 @@
       displayDuas(cat, search ? search.value : '');
     }
 
-    document.getElementById('duaGrid')?.addEventListener('click', (e) => {
+    document.getElementById('duasGrid')?.addEventListener('click', (e) => {
       const btn = e.target.closest('.copy-btn');
       if (btn) {
         const card = btn.closest('.dua-card');
@@ -291,6 +291,6 @@
   </div>
 </div>
 <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=69c61cfb"></script>
+<script src="../i18n.js?v=fd6a6e40"></script>
 </body>
 </html>

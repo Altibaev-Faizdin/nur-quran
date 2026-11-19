@@ -4,13 +4,13 @@
 /static/* https://nur-quran.onrender.com/static/:splat  200!
 
 # Reciter pages 301 redirects to unified template
-/pages/reciter-mishary.html             /pages/reciter.html?id=mishary            301
-/pages/reciter-abdulbaset.html          /pages/reciter.html?id=abdulbaset         301
-/pages/reciter-ghamdi.html              /pages/reciter.html?id=ghamdi             301
-/pages/reciter-menshawi.html            /pages/reciter.html?id=menshawi           301
-/pages/reciter-minshawi-mujawwad.html   /pages/reciter.html?id=minshawi_mujawwad  301
-/pages/reciter-husary.html              /pages/reciter.html?id=husary             301
-/pages/reciter-sudais.html              /pages/reciter.html?id=sudais             301
-/pages/reciter-raad-kurdi.html          /pages/reciter.html?id=raad_kurdi         301
-/pages/reciter-islam-sobhi.html         /pages/reciter.html?id=islam_sobhi        301
-/pages/reciter-sherif-mostafa.html      /pages/reciter.html?id=sherif_mostafa     301
+/pages/reciter-alafasy.html             /pages/reciter.html?id=mishary_alafasy     301
+/pages/reciter-abdulbasit.html          /pages/reciter.html?id=abdulbasit          301
+/pages/reciter-ghamdi.html              /pages/reciter.html?id=ghamdi              301
+/pages/reciter-minshawi.html             /pages/reciter.html?id=minshawi            301
+/pages/reciter-maher.html               /pages/reciter.html?id=maher               301
+/pages/reciter-islam-sobhi.html         /pages/reciter.html?id=islam_sobhi         301
+/pages/reciter-yasser.html              /pages/reciter.html?id=yasser_dosari       301
+/pages/reciter-sherif-mostafa.html      /pages/reciter.html?id=sherif_mostafa      301
+/pages/reciter-abdurrahman-mossad.html  /pages/reciter.html?id=abdurrahman_mossad  301
+/pages/reciter-raad-kurdi.html          /pages/reciter.html?id=raad_kurdi          301

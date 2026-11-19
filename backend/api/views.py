@@ -44,6 +44,27 @@ MP3QURAN_SERVERS = {
 }
 
 
+# ─── CUSTOM EXCEPTIONS FOR EXTERNAL SERVICES ───────────────────────────────
+
+
+class GatewayTimeout(exceptions.APIException):
+    status_code = status.HTTP_504_GATEWAY_TIMEOUT
+    default_detail = "External API timed out. Please try again."
+    default_code = "gateway_timeout"
+
+
+class BadGateway(exceptions.APIException):
+    status_code = status.HTTP_502_BAD_GATEWAY
+    default_detail = "Cannot reach external service. Check your connection."
+    default_code = "bad_gateway"
+
+
+class ServiceUnavailable(exceptions.APIException):
+    status_code = status.HTTP_503_SERVICE_UNAVAILABLE
+    default_detail = "External service is currently unavailable."
+    default_code = "service_unavailable"
+
+
 # ─── HELPER FUNCTIONS ───────────────────────────────────────────────────────
 
 
@@ -56,22 +77,18 @@ def fetch_external_api(url: str, timeout: float = API_TIMEOUT) -> dict:
             return response.json()
     except httpx.TimeoutException:
         logger.error("External API timeout (exceeded %ss): %s", timeout, url)
-        raise exceptions.APIException("External API timed out. Please try again.") from None
+        raise GatewayTimeout() from None
     except httpx.RequestError as exc:
         logger.error("Connection error to external API: %s (%s)", url, exc)
-        raise exceptions.APIException(
-            "Cannot reach external service. Check your connection."
-        ) from exc
+        raise BadGateway() from exc
     except httpx.HTTPStatusError as exc:
         logger.error("External API returned HTTP %s: %s", exc.response.status_code, url)
-        raise exceptions.APIException(
+        raise ServiceUnavailable(
             f"External API returned error {exc.response.status_code}."
         ) from exc
     except Exception as exc:
         logger.exception("Unexpected error fetching: %s (%s)", url, exc)
-        raise exceptions.APIException(
-            "An unexpected error occurred while fetching external data."
-        ) from exc
+        raise BadGateway("An unexpected error occurred while fetching external data.") from exc
 
 
 # ─── QURAN ENDPOINTS ────────────────────────────────────────────────────────
@@ -117,20 +134,23 @@ def surah_detail(request, surah_number: int):
 @cache_page(60 * 30)
 def prayer_times(request):
     """
-    GET /api/prayer-times/?lat=X&lng=Y&method=2
+    GET /api/prayer-times/?lat=X&lng=Y&method=3&school=0&date=DD-MM-YYYY
     Get prayer times for given coordinates using aladhan.com with validation.
     """
     lat_raw = request.query_params.get("lat", "21.3891")
     lng_raw = request.query_params.get("lng", "39.8579")
-    method_raw = request.query_params.get("method", "2")
+    method_raw = request.query_params.get("method", "3")
+    school_raw = request.query_params.get("school", "0")
+    date_param = request.query_params.get("date", "").strip()
 
     try:
         lat = round(float(lat_raw), 2)
         lng = round(float(lng_raw), 2)
         method = int(method_raw)
+        school = int(school_raw)
     except (ValueError, TypeError):
         return Response(
-            {"error": "Invalid parameters. lat, lng, and method must be numeric."},
+            {"error": "Invalid parameters. lat, lng, method, and school must be numeric."},
             status=status.HTTP_400_BAD_REQUEST,
         )
 
@@ -146,7 +166,26 @@ def prayer_times(request):
             status=status.HTTP_400_BAD_REQUEST,
         )
 
-    url = f"{ALADHAN_BASE}/timings?latitude={lat}&longitude={lng}&method={method}"
+    if school not in (0, 1):
+        return Response(
+            {
+                "error": "Invalid school choice. 0 for Standard (Shafi/Maliki/Hanbali), 1 for Hanafi."
+            },
+            status=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if date_param:
+        if not re.match(r"^\d{2}-\d{2}-\d{4}$", date_param):
+            return Response(
+                {"error": "Invalid date format. Expected DD-MM-YYYY."},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        url = f"{ALADHAN_BASE}/timings/{date_param}?latitude={lat}&longitude={lng}&method={method}&school={school}"
+    else:
+        url = (
+            f"{ALADHAN_BASE}/timings?latitude={lat}&longitude={lng}&method={method}&school={school}"
+        )
+
     data = fetch_external_api(url)
     return Response(data, status=status.HTTP_200_OK)
 

@@ -23,7 +23,7 @@
   <link rel="manifest" href="/manifest.json">
 
   <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-<link rel="stylesheet" href="../shared.css?v=ee4921c0">
+<link rel="stylesheet" href="../shared.css?v=f84e13dd">
 <style>
 .prayer-big-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;max-width:900px;margin:0 auto}
 .pbig{padding:32px 20px;text-align:center;position:relative;overflow:hidden}
@@ -84,7 +84,31 @@
   <div style="font-size:4rem;color:var(--white);font-weight:200;letter-spacing:6px;font-variant-numeric:tabular-nums" id="bigClock">00:00:00</div>
   <div style="font-size:.75rem;color:var(--soft);letter-spacing:3px;margin-top:6px" id="bigDate">—</div>
   <div style="font-family:'Amiri',serif;font-size:1rem;color:var(--gold);margin-top:4px" id="bigHijri">—</div>
-  <button class="btn bp" style="margin-top:20px" onclick="loadPrayerBig()" >📍 Get My Prayer Times</button>
+  
+  <!-- PRAYER SETTINGS CONTROLS -->
+  <div class="prayer-settings-bar" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin:24px auto 16px;max-width:700px;padding:14px 20px;background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.2);border-radius:12px;">
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label for="prayerMethodSelect" style="font-size:0.8rem;color:var(--soft);letter-spacing:1px;" data-i18n="prayer_calc_method">Method:</label>
+      <select id="prayerMethodSelect" class="form-control" style="background:#0c131d;color:var(--goldL);border:1px solid rgba(212,160,23,0.3);padding:6px 12px;border-radius:6px;font-size:0.8rem;outline:none;cursor:pointer;">
+        <option value="3">MWL (Muslim World League)</option>
+        <option value="2">ISNA (North America)</option>
+        <option value="5">Egyptian General Authority</option>
+        <option value="4">Umm al-Qura (Makkah)</option>
+        <option value="1">Karachi (Univ. Islamic Sciences)</option>
+        <option value="13">Diyanet (Turkey)</option>
+        <option value="14">SAMRF (Russia)</option>
+      </select>
+    </div>
+    <div style="display:flex;align-items:center;gap:8px;">
+      <label for="prayerSchoolSelect" style="font-size:0.8rem;color:var(--soft);letter-spacing:1px;" data-i18n="prayer_asr_school">Asr Madhab:</label>
+      <select id="prayerSchoolSelect" class="form-control" style="background:#0c131d;color:var(--goldL);border:1px solid rgba(212,160,23,0.3);padding:6px 12px;border-radius:6px;font-size:0.8rem;outline:none;cursor:pointer;">
+        <option value="0">Standard (Shafi, Maliki, Hanbali)</option>
+        <option value="1">Hanafi</option>
+      </select>
+    </div>
+  </div>
+
+  <button class="btn bp" style="margin-top:10px" onclick="loadPrayerBig()" >📍 Get My Prayer Times</button>
 </div>
 
 <section class="sec">
@@ -107,7 +131,7 @@
   <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>  <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
   </footer>
 
-<script src="../shared.js?v=c1a047af"></script>
+<script src="../shared.js?v=f025ec97"></script>
 <script>
 // Big clock for this page
 (function(){
@@ -124,37 +148,44 @@
   setInterval(upd,1000);upd();
 })();
 
-function loadPrayerBig(){
-  const fetchBig = (la, lo) => {
-    fetch(`${API_BASE}/prayer-times/?lat=${la}&lng=${lo}&method=2`)
-      .then(r=>r.json()).then(d=>{
-        const t=d.data.timings;
-        set('bft',t.Fajr);set('bst',t.Sunrise);set('bdt',t.Dhuhr);
-        set('bat',t.Asr);set('bmt',t.Maghrib);set('bit',t.Isha);
-        // Also update prayer bar
-        set('ft',t.Fajr);set('srt',t.Sunrise);set('dt',t.Dhuhr);
-        set('at',t.Asr);set('mt',t.Maghrib);set('it',t.Isha);
-        // Highlight now
-        const now=new Date(),cur=now.getHours()*60+now.getMinutes();
-        const tm=s=>{const[h,m]=s.split(':').map(Number);return h*60+m;};
-        const ps=[{id:'pb-fajr',m:tm(t.Fajr)},{id:'pb-sunrise',m:tm(t.Sunrise)},{id:'pb-dhuhr',m:tm(t.Dhuhr)},{id:'pb-asr',m:tm(t.Asr)},{id:'pb-maghrib',m:tm(t.Maghrib)},{id:'pb-isha',m:tm(t.Isha)}];
-        ps.forEach(p=>{const e=document.getElementById(p.id);if(e)e.classList.remove('now');});
-        for(let i=ps.length-1;i>=0;i--){if(cur>=ps[i].m){const e=document.getElementById(ps[i].id);if(e){e.classList.add('now');break;}}}
-        // Time left
-        const city=d.data.meta.timezone||'';
-        set('locLabel',`📍 Location found · ${city}`);
-        schedulePrayer(t);
-      }).catch(()=>set('locLabel','⚠️ Could not load times'));
-  };
+// Initialize prayer settings UI from localStorage
+(function initPrayerSettings() {
+  const methodSelect = document.getElementById('prayerMethodSelect');
+  const schoolSelect = document.getElementById('prayerSchoolSelect');
+  const currentSettings = typeof getPrayerSettings === 'function' ? getPrayerSettings() : { method: 3, school: 0 };
 
-  const fb = () => {
-    set('locLabel','Using IP Location Fallback...');
-    fetch('https://ipapi.co/json/').then(r=>r.json()).then(d=>fetchBig(d.latitude, d.longitude)).catch(()=>set('locLabel','⚠️ Location access denied'));
-  };
+  if (methodSelect) {
+    methodSelect.value = String(currentSettings.method);
+    methodSelect.addEventListener('change', function() {
+      try {
+        localStorage.setItem('nq_prayer_method', this.value);
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('prayer_cache')) localStorage.removeItem(k);
+        });
+      } catch (e) {
+        console.warn('Failed to save prayer method:', e);
+      }
+      if (typeof loadPrayerBig === 'function') loadPrayerBig();
+      if (typeof loadPrayer === 'function') loadPrayer();
+    });
+  }
 
-  if(!navigator.geolocation) return fb();
-  navigator.geolocation.getCurrentPosition(pos => fetchBig(pos.coords.latitude, pos.coords.longitude), fb);
-}
+  if (schoolSelect) {
+    schoolSelect.value = String(currentSettings.school);
+    schoolSelect.addEventListener('change', function() {
+      try {
+        localStorage.setItem('nq_prayer_school', this.value);
+        Object.keys(localStorage).forEach(k => {
+          if (k.startsWith('prayer_cache')) localStorage.removeItem(k);
+        });
+      } catch (e) {
+        console.warn('Failed to save prayer school:', e);
+      }
+      if (typeof loadPrayerBig === 'function') loadPrayerBig();
+      if (typeof loadPrayer === 'function') loadPrayer();
+    });
+  }
+})();
 </script>
 
 <!-- MOBILE NAV -->
@@ -199,6 +230,6 @@ function loadPrayerBig(){
   </div>
 </div>
 <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=69c61cfb"></script>
+<script src="../i18n.js?v=fd6a6e40"></script>
 </body>
 </html>

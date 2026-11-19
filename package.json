@@ -7,6 +7,8 @@
   "scripts": {
     "test": "node scripts/test-runner.mjs && node scripts/verify-security.mjs",
     "test:audio": "node scripts/verify-audio.mjs",
+    "test:prayer": "python3 scripts/verify-prayer-benchmarks.py",
+    "audit:scout": "python3 scripts/scout-audit.py",
     "version-assets": "node scripts/version-assets.mjs",
     "generate-icons": "python3 scripts/generate-icons.py",
     "update-meta": "python3 scripts/update-meta-and-footers.py",
@@ -23,3 +25,4 @@
   "author": "Noor Al-Quran Team",
   "license": "MIT"
 }
+

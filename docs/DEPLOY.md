@@ -128,3 +128,4 @@ server {
 - [ ] Mixed Content: no `http://localhost` warnings in browser developer tools
 - [ ] PWA: Service Worker v2 registers and caches static assets; offline mode functions in Airplane Mode
 - [ ] Audio: EveryAyah and MP3Quran stream smoothly without CORS or Mixed Content errors
+
