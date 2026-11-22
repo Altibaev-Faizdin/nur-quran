@@ -5,14 +5,14 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "node server.js",
+    "start": "node server.js",
+    "build": "node --check server.js && node scripts/test-runner.mjs && node scripts/verify-security.mjs",
+    "lint": "node --check server.js && node --check frontend/shared.js && node --check frontend/i18n.js && node --check frontend/idb-store.js && node --check frontend/reciter-player.js",
     "test": "node scripts/test-runner.mjs && node scripts/verify-security.mjs",
     "test:audio": "node scripts/verify-audio.mjs",
-    "test:prayer": "python3 scripts/verify-prayer-benchmarks.py",
-    "audit:scout": "python3 scripts/scout-audit.py",
     "version-assets": "node scripts/version-assets.mjs",
-    "generate-icons": "python3 scripts/generate-icons.py",
-    "update-meta": "python3 scripts/update-meta-and-footers.py",
-    "serve": "python3 -m http.server 3000 --directory frontend"
+    "serve": "node server.js"
   },
   "keywords": [
     "quran",
@@ -23,6 +23,8 @@
     "audio-streaming"
   ],
   "author": "Noor Al-Quran Team",
-  "license": "MIT"
+  "license": "MIT",
+  "dependencies": {
+    "express": "^5.3.0"
+  }
 }
-

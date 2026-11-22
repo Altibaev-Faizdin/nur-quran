@@ -64,9 +64,7 @@ window.storageSet = function(k, v) { return StorageManager.set(k, v); };
 window.storageRemove = function(k) { return StorageManager.remove(k); };
 
 // ── API BASE & ZERO-FAILURE DUAL FALLBACK ──
-const isDevPort = (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') &&
-                  window.location.port !== '' && window.location.port !== '8000';
-const API_BASE = window.NQ_API_BASE || (isDevPort ? 'http://localhost:8000/api' : '/api');
+const API_BASE = window.NQ_API_BASE || '/api';
 const PUBLIC_QURAN_API = 'https://api.alquran.cloud/v1';
 window.API_BASE = API_BASE;
 window.PUBLIC_QURAN_API = PUBLIC_QURAN_API;
@@ -802,6 +800,7 @@ function initNetworkTracker() {
 window.initNetworkTracker = initNetworkTracker;
 
 // ── SERVICE WORKER REGISTRATION ──
+const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
 if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || isLocal)) {
   window.addEventListener('load', function() {
     var swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
