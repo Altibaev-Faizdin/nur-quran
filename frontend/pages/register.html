@@ -3,259 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Register — Noor Al-Quran</title>
-  <meta name="description" content="Create your Noor Al-Quran account to save bookmarks and personalize your Quran experience.">
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel+Decorative:wght@400;700&display=swap" rel="stylesheet">
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
-  <style>
-    /* ── AUTH PAGE LAYOUT ── */
-    .auth-page {
-      min-height: 100vh;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      padding: 100px 20px 40px;
-      position: relative;
-      z-index: 2;
-    }
-
-    .auth-card {
-      width: 100%;
-      max-width: 440px;
-      background: rgba(6,15,46,0.75);
-      border: 1px solid rgba(212,160,23,0.25);
-      border-radius: 28px;
-      padding: 48px 40px 40px;
-      backdrop-filter: blur(20px);
-      -webkit-backdrop-filter: blur(20px);
-      box-shadow: 0 20px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-      position: relative;
-      overflow: hidden;
-    }
-    .auth-card::before {
-      content: '';
-      position: absolute;
-      top: -60px;
-      right: -60px;
-      width: 180px;
-      height: 180px;
-      background: radial-gradient(circle, rgba(212,160,23,0.08), transparent 70%);
-      pointer-events: none;
-    }
-    .auth-card::after {
-      content: '';
-      position: absolute;
-      bottom: -40px;
-      left: -40px;
-      width: 120px;
-      height: 120px;
-      background: radial-gradient(circle, rgba(13,38,128,0.3), transparent 70%);
-      pointer-events: none;
-    }
-
-    .auth-icon {
-      width: 72px;
-      height: 72px;
-      background: linear-gradient(135deg, rgba(212,160,23,0.2), rgba(13,38,128,0.4));
-      border: 1px solid rgba(212,160,23,0.35);
-      border-radius: 50%;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 2rem;
-      margin: 0 auto 24px;
-      box-shadow: 0 0 30px rgba(212,160,23,0.15);
-    }
-
-    .auth-title {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1.6rem;
-      color: var(--goldL);
-      margin-bottom: 8px;
-      text-align: center;
-      text-shadow: 0 0 20px rgba(240,192,64,0.3);
-      line-height: 1.3;
-    }
-    .auth-sub {
-      font-size: 0.85rem;
-      color: var(--soft);
-      margin-bottom: 36px;
-      text-align: center;
-      line-height: 1.5;
-    }
-    .auth-divider {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      margin-bottom: 28px;
-    }
-    .auth-divider::before, .auth-divider::after {
-      content: '';
-      flex: 1;
-      height: 1px;
-      background: linear-gradient(90deg, transparent, rgba(212,160,23,0.3), transparent);
-    }
-    .auth-divider span {
-      font-family: 'Amiri', serif;
-      font-size: 1.1rem;
-      color: var(--gold);
-    }
-
-    .auth-form {
-      display: flex;
-      flex-direction: column;
-      gap: 16px;
-    }
-
-    .input-group {
-      position: relative;
-    }
-    .input-icon {
-      position: absolute;
-      left: 18px;
-      top: 50%;
-      transform: translateY(-50%);
-      font-size: 1rem;
-      pointer-events: none;
-      color: var(--gold);
-      opacity: 0.7;
-    }
-    .auth-input {
-      width: 100%;
-      background: rgba(10,26,74,0.4);
-      border: 1px solid rgba(212,160,23,0.2);
-      color: var(--white);
-      padding: 15px 18px 15px 48px;
-      border-radius: 14px;
-      font-size: 0.95rem;
-      outline: none;
-      font-family: 'Lato', sans-serif;
-      transition: var(--r);
-      letter-spacing: 0.3px;
-    }
-    .auth-input:focus {
-      border-color: var(--gold);
-      background: rgba(10,26,74,0.6);
-      box-shadow: 0 0 0 3px rgba(212,160,23,0.1), 0 0 20px rgba(212,160,23,0.1);
-    }
-    .auth-input::placeholder { color: rgba(168,192,232,0.4); }
-
-    .password-hint {
-      font-size: 0.72rem;
-      color: var(--soft);
-      margin-top: 4px;
-      padding-left: 4px;
-      opacity: 0.75;
-    }
-
-    .auth-btn {
-      width: 100%;
-      background: linear-gradient(135deg, var(--gold) 0%, var(--goldL) 50%, #f5c842 100%);
-      border: none;
-      color: var(--bg0);
-      padding: 16px;
-      border-radius: 14px;
-      font-weight: 700;
-      font-size: 0.95rem;
-      cursor: pointer;
-      transition: var(--r);
-      box-shadow: 0 6px 25px rgba(212,160,23,0.35);
-      margin-top: 6px;
-      letter-spacing: 1px;
-      text-transform: uppercase;
-      font-family: 'Lato', sans-serif;
-      position: relative;
-      overflow: hidden;
-    }
-    .auth-btn::before {
-      content: '';
-      position: absolute;
-      top: 0; left: -100%;
-      width: 100%; height: 100%;
-      background: linear-gradient(90deg, transparent, rgba(255,255,255,0.15), transparent);
-      transition: left 0.5s;
-    }
-    .auth-btn:hover::before { left: 100%; }
-    .auth-btn:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 10px 35px rgba(212,160,23,0.5);
-    }
-    .auth-btn:active { transform: translateY(0); }
-    .auth-btn:disabled {
-      opacity: 0.65;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .auth-links {
-      margin-top: 28px;
-      text-align: center;
-      font-size: 0.88rem;
-      color: var(--soft);
-      line-height: 1.6;
-    }
-    .auth-links a {
-      color: var(--goldL);
-      text-decoration: none;
-      font-weight: 700;
-      transition: color 0.2s;
-    }
-    .auth-links a:hover { color: var(--goldG); text-decoration: underline; }
-
-    .auth-error {
-      color: #ff8080;
-      font-size: 0.875rem;
-      display: none;
-      background: rgba(255,80,80,0.08);
-      border: 1px solid rgba(255,80,80,0.25);
-      padding: 12px 16px;
-      border-radius: 12px;
-      text-align: center;
-      line-height: 1.5;
-    }
-    .auth-error.show { display: block; }
-
-    .auth-success {
-      color: #6bff9e;
-      font-size: 0.875rem;
-      display: none;
-      background: rgba(107,255,158,0.08);
-      border: 1px solid rgba(107,255,158,0.25);
-      padding: 12px 16px;
-      border-radius: 12px;
-      text-align: center;
-      line-height: 1.5;
-    }
-    .auth-success.show { display: block; }
-
-    .auth-benefits {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-      margin-top: 28px;
-      padding-top: 24px;
-      border-top: 1px solid rgba(212,160,23,0.12);
-    }
-    .benefit-item {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      font-size: 0.8rem;
-      color: var(--soft);
-    }
-    .benefit-item .b-ic { font-size: 1.1rem; }
-    .benefit-item strong { color: var(--silver); }
-
-    /* ── RESPONSIVE ── */
-    @media (max-width: 480px) {
-      .auth-card {
-        padding: 36px 24px 32px;
-        border-radius: 22px;
-      }
-      .auth-title { font-size: 1.35rem; }
-    }
-  </style>
+  <title>Create Account — Noor Al-Quran</title>
+  <meta name="description" content="Create a free Noor Al-Quran account to save and synchronize Quran bookmarks across devices.">
+  <meta property="og:title" content="Create Account — Noor Al-Quran">
+  <meta property="og:description" content="Create a free account to save and sync your Quran bookmarks.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
@@ -266,6 +17,12 @@
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
+  <link rel="manifest" href="/manifest.json">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
 <body>
   <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
@@ -280,7 +37,7 @@
       <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
       <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
         <div class="dropdown-content">
           <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
           <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
@@ -291,29 +48,29 @@
       </li>
       <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
         <div class="dropdown-content">
           <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
-          <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
+          <a href="../pages/register.html" class="on" data-i18n="auth_register_btn" data-auth="out">Register</a>
           <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+          <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+          <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
         </div>
       </li>
     </ul>
   </nav>
 
   <!-- CONTENT -->
-  <main class="auth-page">
+  <main id="main-content" class="auth-page">
     <div class="auth-card">
       <div class="auth-icon">✨</div>
-      <div class="auth-title" data-i18n="auth_register_title">Join Noor Al-Quran</div>
+      <h1 class="auth-title" data-i18n="auth_register_title">Join Noor Al-Quran</h1>
       <div class="auth-sub" data-i18n="auth_register_sub">Create your account — it's free forever</div>
 
       <div class="auth-divider"><span>بِسْمِ اللَّه</span></div>
 
-      <div id="register-error" class="auth-error"></div>
-      <div id="register-success" class="auth-success">Account created! Signing you in...</div>
+      <div id="register-error" class="auth-error" role="alert"></div>
+      <div id="register-success" class="auth-success" role="status">Account created! Signing you in...</div>
 
       <form class="auth-form" id="registerForm" novalidate>
         <div class="input-group">
@@ -325,9 +82,9 @@
           <div class="input-group">
             <label for="password" class="sr-only">Create a password</label>
             <span class="input-icon">🔒</span>
-            <input aria-label="Create a password" type="password" id="password" class="auth-input" placeholder="Create a password" required minlength="6" autocomplete="new-password">
+            <input aria-label="Create a password" type="password" id="password" class="auth-input" placeholder="Create a password" required minlength="8" autocomplete="new-password">
           </div>
-          <div class="password-hint">Minimum 6 characters</div>
+          <div class="password-hint">Minimum 8 characters with letters and digits/symbols</div>
         </div>
         <button type="submit" class="auth-btn" id="registerBtn" data-i18n="auth_register_btn">Create Account</button>
       </form>
@@ -344,69 +101,14 @@
     </div>
   </main>
 
-  <script src="../shared.js?v=d40d020c"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      if (localStorage.getItem('access_token')) {
-        window.location.href = 'bookmarks.html';
-        return;
-      }
-
-      document.getElementById('registerForm').addEventListener('submit', async (e) => {
-        e.preventDefault();
-        const u = document.getElementById('username').value.trim();
-        const p = document.getElementById('password').value;
-        const errDiv = document.getElementById('register-error');
-        const sucDiv = document.getElementById('register-success');
-        const btn = document.getElementById('registerBtn');
-
-        if (!u || !p) return;
-
-        btn.disabled = true;
-        btn.textContent = '⏳ Creating account...';
-        errDiv.classList.remove('show');
-        sucDiv.classList.remove('show');
-
-        try {
-          const apiBase = window.API_BASE || '/api';
-          const res = await fetch(`${apiBase}/auth/register/`, {
-            method: 'POST',
-            headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({username: u, password: p})
-          });
-
-          const data = await res.json().catch(() => ({}));
-
-          if (res.ok && data.access) {
-            localStorage.setItem('access_token', data.access);
-            localStorage.setItem('refresh_token', data.refresh);
-            localStorage.setItem('username', u);
-            sucDiv.classList.add('show');
-            btn.textContent = '✓ Account Created!';
-            setTimeout(() => { window.location.href = 'bookmarks.html'; }, 800);
-          } else {
-            let errorMsg = 'Registration failed. Username might be taken.';
-            if (data.username) errorMsg = `Username: ${data.username[0]}`;
-            else if (data.password) errorMsg = `Password: ${data.password[0]}`;
-            else if (data.detail) errorMsg = data.detail;
-
-            errDiv.textContent = errorMsg;
-            errDiv.classList.add('show');
-            btn.disabled = false;
-            btn.textContent = 'Create Account';
-          }
-        } catch (err) {
-          errDiv.textContent = 'Unable to connect to the server. Please check your connection.';
-          errDiv.classList.add('show');
-          btn.disabled = false;
-          btn.textContent = 'Create Account';
-          if (typeof showToast === 'function') {
-            showToast('Unable to reach server. Please check your connection.', 'error', 4500);
-          }
-        }
-      });
-    });
-  </script>
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+    <div class="fc fc-links">
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+      <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+    </div>
+  </footer>
 
   <!-- MOBILE NAV -->
   <div class="mob-nav">
@@ -426,27 +128,30 @@
       <div class="mn-ic">🕐</div>
       <div data-i18n="mn_prayer">Prayer</div>
     </a>
-    <a href="javascript:void(0)" onclick="toggleMobileAccount()">
+    <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
       <div class="mn-ic">👤</div>
       <div data-i18n="mn_account">Account</div>
-    </a>
+    </button>
   </div>
 
   <!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
   <div id="mobAccountSheet" class="bottom-sheet">
     <div class="sheet-content">
       <div class="sheet-handle"></div>
-      <h3 data-i18n="mn_account_title">My Account</h3>
+      <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
       <div class="sheet-links">
         <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-        <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+        <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
         <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-        <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-        <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+        <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+        <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
       </div>
     </div>
   </div>
-  <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-  <script src="../i18n.js?v=fd6a6e40"></script>
+  <div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
+
+  <script defer src="../shared.js?v=0adcc7b2"></script>
+  <script defer src="../js/pages/register.js?v=d1d435ef"></script>
+  <script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>

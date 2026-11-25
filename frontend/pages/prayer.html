@@ -1,235 +1,166 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Prayer Times — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Prayer Times — Noor Al-Quran</title>
+  <meta name="description" content="Accurate Islamic Prayer Times (Fajr, Sunrise, Dhuhr, Asr, Maghrib, Isha) supporting MWL, ISNA, Umm al-Qura, Hanafi/Shafi schools, and offline math.">
+  <meta property="og:title" content="Noor Al-Quran — Prayer Times">
+  <meta property="og:description" content="Accurate Islamic Prayer Times with multiple calculation methods and offline calculation.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-<link rel="stylesheet" href="../shared.css?v=f84e13dd">
-<style>
-.prayer-big-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:18px;max-width:900px;margin:0 auto}
-.pbig{padding:32px 20px;text-align:center;position:relative;overflow:hidden}
-.pbig::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse at top,rgba(212,160,23,.07),transparent 70%);opacity:0;transition:var(--r)}
-.pbig:hover::before,.pbig.now::before{opacity:1}
-.pbig.now{border-color:rgba(212,160,23,.6)!important;box-shadow:0 0 30px rgba(212,160,23,.18)}
-.pbig.now::after{content:'NOW';position:absolute;top:12px;right:12px;font-size:.6rem;letter-spacing:2px;color:var(--goldL);background:rgba(212,160,23,.15);border:1px solid rgba(212,160,23,.3);padding:2px 8px;border-radius:10px}
-.pi-icon{font-size:2.2rem;margin-bottom:12px}
-.pi-name{font-family:'Cinzel Decorative',serif;font-size:.85rem;color:var(--soft);letter-spacing:2px;margin-bottom:8px}
-.pi-time{font-size:2.2rem;color:var(--goldL);font-weight:300;letter-spacing:3px;font-variant-numeric:tabular-nums}
-.pi-ar{font-family:'Amiri',serif;font-size:1rem;color:var(--soft);margin-top:6px}
-.pi-left{font-size:.72rem;color:var(--soft);margin-top:8px}
-</style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
-<body>
+<body class="page-prayer">
 <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
 <div class="nebula"></div><canvas id="sc"></canvas>
 <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
-  <nav>
-    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
-    <ul class="nav-links">
-      <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
-      <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
-      <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
-      <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
-        <div class="dropdown-content">
-          <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
-          <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
-          <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
-          <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
-          <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
-        </div>
-      </li>
-      <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
-      <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
-        <div class="dropdown-content">
-          <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
-          <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
-          <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
-        </div>
-      </li>
-    </ul>
-  </nav>
-<div class="wrap">
-<div class="ph fi">
-  <div class="stag">أوقات الصلاة</div>
-  <h1 class="st">Prayer <span>Times</span></h1>
-  <div class="sl"></div>
-  <p style="color:var(--soft);font-size:.82rem;margin-top:12px" id="locLabel">Click button to load your prayer times</p>
-</div>
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+    <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
+    <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
+    <li><a href="../pages/prayer.html" class="on" data-i18n="nav_prayer">Prayer Times</a></li>
+    <li class="dropdown">
+      <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
+      <div class="dropdown-content">
+        <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
+        <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
+        <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
+        <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
+        <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
+      </div>
+    </li>
+    <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
+    <li class="dropdown account-dropdown">
+      <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
+      <div class="dropdown-content">
+        <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
+        <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+        <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
+      </div>
+    </li>
+  </ul>
+</nav>
 
-<!-- BIG CLOCK -->
-<div style="text-align:center;padding:36px 24px;border-bottom:1px solid rgba(212,160,23,.1)">
-  <div style="font-size:4rem;color:var(--white);font-weight:200;letter-spacing:6px;font-variant-numeric:tabular-nums" id="bigClock">00:00:00</div>
-  <div style="font-size:.75rem;color:var(--soft);letter-spacing:3px;margin-top:6px" id="bigDate">—</div>
-  <div style="font-family:'Amiri',serif;font-size:1rem;color:var(--gold);margin-top:4px" id="bigHijri">—</div>
-  
-  <!-- PRAYER SETTINGS CONTROLS -->
-  <div class="prayer-settings-bar" style="display:flex;flex-wrap:wrap;justify-content:center;gap:16px;margin:24px auto 16px;max-width:700px;padding:14px 20px;background:rgba(212,160,23,0.06);border:1px solid rgba(212,160,23,0.2);border-radius:12px;">
-    <div style="display:flex;align-items:center;gap:8px;">
-      <label for="prayerMethodSelect" style="font-size:0.8rem;color:var(--soft);letter-spacing:1px;" data-i18n="prayer_calc_method">Method:</label>
-      <select id="prayerMethodSelect" class="form-control" style="background:#0c131d;color:var(--goldL);border:1px solid rgba(212,160,23,0.3);padding:6px 12px;border-radius:6px;font-size:0.8rem;outline:none;cursor:pointer;">
-        <option value="3">MWL (Muslim World League)</option>
-        <option value="2">ISNA (North America)</option>
-        <option value="5">Egyptian General Authority</option>
-        <option value="4">Umm al-Qura (Makkah)</option>
-        <option value="1">Karachi (Univ. Islamic Sciences)</option>
-        <option value="13">Diyanet (Turkey)</option>
-        <option value="14">SAMRF (Russia)</option>
-      </select>
-    </div>
-    <div style="display:flex;align-items:center;gap:8px;">
-      <label for="prayerSchoolSelect" style="font-size:0.8rem;color:var(--soft);letter-spacing:1px;" data-i18n="prayer_asr_school">Asr Madhab:</label>
-      <select id="prayerSchoolSelect" class="form-control" style="background:#0c131d;color:var(--goldL);border:1px solid rgba(212,160,23,0.3);padding:6px 12px;border-radius:6px;font-size:0.8rem;outline:none;cursor:pointer;">
-        <option value="0">Standard (Shafi, Maliki, Hanbali)</option>
-        <option value="1">Hanafi</option>
-      </select>
-    </div>
+<main id="main-content" class="wrap">
+  <div class="ph fi">
+    <div class="stag">أوقات الصلاة</div>
+    <h1 class="st">Prayer <span>Times</span></h1>
+    <div class="sl"></div>
+    <p class="ph-sub" id="locLabel">Click button to load your prayer times</p>
   </div>
 
-  <button class="btn bp" style="margin-top:10px" onclick="loadPrayerBig()" >📍 Get My Prayer Times</button>
-</div>
+  <!-- BIG CLOCK & SETTINGS -->
+  <div class="prayer-clock-box">
+    <div class="prayer-big-clock" id="bigClock">00:00:00</div>
+    <div class="prayer-big-date" id="bigDate">—</div>
+    <div class="prayer-big-hijri" id="bigHijri">—</div>
 
-<section class="sec">
-<div class="prayer-big-grid fi" id="pbgrid">
-  <div class="card pbig" id="pb-fajr">    <div class="pi-icon">🌙</div><div class="pi-name">FAJR</div><div class="pi-time" id="bft">—:—</div><div class="pi-ar">الفجر</div><div class="pi-left" id="bfl">—</div></div>
-  <div class="card pbig" id="pb-sunrise"><div class="pi-icon">🌅</div><div class="pi-name">SUNRISE</div><div class="pi-time" id="bst">—:—</div><div class="pi-ar">الشروق</div><div class="pi-left" id="bsl">—</div></div>
-  <div class="card pbig" id="pb-dhuhr">  <div class="pi-icon">☀️</div><div class="pi-name">DHUHR</div><div class="pi-time" id="bdt">—:—</div><div class="pi-ar">الظهر</div><div class="pi-left" id="bdl">—</div></div>
-  <div class="card pbig" id="pb-asr">    <div class="pi-icon">🌤️</div><div class="pi-name">ASR</div><div class="pi-time" id="bat">—:—</div><div class="pi-ar">العصر</div><div class="pi-left" id="bal">—</div></div>
-  <div class="card pbig" id="pb-maghrib"><div class="pi-icon">🌇</div><div class="pi-name">MAGHRIB</div><div class="pi-time" id="bmt">—:—</div><div class="pi-ar">المغرب</div><div class="pi-left" id="bml">—</div></div>
-  <div class="card pbig" id="pb-isha">   <div class="pi-icon">🌃</div><div class="pi-name">ISHA</div><div class="pi-time" id="bit">—:—</div><div class="pi-ar">العشاء</div><div class="pi-left" id="bil">—</div></div>
-</div>
-</section>
-</div>
+    <div class="prayer-settings-bar">
+      <div class="prayer-setting-group">
+        <label for="prayerMethodSelect" class="prayer-setting-label" data-i18n="prayer_calc_method">Method:</label>
+        <select id="prayerMethodSelect" class="prayer-select">
+          <option value="3">MWL (Muslim World League)</option>
+          <option value="2">ISNA (North America)</option>
+          <option value="5">Egyptian General Authority</option>
+          <option value="4">Umm al-Qura (Makkah)</option>
+          <option value="1">Karachi (Univ. Islamic Sciences)</option>
+          <option value="13">Diyanet (Turkey)</option>
+          <option value="14">SAMRF (Russia)</option>
+        </select>
+      </div>
+      <div class="prayer-setting-group">
+        <label for="prayerSchoolSelect" class="prayer-setting-label" data-i18n="prayer_asr_school">Asr Madhab:</label>
+        <select id="prayerSchoolSelect" class="prayer-select">
+          <option value="0">Standard (Shafi, Maliki, Hanbali)</option>
+          <option value="1">Hanafi</option>
+        </select>
+      </div>
+    </div>
 
-<div class="adhan" id="adhan">
-  <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
-  <div class="adr"><button class="adcl" onclick="closeAdhan()" >✕</button></div>
-</div>
+    <button type="button" id="getPrayerBtn" class="btn bp mt-10" data-i18n="prayer_get_btn">📍 Get My Prayer Times</button>
+  </div>
 
-  <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>  <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
-  </footer>
+  <section class="sec">
+    <div class="prayer-big-grid fi" id="pbgrid">
+      <div class="card pbig" id="pb-fajr"><div class="pi-icon">🌙</div><div class="pi-name">FAJR</div><div class="pi-time" id="bft">—:—</div><div class="pi-ar">الفجر</div><div class="pi-left" id="bfl">—</div></div>
+      <div class="card pbig" id="pb-sunrise"><div class="pi-icon">🌅</div><div class="pi-name">SUNRISE</div><div class="pi-time" id="bst">—:—</div><div class="pi-ar">الشروق</div><div class="pi-left" id="bsl">—</div></div>
+      <div class="card pbig" id="pb-dhuhr"><div class="pi-icon">☀️</div><div class="pi-name">DHUHR</div><div class="pi-time" id="bdt">—:—</div><div class="pi-ar">الظهر</div><div class="pi-left" id="bdl">—</div></div>
+      <div class="card pbig" id="pb-asr"><div class="pi-icon">🌤️</div><div class="pi-name">ASR</div><div class="pi-time" id="bat">—:—</div><div class="pi-ar">العصر</div><div class="pi-left" id="bal">—</div></div>
+      <div class="card pbig" id="pb-maghrib"><div class="pi-icon">🌇</div><div class="pi-name">MAGHRIB</div><div class="pi-time" id="bmt">—:—</div><div class="pi-ar">المغرب</div><div class="pi-left" id="bml">—</div></div>
+      <div class="card pbig" id="pb-isha"><div class="pi-icon">🌃</div><div class="pi-name">ISHA</div><div class="pi-time" id="bit">—:—</div><div class="pi-ar">العشاء</div><div class="pi-left" id="bil">—</div></div>
+    </div>
+  </section>
 
-<script src="../shared.js?v=d40d020c"></script>
-<script>
-// Big clock for this page
-(function(){
-  const D=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
-  const M=['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
-  function upd(){
-    const n=new Date();
-    const h=String(n.getHours()).padStart(2,'0'),m=String(n.getMinutes()).padStart(2,'0'),s=String(n.getSeconds()).padStart(2,'0');
-    set('bigClock',`${h}:${m}:${s}`);
-    set('bigDate',`${D[n.getDay()]}, ${M[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`);
-    const hj=toHijri(n);
-    set('bigHijri',`${hj.day} ${HM[hj.month]} ${hj.year} AH`);
-  }
-  setInterval(upd,1000);upd();
-})();
+  <div class="adhan" id="adhan">
+    <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
+    <div class="adr">
+      <label for="adhanReciterSel" class="sr-only">Adhan reciter</label>
+      <select class="adsel" id="adhanReciterSel" aria-label="Adhan reciter">
+        <option value="mishary_alafasy">Mishary Alafasy</option>
+        <option value="abdulbasit">Abdul Basit</option>
+        <option value="ghamdi">Saad Al-Ghamdi</option>
+        <option value="maher">Maher Al Muaiqly</option>
+        <option value="minshawi">El-Minshawi</option>
+      </select>
+      <button type="button" class="adcl" data-action="close-adhan" aria-label="Close adhan">✕</button>
+    </div>
+  </div>
+</main>
 
-// Initialize prayer settings UI from localStorage
-(function initPrayerSettings() {
-  const methodSelect = document.getElementById('prayerMethodSelect');
-  const schoolSelect = document.getElementById('prayerSchoolSelect');
-  const currentSettings = typeof getPrayerSettings === 'function' ? getPrayerSettings() : { method: 3, school: 0 };
-
-  if (methodSelect) {
-    methodSelect.value = String(currentSettings.method);
-    methodSelect.addEventListener('change', function() {
-      try {
-        localStorage.setItem('nq_prayer_method', this.value);
-        Object.keys(localStorage).forEach(k => {
-          if (k.startsWith('prayer_cache')) localStorage.removeItem(k);
-        });
-      } catch (e) {
-        console.warn('Failed to save prayer method:', e);
-      }
-      if (typeof loadPrayerBig === 'function') loadPrayerBig();
-      if (typeof loadPrayer === 'function') loadPrayer();
-    });
-  }
-
-  if (schoolSelect) {
-    schoolSelect.value = String(currentSettings.school);
-    schoolSelect.addEventListener('change', function() {
-      try {
-        localStorage.setItem('nq_prayer_school', this.value);
-        Object.keys(localStorage).forEach(k => {
-          if (k.startsWith('prayer_cache')) localStorage.removeItem(k);
-        });
-      } catch (e) {
-        console.warn('Failed to save prayer school:', e);
-      }
-      if (typeof loadPrayerBig === 'function') loadPrayerBig();
-      if (typeof loadPrayer === 'function') loadPrayer();
-    });
-  }
-})();
-</script>
-
-<!-- MOBILE NAV -->
-
-    
+<footer>
+  <div class="fl">Noor Al-Quran · نور القرآن</div>
+  <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  <div class="fc fc-links">
+    <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+    <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+  </div>
+</footer>
 
 <div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
+  <a href="../index.html"><div class="mn-ic">🏠</div><div data-i18n="mn_home">Home</div></a>
+  <a href="../pages/quran.html"><div class="mn-ic">📖</div><div data-i18n="mn_quran">Quran</div></a>
+  <a href="../pages/reciters.html"><div class="mn-ic">🎙️</div><div data-i18n="mn_reciters">Audio</div></a>
+  <a href="../pages/prayer.html" class="active"><div class="mn-ic">🕐</div><div data-i18n="mn_prayer">Prayer</div></a>
+  <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+    <div class="mn-ic">👤</div><div data-i18n="mn_account">Account</div>
+  </button>
 </div>
 
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
 <div id="mobAccountSheet" class="bottom-sheet">
   <div class="sheet-content">
     <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
+    <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
     <div class="sheet-links">
       <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+      <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
       <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+      <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+      <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
     </div>
   </div>
 </div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=fd6a6e40"></script>
+<div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
+
+<script defer src="../shared.js?v=0adcc7b2"></script>
+<script defer src="../js/pages/prayer.js?v=80a5a37d"></script>
+<script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>

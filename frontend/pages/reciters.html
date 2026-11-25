@@ -1,50 +1,44 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Reciters — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta name="description" content="Listen to the Holy Quran recited by 10 world-renowned Qaris including Mishary Alafasy, Abdul Basit, Saad Al-Ghamdi, Maher Al Muaiqly, and more.">
+  <meta property="og:title" content="Quran Reciters — Noor Al-Quran">
+  <meta property="og:description" content="10 world-renowned Quran reciters with full surah audio streaming.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon"
-    href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
-
-<body>
+<body class="page-reciters">
   <div class="cur" id="cur"></div>
   <div class="cur-t" id="cur-t"></div>
   <div class="nebula"></div><canvas id="sc"></canvas>
-  <div class="moon">
-    <div class="mc">
-      <div class="mcr"></div>
-    </div>
-  </div>
-    <nav>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+
+  <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
     <ul class="nav-links">
       <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
-      <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
+      <li><a href="../pages/reciters.html" class="on" data-i18n="nav_reciters">Reciters</a></li>
       <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
         <div class="dropdown-content">
           <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
           <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
@@ -55,144 +49,113 @@
       </li>
       <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
         <div class="dropdown-content">
           <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
           <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
           <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+          <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+          <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
         </div>
       </li>
     </ul>
   </nav>
-  <div class="wrap">
+
+  <main id="main-content" class="wrap">
     <div class="ph fi">
       <div class="stag">المقرئون</div>
       <h1 class="st">The <span>Reciters</span></h1>
       <div class="sl"></div>
-      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">10 World-Renowned Quran Reciters · Click to view full
-        page</p>
+      <p class="ph-sub">10 World-Renowned Quran Reciters · Click to view full page</p>
     </div>
 
     <section class="sec">
       <div class="rg fi" id="rg"></div>
 
-      <!-- QUICK PLAY SECTION -->
-      <div style="margin-top:60px;max-width:700px;margin-inline:auto;text-align:center" class="fi">
-        <div class="stag"
-          style="display:inline-block;background:rgba(212,160,23,.1);padding:10px 16px;border-radius:20px">Quick Play
-        </div>
-        <h3 class="st" style="font-size:1.4rem;margin-top:14px">Or <span>Play Instantly</span></h3>
-        <div class="sl" style="margin-bottom:28px"></div>
-        <p style="color:var(--soft);font-size:.85rem;margin-bottom:18px;font-style:italic">Select a reciter and surah to
-          play audio immediately</p>
-        <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-bottom:24px">
-          <select id="reciterSel"
-            style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:200px">
+      <div class="quick-play-box fi">
+        <div class="stag qp-tag">Quick Play</div>
+        <h2 class="st qp-title">Or <span>Play Instantly</span></h2>
+        <div class="sl qp-divider"></div>
+        <p class="qp-hint">Select a reciter and surah to play audio immediately</p>
+        <div class="qp-controls">
+          <label for="reciterSel" class="sr-only">Select Reciter</label>
+          <select id="reciterSel" class="qp-select" aria-label="Select Reciter">
             <option value="">Select Reciter...</option>
           </select>
-          <select id="surahSel"
-            style="background:var(--card);border:1px solid var(--border);color:var(--white);padding:12px 18px;border-radius:12px;font-size:.85rem;font-family:'Lato',sans-serif;outline:none;flex:1;max-width:250px">
+          <label for="surahSel" class="sr-only">Select Surah</label>
+          <select id="surahSel" class="qp-select" aria-label="Select Surah">
             <option value="">Loading Surahs...</option>
           </select>
-          <button class="btn bp" onclick="quickPlay()" style="white-space:nowrap" >▶ Play</button>
+          <button type="button" id="quickPlayBtn" class="btn bp qp-btn">▶ Play</button>
         </div>
-        <div id="nowPlaying"
-          style="font-family:'Amiri',serif;font-size:1.1rem;color:var(--goldL);min-height:28px;margin-bottom:14px">
-        </div>
+        <div id="nowPlaying" class="qp-now"></div>
       </div>
     </section>
-  </div>
 
-  <!-- AUDIO BAR -->
-  <div class="abar" id="abar">
-    <div class="ainf">
-      <div class="asn" id="asn">—</div>
-      <div class="arc" id="arcn">—</div>
-    </div>
-    <div class="actl">
-      <button class="cb cpl" id="plbtn" onclick="togPlay()" >▶</button>
-      <button class="cb csk" onclick="stopSurah()" >⏹</button>
-    </div>
-    <div class="prog">
-      <input aria-label="Seek Slider" type="range" id="seekSlider" class="sk-sl" min="0" max="100" value="0" oninput="seekAudio()">
-    </div>
-    <button class="cb csk" onclick="closeAudio()" >✕</button>
-  </div>
-  <audio id="aud" ontimeupdate="updP()" onended="onEnd()"></audio>
-
-  <div class="adhan" id="adhan">
-    <div class="adl">
-      <div class="adi">🕌</div>
-      <div>
-        <div class="adn" id="adn">Prayer Time</div>
-        <div class="ads" id="ads">—</div>
+    <div class="abar" id="abar">
+      <div class="ainf">
+        <div class="asn" id="asn">—</div>
+        <div class="arc" id="arcn">—</div>
       </div>
+      <div class="actl">
+        <button type="button" class="cb cpl" id="plbtn" aria-label="Play or pause">▶</button>
+        <button type="button" class="cb csk" id="stopSurahBtn" aria-label="Stop">⏹</button>
+      </div>
+      <div class="prog">
+        <input aria-label="Seek Slider" type="range" id="seekSlider" class="sk-sl" min="0" max="100" value="0">
+      </div>
+      <button type="button" class="cb csk ab-close" id="closeAudioBtn" aria-label="Close player">✕</button>
     </div>
-    <div class="adr"><button class="adcl" onclick="closeAdhan()" aria-label="Close adhan">✕</button></div>
-  </div>
+    <audio id="aud"></audio>
+
+    <div class="adhan" id="adhan">
+      <div class="adl">
+        <div class="adi">🕌</div>
+        <div>
+          <div class="adn" id="adn">Prayer Time</div>
+          <div class="ads" id="ads">—</div>
+        </div>
+      </div>
+      <div class="adr"><button type="button" class="adcl" data-action="close-adhan" aria-label="Close adhan">✕</button></div>
+    </div>
+  </main>
 
   <footer>
     <div class="fl">Noor Al-Quran · نور القرآن</div>
-    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
-    <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
+    <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+    <div class="fc fc-links">
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+      <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+    </div>
   </footer>
 
+  <div class="mob-nav">
+    <a href="../index.html"><div class="mn-ic">🏠</div><div data-i18n="mn_home">Home</div></a>
+    <a href="../pages/quran.html"><div class="mn-ic">📖</div><div data-i18n="mn_quran">Quran</div></a>
+    <a href="../pages/reciters.html" class="active"><div class="mn-ic">🎙️</div><div data-i18n="mn_reciters">Audio</div></a>
+    <a href="../pages/prayer.html"><div class="mn-ic">🕐</div><div data-i18n="mn_prayer">Prayer</div></a>
+    <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+      <div class="mn-ic">👤</div><div data-i18n="mn_account">Account</div>
+    </button>
+  </div>
 
-  <script src="../shared.js?v=d40d020c"></script>
-  <script>
-    // Initialize reciters page
-    document.addEventListener('DOMContentLoaded', () => {
-      loadReciters();
-    });
-
-    function togPlay() { togPlayRec(); }
-  </script>
-
-<!-- MOBILE NAV -->
-
-    
-
-<div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
-</div>
-
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
-<div id="mobAccountSheet" class="bottom-sheet">
-  <div class="sheet-content">
-    <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
-    <div class="sheet-links">
-      <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
-      <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+  <div id="mobAccountSheet" class="bottom-sheet">
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
+      <div class="sheet-links">
+        <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
+        <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+        <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
+      </div>
     </div>
   </div>
-</div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=fd6a6e40"></script>
-</body>
+  <div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
 
+  <script defer src="../shared.js?v=0adcc7b2"></script>
+  <script defer src="../js/pages/reciters.js?v=f2e32705"></script>
+  <script defer src="../i18n.js?v=08602333"></script>
+</body>
 </html>

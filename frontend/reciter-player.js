@@ -3,7 +3,7 @@
  * Noor Al-Quran — Zero-failure player for all 10 reciters
  */
 
-/* globals RECITER_ID, RECITER_SERVER, SURAHS, MOSSAD_AVAILABLE, SHERIF_AVAILABLE, safeHTML */
+/* globals RECITER_ID, RECITER_SERVER, RECITERS, SURAHS, showToast */
 
 'use strict';
 
@@ -29,11 +29,6 @@ let _aud, _playerSurahName, _playerSurahAr, _playerAyahInfo,
     _ayahList, _abar;
 
 let _isInit = false;
-
-// ── Safe HTML Helper ───────────────────────────────────────────────────────
-const _safeHTML = (typeof safeHTML === 'function')
-  ? safeHTML
-  : (s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c])));
 
 // ── Reciter Resolution Helpers (Ensures 100% Reliability) ──────────────────
 function _getReciterId() {
@@ -139,19 +134,17 @@ const RECITER_AUDIO_CONFIG = {
   sherif_mostafa: {
     mode: 'full_surah',
     servers: [
-      '../audio/sherif_mostafa/',
-      '/audio/sherif_mostafa/',
       'https://server6.mp3quran.net/shrf/',
-      'https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/'
+      'https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/',
+      '/audio/sherif_mostafa/'
     ]
   },
   abdurrahman_mossad: {
     mode: 'full_surah',
     servers: [
-      '../audio/abdurrahman_mossad/',
-      '/audio/abdurrahman_mossad/',
       'https://server16.mp3quran.net/mossad/',
-      'https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/'
+      'https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/',
+      '/audio/abdurrahman_mossad/'
     ]
   }
 };
@@ -160,6 +153,10 @@ function _getReciterSurahUrls(surahNum) {
   const recId = _getReciterId();
   const surahStr = String(surahNum).padStart(3, '0');
   const urls = [];
+
+  if (typeof window !== 'undefined' && window.NQ_AUDIO_CDN_BASE) {
+    urls.push(String(window.NQ_AUDIO_CDN_BASE).replace(/\/+$/, '') + '/' + recId + '/' + surahStr + '.mp3');
+  }
 
   const cfg = RECITER_AUDIO_CONFIG[recId];
   const isPagesDir = typeof window !== 'undefined' && window.location && window.location.pathname.includes('/pages/');
@@ -222,26 +219,40 @@ function _initRefs() {
 async function buildSurahGrid() {
   const grid = document.getElementById('surahGrid');
   if (!grid || typeof SURAHS === 'undefined') return;
-  
+
   const availableSurahs = _getAvailableSurahsSync();
   const availableSet = new Set(availableSurahs.map(s => s.n));
   grid.innerHTML = '';
+  const frag = document.createDocumentFragment();
 
   SURAHS.forEach(s => {
     const isAvail = availableSet.has(s.n);
     const btn = document.createElement('button');
+    btn.type = 'button';
     btn.className = 'surah-btn' + (isAvail ? '' : ' unavailable');
     btn.id = 'sb-' + s.n;
     btn.setAttribute('aria-label', `Surah ${s.n}: ${s.en}${isAvail ? '' : ' (Coming soon)'}`);
-    if (!isAvail) {
-      btn.style.opacity = '0.5';
-      btn.style.cursor = 'not-allowed';
+
+    const numEl = document.createElement('div');
+    numEl.className = 'surah-num';
+    numEl.textContent = String(s.n);
+    const nameEl = document.createElement('div');
+    nameEl.className = 'surah-name';
+    nameEl.textContent = s.en;
+    btn.append(numEl, nameEl);
+
+    if (isAvail) {
+      const badge = document.createElement('div');
+      badge.className = 'playing-badge';
+      badge.textContent = '▶ PLAYING';
+      btn.appendChild(badge);
+    } else {
+      const soon = document.createElement('div');
+      soon.className = 'surah-soon';
+      soon.textContent = 'Soon · Скоро';
+      btn.appendChild(soon);
     }
-    btn.innerHTML = `
-      <div class="surah-num">${_safeHTML(String(s.n))}</div>
-      <div class="surah-name">${_safeHTML(s.en)}</div>
-      ${isAvail ? '<div class="playing-badge">▶ PLAYING</div>' : '<div style="font-size:0.65rem;color:var(--soft);margin-top:4px">Soon · Скоро</div>'}`;
-    
+
     btn.addEventListener('click', () => {
       if (!isAvail) {
         if (typeof showToast === 'function') {
@@ -251,11 +262,15 @@ async function buildSurahGrid() {
       }
       loadSurahAyahs(s.n, true);
     });
-    grid.appendChild(btn);
+    frag.appendChild(btn);
   });
+  grid.appendChild(frag);
 }
 
 function _getAvailableSurahsSync() {
+  if (typeof window !== 'undefined' && typeof window.getReciterAvailableSurahs === 'function') {
+    return window.getReciterAvailableSurahs(_getReciterId());
+  }
   if (typeof SURAHS === 'undefined') return [];
   const recId = _getReciterId();
 
@@ -275,7 +290,7 @@ function _getAvailableSurahsSync() {
 function filterSurahs(q) {
   const lq = (q || '').toLowerCase().trim();
   document.querySelectorAll('.surah-btn').forEach(btn => {
-    btn.style.display = !lq || btn.textContent.toLowerCase().includes(lq) ? '' : 'none';
+    btn.classList.toggle('hidden', !!lq && !btn.textContent.toLowerCase().includes(lq));
   });
 }
 
@@ -423,16 +438,34 @@ function _renderAyahList() {
     el.className = 'ayah-item';
     el.id = `ayah-row-${a.num}`;
     el.setAttribute('data-ayah', a.num);
-    el.innerHTML = `
-      <div class="ayah-num">${_safeHTML(String(a.num))}</div>
-      <div class="ayah-content">
-        <div class="ayah-arab">${_safeHTML(a.arab)}</div>
-        <div class="ayah-trans">${_safeHTML(a.trans)}</div>
-      </div>
-      <button class="ayah-play-btn" onclick="playAyahAt(${Number(a.num)}, true)" title="Play this ayah" aria-label="Play ayah ${_safeHTML(String(a.num))}">▶</button>`;
-    el.addEventListener('click', (e) => {
-      if (!e.target.closest('.ayah-play-btn')) playAyahAt(a.num, true);
+
+    const num = document.createElement('div');
+    num.className = 'ayah-num';
+    num.textContent = String(a.num);
+
+    const content = document.createElement('div');
+    content.className = 'ayah-content';
+    const arab = document.createElement('div');
+    arab.className = 'ayah-arab';
+    arab.textContent = a.arab || '';
+    const trans = document.createElement('div');
+    trans.className = 'ayah-trans';
+    trans.textContent = a.trans || '';
+    content.append(arab, trans);
+
+    const playBtn = document.createElement('button');
+    playBtn.type = 'button';
+    playBtn.className = 'ayah-play-btn';
+    playBtn.title = 'Play this ayah';
+    playBtn.setAttribute('aria-label', `Play ayah ${a.num}`);
+    playBtn.textContent = '▶';
+    playBtn.addEventListener('click', (e) => {
+      e.stopPropagation();
+      playAyahAt(Number(a.num), true);
     });
+
+    el.append(num, content, playBtn);
+    el.addEventListener('click', () => playAyahAt(a.num, true));
     _ayahList.appendChild(el);
   });
 }
@@ -752,8 +785,41 @@ function _updateSliders(p) {
 
 function _updateSliderTrack(slider, p) {
   if (slider) {
-    slider.style.background = `linear-gradient(to right, var(--gold, #d4a017) ${p}%, rgba(212,160,23,0.18) ${p}%)`;
+    slider.style.setProperty('--val', `${p}%`);
   }
+}
+
+function _bindPlayerControls() {
+  const bindClick = (id, fn) => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('click', fn);
+  };
+  bindClick('prevBtn', playPrev);
+  bindClick('playerPlayBtn', togPlayReciter);
+  bindClick('nextBtn', playNext);
+  bindClick('volIcon', toggleMute);
+  bindClick('speedBtn', cycleSpeed);
+  bindClick('repeatBtn', toggleRepeat);
+  bindClick('stopPlayerBtn', stopReciter);
+  bindClick('closePlayerBtn', closePlayerBar);
+  bindClick('plbtn', togPlayReciter);
+  bindClick('barStopBtn', stopReciter);
+  bindClick('barCloseBtn', closePlayerBar);
+
+  if (_volSlider) _volSlider.addEventListener('input', setVolume);
+  if (_seekSliderB) _seekSliderB.addEventListener('input', seekFromBar);
+  if (_seekSliderP) {
+    _seekSliderP.addEventListener('input', seekFromPlayer);
+    const startSeek = () => { PlayerState.isSeeking = true; };
+    const endSeek = () => { PlayerState.isSeeking = false; };
+    _seekSliderP.addEventListener('mousedown', startSeek);
+    _seekSliderP.addEventListener('touchstart', startSeek, { passive: true });
+    _seekSliderP.addEventListener('mouseup', endSeek);
+    _seekSliderP.addEventListener('touchend', endSeek);
+    _seekSliderP.addEventListener('change', endSeek);
+  }
+  const searchEl = document.getElementById('surahSearch');
+  if (searchEl) searchEl.addEventListener('input', (e) => filterSurahs(e.target.value));
 }
 
 function _resetSliders() {
@@ -800,13 +866,12 @@ document.addEventListener('DOMContentLoaded', () => {
   _isInit = true;
 
   _initRefs();
+  _bindPlayerControls();
   buildSurahGrid();
 
   // Auto-stage first available Surah on open (without autoPlay to prevent browser block)
-  setTimeout(() => {
-    const avail = _getAvailableSurahsSync();
-    if (avail && avail.length > 0) {
-      loadSurahAyahs(avail[0].n, false);
-    }
-  }, 300);
+  const avail = _getAvailableSurahsSync();
+  if (avail && avail.length > 0) {
+    loadSurahAyahs(avail[0].n, false);
+  }
 });

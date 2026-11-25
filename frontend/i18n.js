@@ -122,6 +122,11 @@ const i18n = {
     privacy_sec4_title: '⚖️ 4. Контакты и обратная связь',
     privacy_sec4_p1: 'Если у вас есть вопросы касательно подлинности текстов, конфиденциальности или предложения по улучшению, свяжитесь с нами через официальный репозиторий.',
 
+    // Account management
+    auth_change_pw_title: 'Смена пароля',
+    auth_delete_acct_title: 'Удаление аккаунта',
+    prayer_get_btn: '📍 Получить время намаза',
+
     // Terms of Service Page
     terms_title: 'Условия использования',
     terms_sub: 'Обновлено: ноябрь 2026 · Этические нормы для исламского цифрового контента',
@@ -259,6 +264,11 @@ const i18n = {
     privacy_sec3_p1: 'Noor Al-Quran utilizes authentic, globally recognized textual editions and certified translations:',
     privacy_sec4_title: '⚖️ 4. Contact & Inquiries',
     privacy_sec4_p1: 'If you have inquiries regarding textual authenticity, data rights, or feature suggestions, please reach out via our official repository or support channels.',
+
+    // Account management
+    auth_change_pw_title: 'Change Password',
+    auth_delete_acct_title: 'Delete Account',
+    prayer_get_btn: '📍 Get My Prayer Times',
 
     // Terms of Service Page
     terms_title: 'Terms of Service',
@@ -398,6 +408,11 @@ const i18n = {
     privacy_sec4_title: '⚖️ 4. Aloqa va savollar',
     privacy_sec4_p1: 'Agar sizda matnlar aniqligi, ma\'lumotlar huquqi yoki takliflar bo\'yicha savollar bo\'lsa, rasmiy omborimiz orqali bog\'laning.',
 
+    // Account management
+    auth_change_pw_title: 'Parolni o\'zgartirish',
+    auth_delete_acct_title: 'Hisobni o\'chirish',
+    prayer_get_btn: '📍 Namoz vaqtlarini olish',
+
     // Terms of Service Page
     terms_title: 'Foydalanish shartlari',
     terms_sub: 'Yangilangan: Noyabr 2026 · Raqamli islomiy kontent uchun axloqiy qoidalar',
@@ -419,31 +434,45 @@ window.i18n = i18n;
 window.setLanguage = function(lang) {
   if (!i18n[lang]) return;
   localStorage.setItem('lang', lang);
-  applyLanguage(lang);
+  window.applyLanguage(lang);
   document.dispatchEvent(new CustomEvent('langChange', { detail: lang }));
 };
 
 window.applyLanguage = function(lang) {
   if (!i18n[lang]) return;
-  document.documentElement.lang = lang;
+  if (document.documentElement.lang !== lang) {
+    document.documentElement.lang = lang;
+  }
+  const dict = i18n[lang];
   document.querySelectorAll('[data-i18n]').forEach(el => {
     const key = el.getAttribute('data-i18n');
-    if (i18n[lang] && i18n[lang][key]) {
+    const next = dict[key];
+    if (next) {
       if ((el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') && el.placeholder !== undefined) {
-        el.placeholder = i18n[lang][key];
-      } else {
-        el.textContent = i18n[lang][key];
+        if (el.placeholder !== next) el.placeholder = next;
+      } else if (el.textContent !== next) {
+        el.textContent = next;
       }
     }
   });
 
   // Update language selector visual active state
   document.querySelectorAll('.lgb').forEach(btn => {
-    btn.classList.toggle('active', btn.textContent.trim().toLowerCase() === lang.toLowerCase());
+    const bLang = btn.getAttribute('data-lang') || btn.textContent.trim().toLowerCase();
+    const shouldActive = bLang.toLowerCase() === lang.toLowerCase();
+    if (btn.classList.contains('active') !== shouldActive) {
+      btn.classList.toggle('active', shouldActive);
+    }
   });
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.lgb').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const targetLang = btn.getAttribute('data-lang') || btn.textContent.trim().toLowerCase();
+      window.setLanguage(targetLang);
+    });
+  });
   const savedLang = localStorage.getItem('lang') || 'en';
   window.applyLanguage(savedLang);
 });

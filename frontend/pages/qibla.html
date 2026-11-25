@@ -3,184 +3,133 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>Qibla Compass - Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
-  <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <title>Qibla Compass — Noor Al-Quran</title>
+  <meta name="description" content="Find the exact Qibla direction and distance toward the Kaaba in Mecca with GPS or manual coordinates.">
+  <meta property="og:title" content="Qibla Compass — Noor Al-Quran">
+  <meta property="og:description" content="Find the exact direction toward the Kaaba in Mecca.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    * {margin:0;padding:0;box-sizing:border-box}
-    body {background:linear-gradient(135deg, #0a0a0a 0%, #1a1517 100%);color:var(--text);font-family:'Lato',sans-serif;line-height:1.6}
-    .container {max-width:1200px;margin:0 auto;padding:20px}
-    .compass-section {display:grid;grid-template-columns:1fr;gap:30px;align-items:start}
-    @media(min-width:768px){.compass-section{grid-template-columns:2fr 1fr}}
-    .compass-container {background:linear-gradient(135deg,rgba(212,175,55,0.1),rgba(30,144,255,0.05));border:2px solid var(--gold);border-radius:16px;padding:40px;text-align:center}
-    svg {width:100%;height:auto;max-width:400px;margin:0 auto 30px;display:block;filter:drop-shadow(0 0 30px rgba(212,175,55,0.3))}
-    .compass-text {font-family:'Cinzel Decorative',cursive;font-size:1.5rem;color:var(--gold);margin:20px 0}
-    .bearing-display {font-size:3rem;font-weight:bold;color:var(--blue);margin:15px 0}
-    .bearing-label {color:var(--soft);font-size:0.9rem;text-transform:uppercase;letter-spacing:2px;margin-bottom:20px}
-    .info-card {background:rgba(212,175,55,0.05);border:2px solid var(--gold);border-radius:12px;padding:20px;margin:15px 0}
-    .info-title {color:var(--gold);font-weight:bold;margin-bottom:8px}
-    .info-value {color:var(--soft);font-size:0.95rem}
-    .button-group {display:flex;gap:10px;margin:20px 0;flex-wrap:wrap;justify-content:center}
-    .btn-action {background:var(--blue);border:none;color:#fff;padding:12px 24px;border-radius:8px;cursor:pointer;font-size:0.95rem;font-weight:bold;transition:all 0.2s ease}
-    .btn-action:hover {background:#0084cc;transform:translateY(-2px)}
-    .btn-action.primary {background:var(--gold);color:#000}
-    .btn-action.primary:hover {background:var(--goldL)}
-    .stats-widget {background:rgba(30,144,255,0.1);border:2px solid var(--blue);border-radius:12px;padding:25px}
-    .stat-item {margin-bottom:20px;padding-bottom:20px;border-bottom:1px solid rgba(30,144,255,0.2)}
-    .stat-item:last-child {border-bottom:none}
-    .stat-label {font-size:0.85rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px;margin-bottom:8px}
-    .stat-value {font-size:1.8rem;font-weight:bold;color:var(--blue)}
-    .stat-unit {font-size:0.8rem;color:var(--soft);margin-left:5px}
-    .status-indicator {display:inline-block;width:12px;height:12px;border-radius:50%;margin-right:8px;animation:pulse 2s infinite}
-    .status-active {background:#4ade80;box-shadow:0 0 10px rgba(74,222,128,0.5)}
-    .status-waiting {background:#facc15;box-shadow:0 0 10px rgba(250,204,21,0.5)}
-    .status-error {background:#ef4444}
-    @keyframes pulse {0%,100%{opacity:1}50%{opacity:0.5}}
-    .error-message {background:rgba(239,68,68,0.1);border:2px solid #ef4444;color:#fca5a5;padding:15px;border-radius:8px;margin:15px 0;display:none}
-    .loading-spinner {animation:spin 2s linear infinite;display:inline-block}
-    @keyframes spin {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-    .info-grid {display:grid;grid-template-columns:1fr 1fr;gap:15px;margin-top:20px}
-    .section-title {font-family:'Cinzel Decorative',cursive;font-size:2rem;color:var(--gold);margin:40px 0 20px;text-align:center;border-bottom:2px solid var(--gold);padding-bottom:15px}
-    @media(max-width:768px){
-      .bearing-display {font-size:2.5rem}
-      .compass-section {grid-template-columns:1fr}
-      .info-grid {grid-template-columns:1fr}
-    }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
-<body>
-  <div class="cur" id="cur"></div>
-  <div class="cur-t" id="cur-t"></div>
+<body class="page-qibla">
+  <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
   <div class="nebula"></div><canvas id="sc"></canvas>
-  <div class="moon">
-    <div class="mc"><div class="mcr"></div></div>
-  </div>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
 
-    <nav>
+  <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
     <ul class="nav-links">
       <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
       <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
       <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
         <div class="dropdown-content">
           <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
           <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
-          <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
+          <a href="../pages/qibla.html" class="on" data-i18n="nav_qibla">Qibla Compass</a>
           <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
           <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
         </div>
       </li>
       <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
         <div class="dropdown-content">
           <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
           <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
           <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+          <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+          <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
         </div>
       </li>
     </ul>
   </nav>
 
-  <div class="wrap">
+  <main id="main-content" class="wrap">
     <div class="ph fi">
       <div class="stag">البوصلة</div>
-      <h1 class="st">Qibla <span>Compass</span></h1>
+      <h1 class="st" data-i18n="qibla_title">Qibla <span>Compass</span></h1>
       <div class="sl"></div>
-      <p style="color:var(--soft);font-size:.82rem;margin-top:12px">Find the direction toward the Kaaba in Mecca</p>
+      <p class="ph-sub">Find the direction toward the Kaaba in Mecca</p>
     </div>
 
-    <section class="sec" style="padding-bottom:60px">
+    <section class="sec sec-pb60">
       <div class="container">
         <div class="compass-section">
           <!-- Main Compass -->
           <div class="compass-container">
-            <svg id="compassSvg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg">
-              <!-- Outer circle -->
+            <svg id="compassSvg" viewBox="0 0 400 400" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Qibla Compass">
               <circle cx="200" cy="200" r="190" fill="none" stroke="url(#compassGradient)" stroke-width="2" opacity="0.5"/>
-              <!-- Cardinal directions -->
-              <text x="200" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="var(--gold)">N</text>
-              <text x="365" y="205" text-anchor="middle" font-size="20" fill="var(--soft)">E</text>
-              <text x="200" y="375" text-anchor="middle" font-size="24" font-weight="bold" fill="var(--soft)">S</text>
-              <text x="35" y="205" text-anchor="middle" font-size="20" fill="var(--soft)">W</text>
-              <!-- Direction markers -->
+              <text x="200" y="35" text-anchor="middle" font-size="24" font-weight="bold" fill="#f0c040">N</text>
+              <text x="365" y="205" text-anchor="middle" font-size="20" fill="#b8cef0">E</text>
+              <text x="200" y="375" text-anchor="middle" font-size="24" font-weight="bold" fill="#b8cef0">S</text>
+              <text x="35" y="205" text-anchor="middle" font-size="20" fill="#b8cef0">W</text>
               <g id="cardinalMarkers">
-                <line x1="200" y1="20" x2="200" y2="50" stroke="var(--gold)" stroke-width="3"/>
-                <line x1="380" y1="200" x2="350" y2="200" stroke="var(--soft)" stroke-width="2"/>
-                <line x1="200" y1="380" x2="200" y2="350" stroke="var(--soft)" stroke-width="2"/>
-                <line x1="20" y1="200" x2="50" y2="200" stroke="var(--soft)" stroke-width="2"/>
+                <line x1="200" y1="20" x2="200" y2="50" stroke="#f0c040" stroke-width="3"/>
+                <line x1="380" y1="200" x2="350" y2="200" stroke="#b8cef0" stroke-width="2"/>
+                <line x1="200" y1="380" x2="200" y2="350" stroke="#b8cef0" stroke-width="2"/>
+                <line x1="200" y1="200" x2="50" y2="200" stroke="#b8cef0" stroke-width="2"/>
               </g>
-              <!-- Degree markings -->
-              <g id="degreeMarks" fill="none" stroke="var(--soft)" stroke-width="1" opacity="0.3">
+              <g id="degreeMarks" fill="none" stroke="#b8cef0" stroke-width="1" opacity="0.3">
                 <circle cx="200" cy="200" r="170"/>
               </g>
-              <!-- Center circle -->
-              <circle cx="200" cy="200" r="15" fill="var(--gold)"/>
-              <!-- Qibla needle -->
+              <circle cx="200" cy="200" r="15" fill="#d4a017"/>
               <g id="needle" transform="translate(200, 200) rotate(0)">
-                <polygon points="0,-100 -8,-20 0,-10 8,-20" fill="var(--gold)" opacity="0.9"/>
-                <polygon points="0,100 -6,20 0,10 6,20" fill="var(--blue)" opacity="0.6"/>
+                <polygon points="0,-100 -8,-20 0,-10 8,-20" fill="#f0c040" opacity="0.95"/>
+                <polygon points="0,100 -6,20 0,10 6,20" fill="#7cb8ff" opacity="0.7"/>
               </g>
               <defs>
                 <linearGradient id="compassGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                  <stop offset="0%" style="stop-color:var(--gold);stop-opacity:0.5"/>
-                  <stop offset="100%" style="stop-color:var(--blue);stop-opacity:0.5"/>
+                  <stop offset="0%" stop-color="#d4a017" stop-opacity="0.5"/>
+                  <stop offset="100%" stop-color="#7cb8ff" stop-opacity="0.5"/>
                 </linearGradient>
               </defs>
             </svg>
 
             <div class="bearing-label">Qibla Direction</div>
             <div class="bearing-display" id="bearingDisplay">--°</div>
-            
+
             <div class="info-card">
               <div class="info-title">Current Status</div>
               <div class="info-value">
                 <span class="status-indicator status-waiting"></span>
-                <span id="statusText">Enable location access</span>
+                <span id="statusText">Enable location access or enter coordinates</span>
               </div>
             </div>
 
             <div class="button-group">
-              <button class="btn-action primary" onclick="getLocation()" >📍 Find My Location</button>
-              <button class="btn-action" onclick="openManualModal()" >🗺️ Enter Manually</button>
-              <button id="compassPermBtn" class="btn-action" style="display:none;width:100%;margin-top:8px" onclick="requestCompassPermission()">🧭 Enable Live Compass (iOS)</button>
+              <button type="button" id="findLocBtn" class="btn-action primary">📍 Find My Location</button>
+              <button type="button" id="openManualBtn" class="btn-action">🗺️ Enter Manually</button>
+              <button type="button" id="compassPermBtn" class="btn-action btn-full hidden">🧭 Enable Live Compass (iOS)</button>
             </div>
 
-            <div class="error-message" id="errorMessage"></div>
+            <div class="error-message" id="errorMessage" role="alert"></div>
 
             <div class="info-card">
               <div class="info-title">Location Information</div>
               <div class="info-grid">
                 <div>
-                  <div class="info-label" style="font-size:0.8rem;color:var(--soft)">Latitude</div>
-                  <div class="info-value" id="latDisplay" style="color:var(--blue)">--</div>
+                  <div class="coord-label">Latitude</div>
+                  <div class="info-value info-value--accent" id="latDisplay">--</div>
                 </div>
                 <div>
-                  <div class="info-label" style="font-size:0.8rem;color:var(--soft)">Longitude</div>
-                  <div class="info-value" id="lonDisplay" style="color:var(--blue)">--</div>
+                  <div class="coord-label">Longitude</div>
+                  <div class="info-value info-value--accent" id="lonDisplay">--</div>
                 </div>
               </div>
             </div>
@@ -188,276 +137,91 @@
 
           <!-- Sidebar -->
           <div class="stats-widget">
-            <h3 style="color:var(--blue);margin-bottom:20px;font-weight:bold">🕋 Mecca Information</h3>
-            
+            <h2>🕋 Mecca Information</h2>
+
             <div class="stat-item">
               <div class="stat-label">Kaaba Coordinates</div>
-              <div class="stat-value" style="font-size:1.1rem">21.43°N<br>39.82°E</div>
+              <div class="stat-value stat-value--coords">21.42°N<br>39.83°E</div>
             </div>
 
             <div class="stat-item">
-              <div class="stat-label">Distance to Mecca</div>
+              <div class="stat-label" data-i18n="qibla_distance">Distance to Mecca</div>
               <div><span class="stat-value" id="distanceDisplay">--</span><span class="stat-unit">km</span></div>
             </div>
 
             <div class="stat-item">
               <div class="stat-label">Your Location</div>
-              <div class="info-value" id="locationNameDisplay" style="color:var(--blue)">Not set</div>
+              <div class="info-value info-value--accent" id="locationNameDisplay">Not set</div>
             </div>
 
             <div class="stat-item">
-              <div class="stat-label">Device Heading</div>
+              <div class="stat-label" data-i18n="qibla_heading">Device Heading</div>
               <div><span class="stat-value" id="headingDisplay">--</span><span class="stat-unit">°</span></div>
             </div>
 
-            <button class="btn-action" style="width:100%;margin-top:15px" onclick="shareLocation()" >📤 Share Location</button>
+            <button type="button" id="shareLocBtn" class="btn-action btn-full">📤 Share Location</button>
           </div>
         </div>
       </div>
     </section>
-  </div>
+
+    <!-- MANUAL LOCATION MODAL -->
+    <div id="manualLocationModal" class="modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="manualModalTitle">
+      <div class="modal-dialog">
+        <h2 id="manualModalTitle" class="modal-title">📍 Enter Coordinates</h2>
+        <p class="modal-desc">Enter latitude and longitude coordinates manually:</p>
+        <div class="modal-field">
+          <label class="modal-label" for="manualLat">Latitude (-90 to 90)</label>
+          <input id="manualLat" type="number" step="any" placeholder="e.g. 55.7558" class="modal-input">
+        </div>
+        <div class="modal-field">
+          <label class="modal-label" for="manualLon">Longitude (-180 to 180)</label>
+          <input id="manualLon" type="number" step="any" placeholder="e.g. 37.6173" class="modal-input">
+        </div>
+        <div class="modal-actions">
+          <button type="button" id="cancelManualBtn" class="btn-action">Cancel</button>
+          <button type="button" id="applyManualBtn" class="btn-action primary">Apply</button>
+        </div>
+      </div>
+    </div>
+  </main>
 
   <footer>
     <div class="fl">Noor Al-Quran · نور القرآن</div>
-    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
-    <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
+    <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+    <div class="fc fc-links">
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+      <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+    </div>
   </footer>
 
+  <div class="mob-nav">
+    <a href="../index.html"><div class="mn-ic">🏠</div><div data-i18n="mn_home">Home</div></a>
+    <a href="../pages/quran.html"><div class="mn-ic">📖</div><div data-i18n="mn_quran">Quran</div></a>
+    <a href="../pages/reciters.html"><div class="mn-ic">🎙️</div><div data-i18n="mn_reciters">Audio</div></a>
+    <a href="../pages/prayer.html"><div class="mn-ic">🕐</div><div data-i18n="mn_prayer">Prayer</div></a>
+    <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+      <div class="mn-ic">👤</div><div data-i18n="mn_account">Account</div>
+    </button>
+  </div>
 
-  <script src="../shared.js?v=d40d020c"></script>
-  <script>
-    const MECCA = {lat:21.4225,lon:39.8262};
-    let userLat, userLon, userHeading=0;
-
-    function degreesToRadians(degrees){return degrees * (Math.PI/180);}
-    function radiansToDegrees(radians){return radians * (180/Math.PI);}
-
-    function calculateQiblaBearing(lat1,lon1){
-      const lat1Rad=degreesToRadians(lat1);
-      const lat2Rad=degreesToRadians(MECCA.lat);
-      const dLon=degreesToRadians(MECCA.lon-lon1);
-      
-      const y=Math.sin(dLon)*Math.cos(lat2Rad);
-      const x=Math.cos(lat1Rad)*Math.sin(lat2Rad)-Math.sin(lat1Rad)*Math.cos(lat2Rad)*Math.cos(dLon);
-      const bearing=radiansToDegrees(Math.atan2(y,x));
-      return (bearing+360)%360;
-    }
-
-    function calculateDistance(lat1,lon1){
-      const R=6371; // Earth's radius in km
-      const dLat=degreesToRadians(MECCA.lat-lat1);
-      const dLon=degreesToRadians(MECCA.lon-lon1);
-      const a=Math.sin(dLat/2)*Math.sin(dLat/2)+Math.cos(degreesToRadians(lat1))*Math.cos(degreesToRadians(MECCA.lat))*Math.sin(dLon/2)*Math.sin(dLon/2);
-      const c=2*Math.asin(Math.sqrt(a));
-      return Math.round(R*c);
-    }
-
-    function updateCompass(bearing){
-      document.getElementById('needle').setAttribute('transform',`translate(200, 200) rotate(${bearing})`);
-      document.getElementById('bearingDisplay').textContent=Math.round(bearing)+'°';
-    }
-
-    function getLocation(){
-      document.getElementById('statusText').textContent='Getting location...';
-      document.querySelector('.status-indicator').className='status-indicator status-waiting';
-      const err=document.getElementById('errorMessage');
-      err.style.display='none';
-      
-      if(!navigator.geolocation){
-        err.textContent='Geolocation not supported by your browser';
-        err.style.display='block';
-        return;
-      }
-
-      navigator.geolocation.getCurrentPosition(pos=>{
-        userLat=pos.coords.latitude;
-        userLon=pos.coords.longitude;
-        updateDisplay();
-        document.getElementById('statusText').textContent='✓ Location found';
-        document.querySelector('.status-indicator').className='status-indicator status-active';
-      },err=>{
-        document.getElementById('errorMessage').textContent='Error: '+err.message;
-        document.getElementById('errorMessage').style.display='block';
-        document.getElementById('statusText').textContent='Location error';
-        document.querySelector('.status-indicator').className='status-indicator status-error';
-      });
-    }
-
-    function updateDisplay(){
-      if(!userLat||!userLon)return;
-      const bearing=calculateQiblaBearing(userLat,userLon);
-      const distance=calculateDistance(userLat,userLon);
-      updateCompass(bearing);
-      document.getElementById('latDisplay').textContent=userLat.toFixed(4)+'°';
-      document.getElementById('lonDisplay').textContent=userLon.toFixed(4)+'°';
-      document.getElementById('distanceDisplay').textContent=distance;
-    }
-
-    function openManualModal(){
-      const modal = document.getElementById('manualLocationModal');
-      if (modal) {
-        modal.style.display = 'flex';
-        const latInput = document.getElementById('manualLat');
-        const lonInput = document.getElementById('manualLon');
-        if (userLat) latInput.value = userLat;
-        if (userLon) lonInput.value = userLon;
-        setTimeout(() => latInput.focus(), 100);
-      }
-    }
-
-    function closeManualModal(){
-      const modal = document.getElementById('manualLocationModal');
-      if (modal) modal.style.display = 'none';
-    }
-
-    function submitManualLocation(){
-      const latVal = document.getElementById('manualLat').value.trim();
-      const lonVal = document.getElementById('manualLon').value.trim();
-      const lat = parseFloat(latVal);
-      const lon = parseFloat(lonVal);
-      if(isNaN(lat) || lat < -90 || lat > 90){
-        showToast('Please enter a valid latitude (-90 to 90)', 'warning');
-        return;
-      }
-      if(isNaN(lon) || lon < -180 || lon > 180){
-        showToast('Please enter a valid longitude (-180 to 180)', 'warning');
-        return;
-      }
-      userLat = lat;
-      userLon = lon;
-      closeManualModal();
-      updateDisplay();
-      document.getElementById('statusText').textContent = '✓ Manual location set';
-      document.querySelector('.status-indicator').className = 'status-indicator status-active';
-      showToast('Coordinates updated successfully!', 'success');
-    }
-
-    function useManualLocation(){
-      openManualModal();
-    }
-
-    function shareLocation(){
-      if(!userLat||!userLon){showToast('Please get your location first', 'warning');return;}
-      const text=`I'm at ${userLat.toFixed(4)}°, ${userLon.toFixed(4)}°. Qibla direction: ${Math.round(calculateQiblaBearing(userLat,userLon))}°`;
-      if(navigator.share){
-        navigator.share({title:'My Qibla Direction',text:text}).catch(e=>console.log(e));
-      }else{
-        navigator.clipboard.writeText(text);
-        showToast('Qibla coordinates copied to clipboard! 📋', 'success');
-      }
-    }
-
-    function handleOrientation(e){
-      let heading = null;
-      if (e.webkitCompassHeading !== undefined && e.webkitCompassHeading !== null) {
-        // iOS Safari gives compass heading relative to magnetic north
-        heading = e.webkitCompassHeading;
-      } else if (e.alpha !== null && e.alpha !== undefined) {
-        // Android gives standard alpha (counter-clockwise)
-        heading = (360 - e.alpha) % 360;
-      }
-      if (heading !== null) {
-        userHeading = heading;
-        const hd = document.getElementById('headingDisplay');
-        if (hd) hd.textContent = Math.round(userHeading);
-      }
-    }
-
-    function requestCompassPermission(){
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        DeviceOrientationEvent.requestPermission()
-          .then(permissionState => {
-            if (permissionState === 'granted') {
-              window.addEventListener('deviceorientation', handleOrientation, true);
-              const btn = document.getElementById('compassPermBtn');
-              if (btn) btn.style.display = 'none';
-              showToast('Live compass enabled! 🧭', 'success');
-            } else {
-              showToast('Orientation permission was denied.', 'warning');
-            }
-          })
-          .catch(err => {
-            console.warn('Orientation request error:', err);
-            showToast('Unable to enable compass orientation.', 'warning');
-          });
-      } else if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', handleOrientation, true);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded',()=>{
-      getLocation();
-      if (typeof DeviceOrientationEvent !== 'undefined' && typeof DeviceOrientationEvent.requestPermission === 'function') {
-        const btn = document.getElementById('compassPermBtn');
-        if (btn) btn.style.display = 'block';
-      } else if (window.DeviceOrientationEvent) {
-        window.addEventListener('deviceorientation', handleOrientation, true);
-      }
-    });
-  </script>
-
-  <!-- MANUAL LOCATION MODAL -->
-  <div id="manualLocationModal" style="display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(2,8,24,0.85);z-index:99999;align-items:center;justify-content:center;backdrop-filter:blur(8px)">
-    <div style="background:var(--surface);border:1px solid rgba(212,160,23,0.3);border-radius:16px;padding:28px;max-width:380px;width:90%;box-shadow:0 10px 40px rgba(0,0,0,0.6)">
-      <h3 style="font-family:'Cinzel',serif;color:var(--gold);margin-bottom:14px;font-size:1.2rem">📍 Enter Coordinates</h3>
-      <p style="font-size:0.85rem;color:var(--soft);margin-bottom:18px">Enter latitude and longitude coordinates manually:</p>
-      <div style="margin-bottom:12px">
-        <label style="display:block;font-size:0.75rem;color:var(--soft);margin-bottom:4px" for="manualLat">Latitude (-90 to 90)</label>
-        <input id="manualLat" type="number" step="any" placeholder="e.g. 55.7558" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.9rem;outline:none">
-      </div>
-      <div style="margin-bottom:20px">
-        <label style="display:block;font-size:0.75rem;color:var(--soft);margin-bottom:4px" for="manualLon">Longitude (-180 to 180)</label>
-        <input id="manualLon" type="number" step="any" placeholder="e.g. 37.6173" style="width:100%;padding:10px 14px;background:var(--card);border:1px solid var(--border);border-radius:8px;color:var(--white);font-size:0.9rem;outline:none">
-      </div>
-      <div style="display:flex;gap:10px;justify-content:flex-end">
-        <button type="button" class="btn-action" onclick="closeManualModal()">Cancel</button>
-        <button type="button" class="btn-action primary" onclick="submitManualLocation()">Apply</button>
+  <div id="mobAccountSheet" class="bottom-sheet">
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
+      <div class="sheet-links">
+        <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
+        <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+        <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
       </div>
     </div>
   </div>
+  <div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
 
-<!-- MOBILE NAV -->
-
-    
-
-<div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
-</div>
-
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
-<div id="mobAccountSheet" class="bottom-sheet">
-  <div class="sheet-content">
-    <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
-    <div class="sheet-links">
-      <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
-      <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
-    </div>
-  </div>
-</div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=fd6a6e40"></script>
+  <script defer src="../shared.js?v=0adcc7b2"></script>
+  <script defer src="../js/pages/qibla.js?v=46f764e9"></script>
+  <script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>

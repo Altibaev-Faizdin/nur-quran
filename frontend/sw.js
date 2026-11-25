@@ -8,21 +8,42 @@
  * - Auth Requests: Completely bypassed from caching
  */
 
-const CACHE_NAME = 'noor-quran-v2.0';
+const CACHE_NAME = 'noor-quran-v3.0';
 
 const PRECACHE_ASSETS = [
   '/',
   '/index.html',
+  '/404.html',
+  '/favicon.ico',
   '/manifest.json',
   '/shared.css',
+  '/css/pages.css',
   '/shared.js',
   '/i18n.js',
   '/idb-store.js',
   '/reciter-player.js',
+  '/data/names-data.js',
+  '/data/reciter-availability.json',
+  '/js/pages/bookmarks.js',
+  '/js/pages/dua.js',
+  '/js/pages/hadith.js',
+  '/js/pages/hijri.js',
+  '/js/pages/login.js',
+  '/js/pages/names.js',
+  '/js/pages/prayer.js',
+  '/js/pages/qibla.js',
+  '/js/pages/quran.js',
+  '/js/pages/reciter.js',
+  '/js/pages/reciters.js',
+  '/js/pages/register.js',
+  '/js/pages/tasbih.js',
   '/assets/images/logo.svg',
+  '/assets/images/icon-192.png',
+  '/assets/images/icon-512.png',
   '/pages/offline.html',
   '/pages/quran.html',
   '/pages/reciters.html',
+  '/pages/reciter.html',
   '/pages/prayer.html',
   '/pages/dua.html',
   '/pages/tasbih.html',
@@ -32,7 +53,9 @@ const PRECACHE_ASSETS = [
   '/pages/names.html',
   '/pages/bookmarks.html',
   '/pages/login.html',
-  '/pages/register.html'
+  '/pages/register.html',
+  '/pages/privacy.html',
+  '/pages/terms.html'
 ];
 
 self.addEventListener('install', (event) => {

@@ -4,298 +4,31 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>Tasbih Counter — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Digital Tasbih prayer beads counter with dhikr presets, sound, and session statistics.">
-  <meta property="og:title" content="Noor Al-Quran — Tasbih Counter">
-  <meta property="og:description" content="Digital Tasbih prayer beads with dhikr presets, sound, and session statistics.">
+  <meta name="description" content="Interactive digital Tasbih counter with presets, target goals, gentle audio synthesis, haptics, and persistent session statistics.">
+  <meta property="og:title" content="Digital Tasbih Counter — Noor Al-Quran">
+  <meta property="og:description" content="Interactive digital prayer beads with sound, haptics, and persistent statistics.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon" type="image/svg+xml" href="/assets/images/logo.svg">
-  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Amiri+Quran&family=Scheherazade+New:wght@400;700&family=Cinzel+Decorative:wght@700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
-  <style>
-    .tasbih-wrapper {
-      max-width: 860px;
-      margin: 0 auto;
-      padding: 10px 16px 80px;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-    }
-    
-    .tasbih-card {
-      width: 100%;
-      background: radial-gradient(circle at 50% 30%, rgba(26, 42, 86, 0.45) 0%, rgba(6, 12, 28, 0.85) 100%);
-      border: 1px solid rgba(212, 160, 23, 0.35);
-      border-radius: 24px;
-      padding: 32px 24px;
-      text-align: center;
-      position: relative;
-      box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5), inset 0 0 30px rgba(212, 160, 23, 0.05);
-      backdrop-filter: blur(12px);
-    }
-
-    .dhikr-ar {
-      font-family: 'Scheherazade New', 'Amiri Quran', serif;
-      font-size: clamp(1.8rem, 4vw, 2.4rem);
-      color: var(--goldL);
-      line-height: 2.2;
-      direction: rtl;
-      margin-bottom: 6px;
-      text-shadow: 0 0 20px rgba(240, 192, 64, 0.35);
-      min-height: 4.8rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-    }
-
-    .dhikr-en {
-      font-size: 0.95rem;
-      color: var(--silver);
-      margin-bottom: 24px;
-      min-height: 1.4rem;
-    }
-
-    /* Central Interactive Circular Bead */
-    .bead-circle-container {
-      position: relative;
-      width: 250px;
-      height: 250px;
-      margin: 0 auto 24px;
-    }
-
-    .bead-circle-btn {
-      width: 100%;
-      height: 100%;
-      border-radius: 50%;
-      background: radial-gradient(circle at 35% 35%, #1e3366 0%, #0a1329 70%, #040916 100%);
-      border: 3px solid var(--gold);
-      box-shadow: 0 0 35px rgba(212, 160, 23, 0.35), inset 0 0 25px rgba(212, 160, 23, 0.2);
-      cursor: pointer;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      transition: transform 0.1s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.15s;
-      outline: none;
-      user-select: none;
-      -webkit-tap-highlight-color: transparent;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .bead-circle-btn:active {
-      transform: scale(0.93);
-      box-shadow: 0 0 15px rgba(212, 160, 23, 0.6), inset 0 0 35px rgba(212, 160, 23, 0.4);
-    }
-
-    .counter-num {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: clamp(3.2rem, 8vw, 4.2rem);
-      font-weight: 700;
-      color: var(--goldL);
-      line-height: 1;
-      text-shadow: 0 0 25px rgba(240, 192, 64, 0.5);
-      transition: transform 0.1s;
-    }
-
-    .counter-num.bump {
-      transform: scale(1.15);
-    }
-
-    .bead-hint {
-      font-size: 0.72rem;
-      letter-spacing: 1.5px;
-      color: rgba(212, 160, 23, 0.75);
-      text-transform: uppercase;
-      margin-top: 8px;
-      font-weight: 700;
-    }
-
-    /* Goal Progress Bar & Pills */
-    .goal-row {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 12px;
-      margin-bottom: 20px;
-    }
-
-    .goal-pill {
-      background: rgba(255, 255, 255, 0.05);
-      border: 1px solid rgba(212, 160, 23, 0.3);
-      color: var(--silver);
-      padding: 4px 12px;
-      border-radius: 20px;
-      font-size: 0.8rem;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    .goal-pill.active {
-      background: var(--gold);
-      color: #020818;
-      font-weight: 700;
-      border-color: var(--gold);
-      box-shadow: 0 0 12px rgba(212, 160, 23, 0.4);
-    }
-
-    .progress-bar-wrap {
-      width: 100%;
-      max-width: 380px;
-      height: 6px;
-      background: rgba(255, 255, 255, 0.08);
-      border-radius: 4px;
-      margin: 0 auto 24px;
-      overflow: hidden;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: linear-gradient(90deg, var(--gold), #ffde7a);
-      transition: width 0.2s ease;
-      box-shadow: 0 0 8px rgba(212, 160, 23, 0.8);
-    }
-
-    /* Action buttons grid */
-    .tasbih-actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 10px;
-      justify-content: center;
-      margin-bottom: 28px;
-    }
-
-    .t-btn {
-      background: rgba(212, 160, 23, 0.12);
-      border: 1px solid rgba(212, 160, 23, 0.35);
-      color: var(--goldL);
-      padding: 9px 18px;
-      border-radius: 12px;
-      cursor: pointer;
-      font-size: 0.85rem;
-      font-weight: 700;
-      transition: all 0.2s;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-    }
-
-    .t-btn:hover {
-      background: rgba(212, 160, 23, 0.25);
-      border-color: var(--gold);
-      transform: translateY(-2px);
-    }
-
-    .t-btn.danger {
-      border-color: rgba(231, 76, 60, 0.4);
-      color: #ff7675;
-      background: rgba(231, 76, 60, 0.1);
-    }
-    .t-btn.danger:hover {
-      background: rgba(231, 76, 60, 0.25);
-      border-color: #ff7675;
-    }
-
-    /* Preset Dhikr Buttons */
-    .preset-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
-      gap: 8px;
-      width: 100%;
-      margin-bottom: 24px;
-    }
-
-    .preset-btn {
-      background: rgba(255, 255, 255, 0.04);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-      border-radius: 10px;
-      padding: 10px 8px;
-      color: var(--silver);
-      font-size: 0.78rem;
-      cursor: pointer;
-      transition: all 0.2s;
-      text-align: center;
-    }
-
-    .preset-btn:hover {
-      border-color: rgba(212, 160, 23, 0.4);
-      color: var(--goldL);
-    }
-
-    .preset-btn.active {
-      background: rgba(212, 160, 23, 0.18);
-      border-color: var(--gold);
-      color: var(--goldL);
-      font-weight: 700;
-    }
-
-    /* Stats strip */
-    .tasbih-stats-bar {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      background: rgba(0, 0, 0, 0.3);
-      border: 1px solid rgba(255, 255, 255, 0.06);
-      border-radius: 14px;
-      padding: 14px 10px;
-      width: 100%;
-    }
-
-    .stat-box {
-      text-align: center;
-    }
-    .stat-label {
-      font-size: 0.72rem;
-      color: var(--soft);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      margin-bottom: 4px;
-    }
-    .stat-val {
-      font-family: 'Cinzel Decorative', serif;
-      font-size: 1.25rem;
-      font-weight: 700;
-      color: var(--gold);
-    }
-
-    .completed-badge {
-      display: none;
-      background: rgba(46, 204, 113, 0.2);
-      border: 1px solid #2ecc71;
-      color: #2ecc71;
-      border-radius: 20px;
-      padding: 6px 16px;
-      font-size: 0.85rem;
-      font-weight: 700;
-      margin: 0 auto 16px;
-      width: fit-content;
-      animation: fadeIn 0.3s ease;
-    }
-    .completed-badge.show { display: block; }
-    @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
-<body>
-  <div class="cur" id="cur"></div>
-  <div class="cur-t" id="cur-t"></div>
+<body class="page-tasbih">
+  <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
   <div class="nebula"></div><canvas id="sc"></canvas>
-  <div class="moon">
-    <div class="mc"><div class="mcr"></div></div>
-  </div>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
 
   <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
@@ -304,10 +37,10 @@
       <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
       <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
         <div class="dropdown-content">
           <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
-          <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
+          <a href="../pages/tasbih.html" class="on" data-i18n="nav_tasbih">Tasbih Counter</a>
           <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
           <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
           <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
@@ -315,24 +48,24 @@
       </li>
       <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
         <div class="dropdown-content">
           <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
           <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
           <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+          <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+          <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
         </div>
       </li>
     </ul>
   </nav>
 
-  <div class="wrap">
+  <main id="main-content" class="wrap">
     <div class="ph fi">
       <div class="stag">سبحة إلكترونية</div>
       <h1 class="st">Tasbih <span>Counter</span></h1>
       <div class="sl"></div>
-      <p style="color:var(--soft);font-size:.82rem;margin-top:10px">Interactive digital prayer beads with sound and haptics</p>
+      <p class="ph-sub">Interactive digital prayer beads with sound and haptics</p>
     </div>
 
     <div class="tasbih-wrapper fi">
@@ -341,343 +74,92 @@
           Mashallah! Goal Reached 🤲
         </div>
 
-        <!-- Arabic & Meaning -->
         <div class="dhikr-ar" id="dhikrAr">سُبْحَانَ اللَّهِ</div>
         <div class="dhikr-en" id="dhikrEn">Subhan'Allah — Glory be to Allah</div>
 
-        <!-- Interactive Circular Bead -->
         <div class="bead-circle-container">
-          <button class="bead-circle-btn" id="beadBtn" onclick="incrementCounter()" aria-label="Tap to count">
+          <button type="button" class="bead-circle-btn" id="beadBtn" aria-label="Tap to count dhikr">
             <div class="counter-num" id="counterDisplay">0</div>
             <div class="bead-hint">TAP / SPACE</div>
           </button>
         </div>
 
-        <!-- Progress to Goal -->
         <div class="progress-bar-wrap">
           <div class="progress-bar-fill" id="progressFill"></div>
         </div>
 
-        <!-- Goal Selection -->
         <div class="goal-row">
-          <span style="font-size:0.75rem;color:var(--soft);text-transform:uppercase;letter-spacing:1px">Goal:</span>
-          <button class="goal-pill active" onclick="setGoal(33)">33</button>
-          <button class="goal-pill" onclick="setGoal(99)">99</button>
-          <button class="goal-pill" onclick="setGoal(100)">100</button>
-          <button class="goal-pill" onclick="setGoal(Infinity)">∞</button>
+          <span class="goal-label">Goal:</span>
+          <button type="button" class="goal-pill active" data-goal="33">33</button>
+          <button type="button" class="goal-pill" data-goal="99">99</button>
+          <button type="button" class="goal-pill" data-goal="100">100</button>
+          <button type="button" class="goal-pill" data-goal="inf">∞</button>
         </div>
 
-        <!-- Action Buttons -->
         <div class="tasbih-actions">
-          <button class="t-btn" onclick="prevDhikr()" title="Previous Dhikr">◀ Prev</button>
-          <button class="t-btn" onclick="decrementCounter()" title="Subtract 1">➖ -1</button>
-          <button class="t-btn danger" onclick="resetCounter()" title="Reset Counter">🔄 Reset</button>
-          <button class="t-btn" onclick="nextDhikr()" title="Next Dhikr">Next ▶</button>
-          <button class="t-btn" onclick="saveDhikrSession()" title="Save today's session">💾 Save</button>
+          <button type="button" id="prevDhikrBtn" class="t-btn" title="Previous Dhikr">◀ Prev</button>
+          <button type="button" id="decCounterBtn" class="t-btn" title="Subtract 1">➖ -1</button>
+          <button type="button" id="resetCounterBtn" class="t-btn danger" title="Reset Counter">🔄 Reset</button>
+          <button type="button" id="nextDhikrBtn" class="t-btn" title="Next Dhikr">Next ▶</button>
+          <button type="button" id="saveSessionBtn" class="t-btn" title="Save today's session">💾 Save</button>
         </div>
 
-        <!-- Preset Dhikrs -->
         <div class="preset-grid" id="dhikrPresets"></div>
 
-        <!-- Stats Bar -->
         <div class="tasbih-stats-bar">
           <div class="stat-box">
-            <div class="stat-label">Today</div>
+            <div class="stat-label" data-i18n="tasbih_today_total">Today</div>
             <div class="stat-val" id="statsToday">0</div>
           </div>
           <div class="stat-box">
-            <div class="stat-label">Sessions</div>
+            <div class="stat-label" data-i18n="tasbih_sessions">Sessions</div>
             <div class="stat-val" id="statsSessions">0</div>
           </div>
           <div class="stat-box">
-            <div class="stat-label">Best Streak</div>
+            <div class="stat-label" data-i18n="tasbih_best">Best Streak</div>
             <div class="stat-val" id="statsBest">0</div>
           </div>
         </div>
       </div>
     </div>
-  </div>
+  </main>
 
   <footer>
     <div class="fl">Noor Al-Quran · نور القرآن</div>
-    <div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
-    <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
+    <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+    <div class="fc fc-links">
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+      <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+    </div>
   </footer>
 
-  <script src="../shared.js?v=d40d020c"></script>
-  <script>
-    const TASBIH_LIST = [
-      { ar: 'سُبْحَانَ اللَّهِ', en: "Subhan'Allah (Glory be to Allah)", goal: 33 },
-      { ar: 'الْحَمْدُ لِلَّهِ', en: "Alhamdulillah (All praise to Allah)", goal: 33 },
-      { ar: 'اللَّهُ أَكْبَرُ', en: "Allahu Akbar (Allah is Greatest)", goal: 34 },
-      { ar: 'لَا إِلَهَ إِلَّا اللَّهُ', en: "La ilaha illallah (None worthy of worship but Allah)", goal: 33 },
-      { ar: 'أَسْتَغْفِرُ اللَّهَ', en: "Astaghfirullah (I seek forgiveness from Allah)", goal: 100 },
-      { ar: 'اللَّهُمَّ صَلِّ عَلَى مُحَمَّدٍ', en: "Salawat (Blessings upon Prophet Muhammad)", goal: 10 },
-      { ar: 'لَا حَوْلَ وَلَا قُوَّةَ إِلَّا بِاللَّهِ', en: "La hawla wa la quwwata illa billah", goal: 33 }
-    ];
-
-    const STORAGE_KEY = 'nq_tasbih_state_v2';
-    let currentDhikrIdx = 0;
-    let counter = 0;
-    let currentGoal = 33;
-    let totalToday = 0;
-    let sessions = 0;
-    let bestCount = 0;
-
-    let _audioCtx = null;
-    function _getAudioCtx() {
-      if (!_audioCtx) {
-        _audioCtx = new (window.AudioContext || window.webkitAudioContext)();
-      }
-      return _audioCtx;
-    }
-
-    function _getTodayStr() {
-      return new Date().toISOString().slice(0, 10);
-    }
-
-    function _loadState() {
-      try {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return;
-        const state = JSON.parse(raw);
-        if (state.date !== _getTodayStr()) {
-          totalToday = 0;
-          sessions = 0;
-          counter = 0;
-          currentDhikrIdx = state.currentDhikrIdx || 0;
-          bestCount = state.bestCount || 0;
-          _saveState();
-          return;
-        }
-        currentDhikrIdx = state.currentDhikrIdx || 0;
-        counter = state.counter || 0;
-        totalToday = state.totalToday || 0;
-        sessions = state.sessions || 0;
-        bestCount = state.bestCount || 0;
-        currentGoal = state.currentGoal || TASBIH_LIST[currentDhikrIdx].goal;
-      } catch (e) {
-        console.warn('Could not load tasbih saved state:', e);
-      }
-    }
-
-    function _saveState() {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify({
-          date: _getTodayStr(),
-          currentDhikrIdx,
-          counter,
-          currentGoal,
-          totalToday,
-          sessions,
-          bestCount
-        }));
-      } catch (e) {
-        console.warn('Could not save tasbih state:', e);
-      }
-    }
-
-    function renderPresets() {
-      const container = document.getElementById('dhikrPresets');
-      if (!container) return;
-      container.innerHTML = TASBIH_LIST.map((d, i) => `
-        <button class="preset-btn ${i === currentDhikrIdx ? 'active' : ''}" onclick="selectDhikr(${i})">
-          <div style="font-family:'Scheherazade New',serif;font-size:1.05rem;line-height:1.6">${d.ar}</div>
-          <small style="opacity:0.7">×${d.goal}</small>
-        </button>
-      `).join('');
-    }
-
-    function selectDhikr(idx) {
-      currentDhikrIdx = idx;
-      counter = 0;
-      currentGoal = TASBIH_LIST[idx].goal;
-      document.getElementById('completedBadge').classList.remove('show');
-      updateGoalPills();
-      updateDisplay();
-      renderPresets();
-      _saveState();
-    }
-
-    function prevDhikr() {
-      const newIdx = (currentDhikrIdx - 1 + TASBIH_LIST.length) % TASBIH_LIST.length;
-      selectDhikr(newIdx);
-    }
-
-    function nextDhikr() {
-      const newIdx = (currentDhikrIdx + 1) % TASBIH_LIST.length;
-      selectDhikr(newIdx);
-    }
-
-    function setGoal(g) {
-      currentGoal = g;
-      updateGoalPills();
-      updateDisplay();
-      _saveState();
-    }
-
-    function updateGoalPills() {
-      document.querySelectorAll('.goal-pill').forEach(pill => {
-        const val = pill.textContent.trim();
-        const numVal = val === '∞' ? Infinity : parseInt(val, 10);
-        pill.classList.toggle('active', numVal === currentGoal);
-      });
-    }
-
-    function incrementCounter() {
-      counter++;
-      if (counter > bestCount) bestCount = counter;
-
-      // Haptic feedback
-      if (navigator.vibrate) navigator.vibrate(14);
-
-      // Sound
-      playBeep();
-
-      // Bump animation
-      const disp = document.getElementById('counterDisplay');
-      disp.classList.add('bump');
-      setTimeout(() => disp.classList.remove('bump'), 120);
-
-      // Check goal
-      if (currentGoal !== Infinity && counter === currentGoal) {
-        document.getElementById('completedBadge').classList.add('show');
-        if (navigator.vibrate) navigator.vibrate([30, 60, 40]);
-        setTimeout(() => document.getElementById('completedBadge').classList.remove('show'), 3500);
-      }
-
-      updateDisplay();
-      _saveState();
-    }
-
-    function decrementCounter() {
-      if (counter > 0) {
-        counter--;
-        updateDisplay();
-        _saveState();
-      }
-    }
-
-    function resetCounter() {
-      counter = 0;
-      document.getElementById('completedBadge').classList.remove('show');
-      updateDisplay();
-      _saveState();
-    }
-
-    function saveDhikrSession() {
-      if (counter === 0) {
-        showToast('Count at least 1 dhikr to save session', 'info');
-        return;
-      }
-      totalToday += counter;
-      sessions++;
-      showToast(`Saved session: ${counter} dhikrs! Total today: ${totalToday}`, 'success');
-      counter = 0;
-      document.getElementById('completedBadge').classList.remove('show');
-      updateDisplay();
-      _saveState();
-    }
-
-    function updateDisplay() {
-      const d = TASBIH_LIST[currentDhikrIdx];
-      document.getElementById('counterDisplay').textContent = counter;
-      document.getElementById('dhikrAr').textContent = d.ar;
-      document.getElementById('dhikrEn').textContent = d.en;
-
-      const fill = document.getElementById('progressFill');
-      if (currentGoal === Infinity) {
-        fill.style.width = '100%';
-      } else {
-        const pct = Math.min(100, Math.round((counter / currentGoal) * 100));
-        fill.style.width = pct + '%';
-      }
-
-      document.getElementById('statsToday').textContent = totalToday + counter;
-      document.getElementById('statsSessions').textContent = sessions;
-      document.getElementById('statsBest').textContent = bestCount;
-    }
-
-    function playBeep() {
-      try {
-        const ctx = _getAudioCtx();
-        if (ctx.state === 'suspended') ctx.resume();
-        const osc = ctx.createOscillator();
-        const gain = ctx.createGain();
-        osc.connect(gain);
-        gain.connect(ctx.destination);
-        osc.frequency.value = 750;
-        osc.type = 'sine';
-        gain.gain.setValueAtTime(0.2, ctx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.08);
-        osc.start(ctx.currentTime);
-        osc.stop(ctx.currentTime + 0.08);
-      } catch (e) {
-        console.warn('Audio click synth failed:', e);
-      }
-    }
-
-    document.addEventListener('DOMContentLoaded', () => {
-      _loadState();
-      renderPresets();
-      updateGoalPills();
-      updateDisplay();
-
-      // Keyboard shortcuts
-      document.addEventListener('keydown', (e) => {
-        if (e.target && (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA')) return;
-        if (e.code === 'Space' || e.code === 'Enter') {
-          e.preventDefault();
-          incrementCounter();
-        } else if (e.code === 'ArrowLeft') {
-          prevDhikr();
-        } else if (e.code === 'ArrowRight') {
-          nextDhikr();
-        } else if (e.code === 'KeyR') {
-          resetCounter();
-        }
-      });
-    });
-  </script>
-
-  <!-- MOBILE NAV -->
   <div class="mob-nav">
-    <a href="../index.html">
-      <div class="mn-ic">🏠</div>
-      <div data-i18n="mn_home">Home</div>
-    </a>
-    <a href="../pages/quran.html">
-      <div class="mn-ic">📖</div>
-      <div data-i18n="mn_quran">Quran</div>
-    </a>
-    <a href="../pages/reciters.html">
-      <div class="mn-ic">🎙️</div>
-      <div data-i18n="mn_reciters">Audio</div>
-    </a>
-    <a href="../pages/prayer.html">
-      <div class="mn-ic">🕐</div>
-      <div data-i18n="mn_prayer">Prayer</div>
-    </a>
-    <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-      <div class="mn-ic">👤</div>
-      <div data-i18n="mn_account">Account</div>
-    </a>
+    <a href="../index.html"><div class="mn-ic">🏠</div><div data-i18n="mn_home">Home</div></a>
+    <a href="../pages/quran.html"><div class="mn-ic">📖</div><div data-i18n="mn_quran">Quran</div></a>
+    <a href="../pages/reciters.html"><div class="mn-ic">🎙️</div><div data-i18n="mn_reciters">Audio</div></a>
+    <a href="../pages/prayer.html"><div class="mn-ic">🕐</div><div data-i18n="mn_prayer">Prayer</div></a>
+    <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+      <div class="mn-ic">👤</div><div data-i18n="mn_account">Account</div>
+    </button>
   </div>
 
   <div id="mobAccountSheet" class="bottom-sheet">
     <div class="sheet-content">
       <div class="sheet-handle"></div>
-      <h3 data-i18n="mn_account_title">My Account</h3>
+      <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
       <div class="sheet-links">
         <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-        <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+        <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
         <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-        <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-        <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+        <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+        <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
       </div>
     </div>
   </div>
-  <div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-  <script src="../i18n.js?v=fd6a6e40"></script>
+  <div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
+
+  <script defer src="../shared.js?v=0adcc7b2"></script>
+  <script defer src="../js/pages/tasbih.js?v=2cfc985d"></script>
+  <script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>

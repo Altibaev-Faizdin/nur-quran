@@ -1,101 +1,109 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Quran — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Holy Quran — Noor Al-Quran</title>
+  <meta name="description" content="Read and listen to all 114 Surahs of the Holy Quran with Arabic Uthmani script, translations, transliteration, bookmarks, and offline support.">
   <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:description" content="Read and listen to all 114 Surahs of the Holy Quran offline and online.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>📖</text></svg>">
-<link rel="stylesheet" href="../shared.css?v=f84e13dd">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
-<body>
+<body class="page-quran">
 <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
 <div class="nebula"></div><canvas id="sc"></canvas>
 <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+<nav>
+  <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
+  <ul class="nav-links">
+    <li><a href="../pages/quran.html" class="on" data-i18n="nav_quran">Quran</a></li>
+    <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
+    <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
+    <li class="dropdown">
+      <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
+      <div class="dropdown-content">
+        <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
+        <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
+        <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
+        <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
+        <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
+      </div>
+    </li>
+    <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
+    <li class="dropdown account-dropdown">
+      <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
+      <div class="dropdown-content">
+        <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
+        <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+        <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
+      </div>
+    </li>
+  </ul>
+</nav>
 
-  <nav>
-    <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
-    <ul class="nav-links">
-      <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
-      <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
-      <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
-      <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
-        <div class="dropdown-content">
-          <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
-          <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
-          <a href="../pages/qibla.html" data-i18n="nav_qibla">Qibla Compass</a>
-          <a href="../pages/hijri.html" data-i18n="nav_hijri">Hijri Calendar</a>
-          <a href="../pages/hadith.html" data-i18n="nav_hadith">Hadith</a>
-        </div>
-      </li>
-      <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
-      <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
-        <div class="dropdown-content">
-          <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
-          <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
-          <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
-        </div>
-      </li>
-    </ul>
-  </nav>
-
-<div class="wrap">
-<div class="ph fi"><div class="stag">القرآن الكريم</div><h1 class="st">The Holy <span>Quran</span></h1><div class="sl"></div><p style="color:var(--soft);font-size:.83rem;margin-top:13px;letter-spacing:1px">114 Surahs · Arabic · English · Russian · Uzbek</p></div>
-
-<!-- PRAYER BAR -->
-<div class="pbar">
-  <div class="clk"><div class="ct" id="ct">00:00:00</div><div class="cd" id="cd">—</div><div class="ch" id="ch">—</div></div>
-  <div class="pi" id="fi"><span class="pn">Fajr</span><span class="pt" id="ft">—:—</span></div>
-  <div class="pi" id="si"><span class="pn">Sunrise</span><span class="pt" id="srt">—:—</span></div>
-  <div class="pi" id="di"><span class="pn">Dhuhr</span><span class="pt" id="dt">—:—</span></div>
-  <div class="pi" id="ai"><span class="pn">Asr</span><span class="pt" id="at">—:—</span></div>
-  <div class="pi" id="mi"><span class="pn">Maghrib</span><span class="pt" id="mt">—:—</span></div>
-  <div class="pi" id="ii"><span class="pn">Isha</span><span class="pt" id="it">—:—</span></div>
-  <button class="btn bo bsm" onclick="loadPrayer()" >📍 My Location</button>
-</div>
-
-<section class="sec">
-  <div class="sw fi"><input aria-label="Search surah by name or number" class="si2" id="srch" type="text" placeholder="Search surah by name or number..." oninput="filterS(this.value)"><svg class="sic" viewBox="0 0 24 24"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#a8c0e8" stroke-width="2" fill="none" stroke-linecap="round"/></svg></div>
-  <div style="display:flex;align-items:center;justify-content:center;margin:0 0 20px;gap:12px;flex-wrap:wrap">
-    <button id="offlineQuranBtn" type="button" class="btn bo bsm" style="display:inline-flex;align-items:center;gap:6px">
-      <span>📥</span> <span id="offlineBtnText" data-i18n="offline_download_btn">Offline Quran</span>
-      <span id="offlineBadge" style="background:rgba(212,175,55,0.2);padding:2px 8px;border-radius:10px;font-size:0.75rem;font-weight:bold;color:var(--gold)">Check</span>
-    </button>
+<main id="main-content" class="wrap">
+  <div class="ph fi">
+    <div class="stag">القرآن الكريم</div>
+    <h1 class="st">The Holy <span>Quran</span></h1>
+    <div class="sl"></div>
+    <p class="ph-sub">114 Surahs · Arabic, Translation &amp; Audio</p>
   </div>
-  <div id="offlineProgressWrap" style="display:none;max-width:400px;margin:0 auto 20px;text-align:center">
-    <div style="font-size:0.8rem;color:var(--soft);margin-bottom:6px" id="offlineProgressLabel">Preparing download...</div>
-    <div style="background:rgba(255,255,255,0.1);border-radius:6px;height:8px;overflow:hidden">
-      <div id="offlineProgressBar" style="width:0%;height:100%;background:linear-gradient(90deg,var(--gold),#ffe082);transition:width 0.2s"></div>
+
+  <!-- PRAYER BAR -->
+  <div class="pbar">
+    <div class="clk"><div class="ct" id="ct">00:00:00</div><div class="cd" id="cd">—</div><div class="ch" id="ch">—</div></div>
+    <div class="pi" id="fi"><span class="pn">Fajr</span><span class="pt" id="ft">—:—</span></div>
+    <div class="pi" id="si"><span class="pn">Sunrise</span><span class="pt" id="srt">—:—</span></div>
+    <div class="pi" id="di"><span class="pn">Dhuhr</span><span class="pt" id="dt">—:—</span></div>
+    <div class="pi" id="ai"><span class="pn">Asr</span><span class="pt" id="at">—:—</span></div>
+    <div class="pi" id="mi"><span class="pn">Maghrib</span><span class="pt" id="mt">—:—</span></div>
+    <div class="pi" id="ii"><span class="pn">Isha</span><span class="pt" id="it">—:—</span></div>
+    <button type="button" class="btn bo bsm" data-action="load-prayer">📍 My Location</button>
+  </div>
+
+  <section class="sec">
+    <div class="sw fi">
+      <label for="srch" class="sr-only">Search surah by name or number</label>
+      <input aria-label="Search surah by name or number" class="si2" id="srch" type="text" placeholder="Search surah by name or number...">
+      <svg class="sic" viewBox="0 0 24 24" aria-hidden="true"><path d="M21 21l-4.35-4.35M17 11A6 6 0 1 1 5 11a6 6 0 0 1 12 0z" stroke="#a8c0e8" stroke-width="2" fill="none" stroke-linecap="round"/></svg>
     </div>
-  </div>
-  <div class="sg fi" id="grid"></div>
-</section>
-</div>
+    <div class="offline-controls">
+      <button id="offlineQuranBtn" type="button" class="btn bo bsm offline-btn">
+        <span>📥</span> <span id="offlineBtnText" data-i18n="offline_download_btn">Offline Quran</span>
+        <span id="offlineBadge" class="offline-badge">Check</span>
+      </button>
+    </div>
+    <div id="offlineProgressWrap" class="offline-progress-wrap hidden">
+      <div id="offlineProgressLabel" class="offline-progress-label">Preparing download...</div>
+      <div class="offline-progress-track">
+        <div id="offlineProgressBar" class="offline-progress-fill"></div>
+      </div>
+    </div>
+    <div class="sg fi" id="grid"></div>
+  </section>
+</main>
 
 <!-- READER -->
 <div class="reader" id="reader">
-  <button class="rcls" onclick="closeR()" aria-label="Close reader">✕</button>
+  <button type="button" id="closeReaderBtn" class="rcls" aria-label="Close reader">✕</button>
   <div class="rh">
     <div class="rhn" id="rn">SURAH —</div>
     <div class="rhar" id="rar">—</div>
@@ -103,22 +111,21 @@
   </div>
   <div class="rbis" id="rbis">بِسْمِ اللَّهِ الرَّحْمَنِ الرَّحِيمِ</div>
 
-  <!-- FLOATING READING CONTROLS -->
   <div class="reading-controls">
     <div class="rc-group">
       <span class="rc-label">Font:</span>
-      <button class="rc-btn rc-size-btn" onclick="changeAyahFontSize(-0.15)" title="Decrease font size" aria-label="Decrease font size">A−</button>
-      <button class="rc-btn rc-size-btn" onclick="changeAyahFontSize(0.15)" title="Increase font size" aria-label="Increase font size">A+</button>
+      <button type="button" id="fontDecBtn" class="rc-btn rc-size-btn" title="Decrease font size" aria-label="Decrease font size">A−</button>
+      <button type="button" id="fontIncBtn" class="rc-btn rc-size-btn" title="Increase font size" aria-label="Increase font size">A+</button>
     </div>
     <div class="rc-group">
       <span class="rc-label">View:</span>
-      <button class="rc-btn active" data-view-mode="both" onclick="setQuranViewMode('both')">With Translation</button>
-      <button class="rc-btn" data-view-mode="arabic-only" onclick="setQuranViewMode('arabic-only')">Arabic Only</button>
-      <button class="rc-btn" data-view-mode="translit" onclick="setQuranViewMode('translit')">With Translit</button>
+      <button type="button" class="rc-btn active" data-view-mode="both">With Translation</button>
+      <button type="button" class="rc-btn" data-view-mode="arabic-only">Arabic Only</button>
+      <button type="button" class="rc-btn" data-view-mode="translit">With Translit</button>
     </div>
     <div class="rc-group">
-      <span class="rc-label">Reciter:</span>
-      <select id="quranReciterSel" class="rc-btn" style="padding:4px 8px;cursor:pointer" aria-label="Select Reciter" onchange="changeQuranReciter(this.value)">
+      <label for="quranReciterSel" class="rc-label">Reciter:</label>
+      <select id="quranReciterSel" class="rc-btn rc-select" aria-label="Select Reciter">
         <option value="mishary_alafasy">Mishary Alafasy</option>
         <option value="abdulbasit">Abdul Basit</option>
         <option value="ghamdi">Saad Al-Ghamdi</option>
@@ -136,302 +143,70 @@
 <div class="abar" id="abar">
   <div class="ainf"><div class="asn" id="asn">—</div><div class="arc" id="arcn">Mishary Alafasy</div></div>
   <div class="actl">
-    <button class="cb csk" onclick="prevA()" aria-label="Previous ayah">⏮</button>
-    <button class="cb cpl" id="plbtn" onclick="togPlay()" aria-label="Play or pause">▶</button>
-    <button class="cb csk" onclick="nextA()" aria-label="Next ayah">⏭</button>
-    <button class="abar-btn" id="speedBtn" onclick="cycleAudioSpeed()" title="Playback speed" aria-label="Playback speed">1x</button>
-    <button class="abar-btn" id="loopBtn" onclick="cycleAudioLoop()" title="Loop ayah" aria-label="Loop ayah">🔁 Off</button>
+    <button type="button" id="prevAyahBtn" class="cb csk" aria-label="Previous ayah">⏮</button>
+    <button type="button" id="plbtn" class="cb cpl" aria-label="Play or pause">▶</button>
+    <button type="button" id="nextAyahBtn" class="cb csk" aria-label="Next ayah">⏭</button>
+    <button type="button" id="speedBtn" class="abar-btn" title="Playback speed">1x</button>
+    <button type="button" id="loopBtn" class="abar-btn" title="Loop ayah">🔁 Off</button>
   </div>
   <div class="prog"><div class="pb"><div class="pf" id="pf"></div></div></div>
-  <button class="cb csk" onclick="closeAudio()" style="font-size:.85rem" aria-label="Close player">✕</button>
+  <button type="button" id="closeAudioBtn" class="cb csk ab-close" aria-label="Close player">✕</button>
 </div>
-<audio id="aud" ontimeupdate="updProg()" onended="onAyahEnded()"></audio>
+<audio id="aud"></audio>
 
 <!-- ADHAN -->
 <div class="adhan" id="adhan">
   <div class="adl"><div class="adi">🕌</div><div><div class="adn" id="adn">Prayer Time</div><div class="ads" id="ads">—</div></div></div>
-  <div class="adr"><select class="adsel" id="adhanReciterSel" onchange="changeAdhanReciter(this.value)"><option value="mishary_alafasy">Mishary Alafasy</option><option value="abdulbasit">Abdul Basit</option><option value="ghamdi">Saad Al-Ghamdi</option><option value="maher">Maher Al Muaiqly</option><option value="minshawi">El-Minshawi</option></select><button class="adcl" onclick="closeAdhan()" aria-label="Close adhan">✕</button></div>
+  <div class="adr">
+    <label for="adhanReciterSel" class="sr-only">Adhan reciter</label>
+    <select class="adsel" id="adhanReciterSel" aria-label="Adhan reciter">
+      <option value="mishary_alafasy">Mishary Alafasy</option>
+      <option value="abdulbasit">Abdul Basit</option>
+      <option value="ghamdi">Saad Al-Ghamdi</option>
+      <option value="maher">Maher Al Muaiqly</option>
+      <option value="minshawi">El-Minshawi</option>
+    </select>
+    <button type="button" class="adcl" data-action="close-adhan" aria-label="Close adhan">✕</button>
+  </div>
 </div>
 
-
-  <footer><div class="fl">Noor Al-Quran · نور القرآن</div><div class="fc">Free Forever · No Ads · Made with ❤️ for the Ummah</div>  <div class="fc" style="margin:6px 0"><a href="privacy.html" style="color:var(--goldL);margin-right:14px;text-decoration:none" data-i18n="footer_privacy">Privacy & Sources</a><a href="terms.html" style="color:var(--goldL);text-decoration:none" data-i18n="footer_terms">Terms of Service</a></div>
-  </footer>
-
-<script src="../idb-store.js?v=6bf1f19d"></script>
-<script src="../shared.js?v=d40d020c"></script>
-<script>
-
-let CUR=null,CAY=1,PLAYING=false,CLANG='en';
-let _localLoopCount=0;
-
-function renderS(list){
-  const grid = document.getElementById('grid');
-  if (!list || list.length === 0) {
-    grid.innerHTML = getEmptyStateHTML({
-      icon: '🔍',
-      title: 'No Surahs Found',
-      description: 'Try searching by surah name in Arabic, English, or by chapter number.',
-      actionText: 'Show All Surahs',
-      actionFn: 'filterS("")'
-    });
-    return;
-  }
-  grid.innerHTML=list.map(s=>`
-    <div class="si" onclick="openS(${s.n})">
-      <div class="snum">${safeHTML(String(s.n))}</div>
-      <div class="sinf">
-        <div class="sar">${safeHTML(s.ar)}</div>
-        <div class="sen">${safeHTML(s.en)}</div>
-        ${s.v ? `<div class="sv">${safeHTML(String(s.v))} verses</div>` : ''}
-      </div>
-    </div>`).join('');
-}
-renderS(window.SURAHS);
-
-function filterS(q){
-  const query = (q || '').trim().toLowerCase();
-  if (!query) {
-    renderS(window.SURAHS);
-    return;
-  }
-  renderS(window.SURAHS.filter(s=>s.en.toLowerCase().includes(query)||s.ar.includes(query)||String(s.n).includes(query)));
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  initOfflineControls();
-  const params = new URLSearchParams(window.location.search);
-  const surahParam = params.get('surah');
-  if (surahParam) {
-    openS(parseInt(surahParam, 10)).then(() => {
-      setTimeout(() => {
-        if(window.location.hash) {
-          const el = document.querySelector(window.location.hash);
-          if (el) el.scrollIntoView({behavior:'smooth',block:'center'});
-        }
-      }, 500);
-    });
-  }
-});
-
-async function initOfflineControls() {
-  if (!window.NoorDB) return;
-  const badge = document.getElementById('offlineBadge');
-  const btn = document.getElementById('offlineQuranBtn');
-  const count = await window.NoorDB.getCachedSurahCount(CLANG || 'en');
-  if (count >= 114) {
-    if (badge) {
-      badge.textContent = '✓ 114/114 Ready';
-      badge.style.background = 'rgba(46,204,113,0.2)';
-      badge.style.color = '#2ecc71';
-    }
-  } else if (count > 0) {
-    if (badge) badge.textContent = `${count}/114 Cached`;
-  } else {
-    if (badge) badge.textContent = 'Not Downloaded';
-  }
-
-  if (btn) {
-    btn.addEventListener('click', downloadFullQuranOffline);
-  }
-}
-
-let _isDownloading = false;
-async function downloadFullQuranOffline() {
-  if (_isDownloading) return;
-  const count = await window.NoorDB.getCachedSurahCount(CLANG || 'en');
-  if (count >= 114) {
-    showToast('All 114 Surahs are already saved for offline reading! ✨', 'info');
-    return;
-  }
-
-  _isDownloading = true;
-  const wrap = document.getElementById('offlineProgressWrap');
-  const bar = document.getElementById('offlineProgressBar');
-  const lbl = document.getElementById('offlineProgressLabel');
-  const badge = document.getElementById('offlineBadge');
-  if (wrap) wrap.style.display = 'block';
-
-  let done = 0;
-  const lang = CLANG || 'en';
-  showToast('Starting offline Quran download... 📥', 'info');
-
-  for (let n = 1; n <= 114; n++) {
-    try {
-      await window.fetchSurahData(n, lang);
-    } catch (e) {
-      console.warn(`Failed to cache surah ${n}:`, e);
-    }
-    done++;
-    const pct = Math.round((done / 114) * 100);
-    if (bar) bar.style.width = pct + '%';
-    if (lbl) lbl.textContent = `Downloading Quran: ${done}/114 surahs (${pct}%)`;
-    if (badge) badge.textContent = `${done}/114`;
-  }
-
-  _isDownloading = false;
-  if (lbl) lbl.textContent = '✓ Full Quran downloaded successfully!';
-  if (badge) {
-    badge.textContent = '✓ 114/114 Ready';
-    badge.style.background = 'rgba(46,204,113,0.2)';
-    badge.style.color = '#2ecc71';
-  }
-  showToast('Full Quran is ready for offline reading! 🌙', 'success', 5000);
-  setTimeout(() => { if (wrap) wrap.style.display = 'none'; }, 4000);
-}
-
-async function openS(n){
-  const s=window.SURAHS.find(x=>x.n===n);if(!s)return;
-  CUR=s;CAY=1;_localLoopCount=0;
-  set('rn','SURAH '+n);set('rar',s.ar);set('ren',s.en);
-  document.getElementById('rbis').style.display = (n === 1 || n === 9) ? 'none' : 'block';
-  document.getElementById('reader').classList.add('open');
-  document.getElementById('abar').classList.add('show');
-  set('asn',s.ar+' — '+s.en);
-  document.getElementById('alist').innerHTML=getAyahSkeletons(6);
-
-  applyReadingSettings();
-
-  const lang = CLANG || 'en';
-  try{
-    const d = await window.fetchSurahData(n, lang);
-    if(d && (d.code === 200 || d.data)){
-      const ar=d.data[0].ayahs;
-      const tr=(d.data[1] && d.data[1].ayahs) || [];
-      const translit=(d.data[2] && d.data[2].ayahs) || [];
-      const bismillahRegex = /^بِسْمِ\s*[ٱا]للَّ?[-ـ\u0640]*[ٰ\u0670]?هِ\s*[ٱا]لرَّحْمَ?[-ـ\u0640]*[ٰ\u0670]?نِ\s*[ٱا]لرَّحِيمِ\s*/u;
-      document.getElementById('alist').innerHTML=ar.map((a,i)=>{
-        const trText = (tr[i] && tr[i].text) || '';
-        const translitText = (translit[i] && translit[i].text) || '';
-        let arText = a.text || '';
-        if (n !== 1 && a.numberInSurah === 1) {
-          arText = arText.replace(bismillahRegex, '');
-        }
-        return `
-        <div class="ac" id="ay${a.numberInSurah}">
-          <div class="at">
-            <span class="anum">${safeHTML(String(a.numberInSurah))}</span>
-            <div class="aact">
-              <button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button>
-              <button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">🔖</button>
-              <button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button>
-            </div>
-          </div>
-          <div class="aarb">${safeHTML(arText)}</div>
-          ${trText ? `<div class="aen">${safeHTML(trText)}</div>` : ''}
-          ${translitText ? `<div class="atrn">${safeHTML(translitText)}</div>` : ''}
-        </div>`;
-      }).join('');
-      applyReadingSettings();
-    } else {
-      throw new Error((d && d.message) || 'Error');
-    }
-  }catch(e){
-    document.getElementById('alist').innerHTML=getErrorStateHTML({
-      title: 'Failed to load verses',
-      description: 'Unable to reach the Quran server. Please check your network connection.',
-      onRetry: `openS(${n})`
-    });
-  }
-}
-
-function closeR(){
-  document.getElementById('reader').classList.remove('open');
-}
-
-function playAyahQuran(s, a) {
-  CAY = a;
-  if (!CUR || CUR.n !== s) {
-    CUR = (window.SURAHS || []).find(x => x.n === s) || { n: s, ar: 'سورة', en: 'Surah ' + s };
-  }
-  const sel = document.getElementById('quranReciterSel');
-  const reciter = (sel && sel.value) || localStorage.getItem('nq_quran_reciter') || 'mishary_alafasy';
-  NoorAudioManager.playAyah(s, a, reciter);
-}
-
-function togPlay() {
-  NoorAudioManager.togglePlay();
-}
-
-function nextA() {
-  NoorAudioManager.next();
-}
-
-function prevA() {
-  NoorAudioManager.prev();
-}
-
-function onAyahEnded() {
-  NoorAudioManager.next();
-}
-
-function updProg() {
-  // Handled by NoorAudioManager internally
-}
-
-function closeAudio() {
-  document.getElementById('abar').classList.remove('show');
-  NoorAudioManager.pause();
-  document.querySelectorAll('.ac.playing').forEach(el => el.classList.remove('playing'));
-}
-
-function changeQuranReciter(val) {
-  localStorage.setItem('nq_quran_reciter', val);
-  if (NoorAudioManager.state.isPlaying) {
-    NoorAudioManager.playAyah(NoorAudioManager.state.surahNum, NoorAudioManager.state.ayahNum, val);
-  }
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-  const savedReciter = localStorage.getItem('nq_quran_reciter') || 'mishary_alafasy';
-  const sel = document.getElementById('quranReciterSel');
-  if (sel) sel.value = savedReciter;
-});
-
-document.addEventListener('langChange', e => { CLANG = e.detail; if (CUR) openS(CUR.n); });
-</script>
-
-<!-- MOBILE NAV -->
-
-    
+<footer>
+  <div class="fl">Noor Al-Quran · نور القرآن</div>
+  <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+  <div class="fc fc-links">
+    <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+    <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+  </div>
+</footer>
 
 <div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
+  <a href="../index.html"><div class="mn-ic">🏠</div><div data-i18n="mn_home">Home</div></a>
+  <a href="../pages/quran.html" class="active"><div class="mn-ic">📖</div><div data-i18n="mn_quran">Quran</div></a>
+  <a href="../pages/reciters.html"><div class="mn-ic">🎙️</div><div data-i18n="mn_reciters">Audio</div></a>
+  <a href="../pages/prayer.html"><div class="mn-ic">🕐</div><div data-i18n="mn_prayer">Prayer</div></a>
+  <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+    <div class="mn-ic">👤</div><div data-i18n="mn_account">Account</div>
+  </button>
 </div>
 
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
 <div id="mobAccountSheet" class="bottom-sheet">
   <div class="sheet-content">
     <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
+    <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
     <div class="sheet-links">
       <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
+      <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
       <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+      <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+      <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
     </div>
   </div>
 </div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=fd6a6e40"></script>
+<div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
+
+<script defer src="../idb-store.js?v=f3c88684"></script>
+<script defer src="../shared.js?v=0adcc7b2"></script>
+<script defer src="../js/pages/quran.js?v=219d2672"></script>
+<script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>

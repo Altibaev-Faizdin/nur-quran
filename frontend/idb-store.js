@@ -46,14 +46,14 @@
       const db = await openDB();
       lang = lang || 'en';
       const key = `${surahNum}_${lang}`;
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _reject) => {
         const tx = db.transaction('surahs', 'readonly');
         const store = tx.objectStore('surahs');
         const req = store.get(key);
         req.onsuccess = () => resolve(req.result ? req.result.data : null);
         req.onerror = () => resolve(null);
       });
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   }
@@ -63,7 +63,7 @@
       const db = await openDB();
       lang = lang || 'en';
       const key = `${surahNum}_${lang}`;
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve, _reject) => {
         const tx = db.transaction('surahs', 'readwrite');
         const store = tx.objectStore('surahs');
         const req = store.put({
@@ -76,7 +76,7 @@
         req.onsuccess = () => resolve(true);
         req.onerror = () => resolve(false);
       });
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }
@@ -96,7 +96,7 @@
         };
         req.onerror = () => resolve(0);
       });
-    } catch (e) {
+    } catch (_e) {
       return 0;
     }
   }
@@ -111,7 +111,7 @@
         req.onsuccess = () => resolve(req.result ? req.result.data : null);
         req.onerror = () => resolve(null);
       });
-    } catch (e) {
+    } catch (_e) {
       return null;
     }
   }
@@ -130,7 +130,7 @@
         req.onsuccess = () => resolve(true);
         req.onerror = () => resolve(false);
       });
-    } catch (e) {
+    } catch (_e) {
       return false;
     }
   }

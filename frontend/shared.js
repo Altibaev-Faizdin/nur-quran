@@ -6,17 +6,23 @@
 
 // ── XSS PROTECTION HELPER ──
 function safeHTML(str) {
+  if (typeof document === 'undefined') {
+    return String(str === undefined || str === null ? '' : str)
+      .replace(/[&<>"']/g, function(c) {
+        return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c];
+      });
+  }
   var d = document.createElement('div');
   d.textContent = (str === undefined || str === null) ? '' : str;
   return d.innerHTML;
 }
-window.safeHTML = safeHTML;
+if (typeof window !== 'undefined') window.safeHTML = safeHTML;
 
 // ── PRAYER TIMER TRACKER ──
 var _prayerTimers = [];
 
-// ── UNIFIED ROBUST STORAGE MANAGER ──
-const StorageManager = {
+// ── UNIFIED ROBUST STORAGE MANAGER (NO SECRETS / NO TOKENS) ──
+const NoorStorage = {
   _prefix: 'nq_',
   get: function(key, defaultVal) {
     try {
@@ -34,9 +40,11 @@ const StorageManager = {
   },
   set: function(key, val) {
     try {
+      // Never persist bearer or refresh tokens in Web Storage
+      if (key === 'access_token' || key === 'refresh_token') return false;
       var serialized = typeof val === 'object' && val !== null ? JSON.stringify(val) : String(val);
       localStorage.setItem(this._prefix + key, serialized);
-      if (['access_token', 'refresh_token', 'username', 'lang'].includes(key)) {
+      if (key === 'username' || key === 'lang') {
         try {
           localStorage.setItem(key, serialized);
         } catch (e) {
@@ -45,7 +53,7 @@ const StorageManager = {
       }
       return true;
     } catch (e) {
-      console.warn('StorageManager.set quota exceeded or disabled', e);
+      console.warn('NoorStorage.set quota exceeded or disabled', e);
       return false;
     }
   },
@@ -54,20 +62,38 @@ const StorageManager = {
       localStorage.removeItem(this._prefix + key);
       localStorage.removeItem(key);
     } catch (e) {
-      console.warn('StorageManager.remove error:', e);
+      console.warn('NoorStorage.remove error:', e);
     }
   }
 };
-window.StorageManager = StorageManager;
-window.storageGet = function(k, d) { return StorageManager.get(k, d); };
-window.storageSet = function(k, v) { return StorageManager.set(k, v); };
-window.storageRemove = function(k) { return StorageManager.remove(k); };
+if (typeof window !== 'undefined') {
+  window.NoorStorage = NoorStorage;
+  window.StorageManager = NoorStorage;
+  window.storageGet = function(k, d) { return NoorStorage.get(k, d); };
+  window.storageSet = function(k, v) { return NoorStorage.set(k, v); };
+  window.storageRemove = function(k) { return NoorStorage.remove(k); };
+  window.onReady = function(fn) {
+    if (typeof document === 'undefined') return;
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', fn);
+    } else {
+      fn();
+    }
+  };
+}
 
 // ── API BASE & ZERO-FAILURE DUAL FALLBACK ──
-const API_BASE = window.NQ_API_BASE || '/api';
+const API_BASE = (typeof window !== 'undefined' && window.NQ_API_BASE) ? window.NQ_API_BASE : '/api';
 const PUBLIC_QURAN_API = 'https://api.alquran.cloud/v1';
-window.API_BASE = API_BASE;
-window.PUBLIC_QURAN_API = PUBLIC_QURAN_API;
+if (typeof window !== 'undefined') {
+  window.API_BASE = API_BASE;
+  window.PUBLIC_QURAN_API = PUBLIC_QURAN_API;
+  try {
+    ['access_token', 'refresh_token', 'nq_access_token', 'nq_refresh_token'].forEach(function(k) {
+      localStorage.removeItem(k);
+    });
+  } catch (e) { /* storage disabled */ }
+}
 
 // ── RESILIENT SURAH FETCHER (Offline IndexedDB -> Backend -> alquran.cloud) ──
 async function fetchSurahData(surahNum, lang) {
@@ -158,7 +184,7 @@ async function _backgroundSyncSurah(surahNum, lang, edition) {
     console.warn('Background surah sync failed for surah ' + surahNum, e);
   }
 }
-window.fetchSurahData = fetchSurahData;
+if (typeof window !== 'undefined') window.fetchSurahData = fetchSurahData;
 
 // ── RECITERS DATA ──
 // Alafasy removed; Sherif Mostafa and Sheikh Saud Al-Juma'a added.
@@ -284,7 +310,9 @@ const RECITERS = [
     page: 'reciter.html?id=raad_kurdi',
   }
 ];
-window.RECITERS = RECITERS;
+if (typeof window !== 'undefined') {
+  window.RECITERS = RECITERS;
+}
 
 // ── SURAH DATA (114 surahs) ──
 var SURAHS = [
@@ -327,52 +355,102 @@ var SURAHS = [
   { n: 109, ar: 'الكافرون', en: 'Al-Kafirun', v: 6 }, { n: 110, ar: 'النصر', en: 'An-Nasr', v: 3 }, { n: 111, ar: 'المسد', en: 'Al-Masad', v: 5 },
   { n: 112, ar: 'الإخلاص', en: 'Al-Ikhlas', v: 4 }, { n: 113, ar: 'الفلق', en: 'Al-Falaq', v: 5 }, { n: 114, ar: 'الناس', en: 'An-Nas', v: 6 },
 ];
-window.SURAHS = SURAHS;
+if (typeof window !== 'undefined') {
+  window.SURAHS = SURAHS;
+}
 
-const MOSSAD_AVAILABLE = [
-  10, 19, 23, 29, 32, 49, 73, 78, 87, 88, 100, 107
-];
+const RECITER_SURAH_AVAILABILITY = {
+  abdurrahman_mossad: [1, 29],
+  sherif_mostafa: [65, 66, 67, 71, 75, 76, 77, 89],
+  islam_sobhi_excluded: [36, 45],
+};
+const MOSSAD_AVAILABLE = RECITER_SURAH_AVAILABILITY.abdurrahman_mossad;
+const SHERIF_AVAILABLE = RECITER_SURAH_AVAILABILITY.sherif_mostafa;
 
-const SHERIF_AVAILABLE = [
-  13, 15, 19, 20, 31, 32, 53, 55, 56, 57, 60,
-  61, 62, 63, 64, 65, 66, 67, 71, 75, 76, 77, 89
-];
+function getReciterAvailableSurahs(reciterId) {
+  if (reciterId === 'abdurrahman_mossad') {
+    return SURAHS.filter(function(s) { return RECITER_SURAH_AVAILABILITY.abdurrahman_mossad.includes(s.n); });
+  }
+  if (reciterId === 'sherif_mostafa') {
+    return SURAHS.filter(function(s) { return RECITER_SURAH_AVAILABILITY.sherif_mostafa.includes(s.n); });
+  }
+  if (reciterId === 'islam_sobhi') {
+    return SURAHS.filter(function(s) { return !RECITER_SURAH_AVAILABILITY.islam_sobhi_excluded.includes(s.n); });
+  }
+  return SURAHS;
+}
+if (typeof window !== 'undefined') {
+  window.MOSSAD_AVAILABLE = MOSSAD_AVAILABLE;
+  window.SHERIF_AVAILABLE = SHERIF_AVAILABLE;
+  window.getReciterAvailableSurahs = getReciterAvailableSurahs;
+}
 
-// ── STARS ──
-(function () {
+// ── STARS (respects prefers-reduced-motion, batched lightweight canvas rendering) ──
+if (typeof window !== 'undefined' && typeof document !== 'undefined') (function () {
   const c = document.getElementById('sc'); if (!c) return;
-  const x = c.getContext('2d'); let s = [];
+  const x = c.getContext('2d'); if (!x) return;
+  const COLORS = ['#ffffff', '#fffde0', '#d0e8ff', '#f0d060'];
+  let buckets = [[], [], [], []];
+  const reducedMotion = window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  let timerId = null;
   function rs() {
-    c.width = innerWidth; c.height = innerHeight; s = [];
-    const n = Math.floor(c.width * c.height / 2800);
-    for (let i = 0; i < n; i++) s.push({
-      x: Math.random() * c.width, y: Math.random() * c.height,
-      r: Math.random() * 1.7 + 0.2, a: Math.random(),
-      sp: Math.random() * 0.008 + 0.002, ph: Math.random() * Math.PI * 2,
-      col: ['#fff', '#fffde0', '#d0e8ff', '#f0d060'][Math.floor(Math.random() * 4)],
-    });
+    c.width = innerWidth; c.height = innerHeight;
+    buckets = [[], [], [], []];
+    const maxStars = c.width < 900 ? 45 : 95;
+    const n = Math.min(maxStars, Math.floor(c.width * c.height / 14000));
+    for (let i = 0; i < n; i++) {
+      const sz = Math.random() > 0.7 ? 2 : 1.5;
+      buckets[i % 4].push({
+        x: Math.floor(Math.random() * c.width),
+        y: Math.floor(Math.random() * c.height),
+        s: sz,
+        a: 0.35 + Math.random() * 0.55,
+      });
+    }
   }
-  function draw() {
+  function drawOnce() {
     x.clearRect(0, 0, c.width, c.height);
-    const t = Date.now() * 0.001;
-    s.forEach(v => {
-      const a = 0.3 + 0.7 * (0.5 + 0.5 * Math.sin(t * v.sp * 10 + v.ph));
-      x.beginPath(); x.arc(v.x, v.y, v.r, 0, Math.PI * 2);
-      x.fillStyle = v.col; x.globalAlpha = a * v.a; x.fill();
-      if (v.r > 1.2) {
-        x.beginPath(); x.arc(v.x, v.y, v.r * 2.5, 0, Math.PI * 2);
-        x.fillStyle = v.col; x.globalAlpha = a * v.a * 0.12; x.fill();
+    for (let b = 0; b < 4; b++) {
+      x.fillStyle = COLORS[b];
+      const list = buckets[b];
+      for (let i = 0; i < list.length; i++) {
+        const v = list[i];
+        x.globalAlpha = v.a;
+        x.fillRect(v.x, v.y, v.s, v.s);
       }
-      x.globalAlpha = 1;
-    });
-    requestAnimationFrame(draw);
+    }
+    x.globalAlpha = 1;
   }
-  window.addEventListener('resize', rs); rs(); draw();
+  function startStars() {
+    if (timerId) clearInterval(timerId);
+    rs();
+    drawOnce();
+    if (!reducedMotion) {
+      timerId = setInterval(function () {
+        if (document.hidden) return;
+        for (let b = 0; b < 4; b++) {
+          const list = buckets[b];
+          if (list.length) {
+            const idx = Math.floor(Math.random() * list.length);
+            list[idx].a = 0.3 + Math.random() * 0.65;
+          }
+        }
+        drawOnce();
+      }, 220);
+    }
+  }
+  window.addEventListener('resize', function () {
+    if (buckets[0].length) { rs(); drawOnce(); }
+  });
+  window.addEventListener('load', function () {
+    setTimeout(startStars, 800);
+  }, { once: true });
 })();
 
 // ── CURSOR ──
-(function () {
+if (typeof window !== 'undefined' && typeof document !== 'undefined') (function () {
   if (!window.matchMedia('(pointer: fine)').matches) return;
+  if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
   const d = document.getElementById('cur'), t = document.getElementById('cur-t');
   if (!d || !t) return;
   let mx = 0, my = 0, tx = 0, ty = 0;
@@ -398,7 +476,8 @@ const SHERIF_AVAILABLE = [
   }
 })();
 
-// ── HIJRI DATE ──
+// ── HIJRI DATE (cached Intl formatter) ──
+var _hijriFmt = null;
 function toHijri(date, adjustment) {
   date = date || new Date();
   if (typeof adjustment !== 'number') {
@@ -411,11 +490,14 @@ function toHijri(date, adjustment) {
   }
   const d = new Date(date.getTime() + adjustment * 86400000);
   try {
-    const parts = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
-      day: 'numeric',
-      month: 'numeric',
-      year: 'numeric'
-    }).formatToParts(d);
+    if (!_hijriFmt) {
+      _hijriFmt = new Intl.DateTimeFormat('en-US-u-ca-islamic-umalqura', {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric'
+      });
+    }
+    const parts = _hijriFmt.formatToParts(d);
     let y = 1445, m = 1, day = 1;
     parts.forEach(p => {
       if (p.type === 'year') y = parseInt(p.value, 10);
@@ -432,26 +514,47 @@ function toHijri(date, adjustment) {
     return { day: l - Math.floor((709 * Math.floor((24 * l) / 709)) / 24), month: Math.floor((24 * l) / 709) - 1, year: 30 * n + j - 30 };
   }
 }
-window.toHijri = toHijri;
+if (typeof window !== 'undefined') {
+  window.toHijri = toHijri;
+}
 const HM = ['Muharram', 'Safar', 'Rabi I', 'Rabi II', 'Jumada I', 'Jumada II', 'Rajab', "Sha'ban", 'Ramadan', 'Shawwal', "Dhul Qa'dah", 'Dhul Hijjah'];
 const HMA = ['مُحَرَّم', 'صَفَر', 'رَبِيع الأَوَّل', 'رَبِيع الآخِر', 'جُمَادَى الأُولَى', 'جُمَادَى الآخِرَة', 'رَجَب', 'شَعْبَان', 'رَمَضَان', 'شَوَّال', 'ذُو القَعْدَة', 'ذُو الحِجَّة'];
-window.HM = HM;
-window.HMA = HMA;
+if (typeof window !== 'undefined') {
+  window.HM = HM;
+  window.HMA = HMA;
+}
 
 // ── CLOCK ──
-(function () {
+if (typeof window !== 'undefined' && typeof document !== 'undefined') (function () {
   const D = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
   const M = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  let lastDayKey = '';
+  let _timerStarted = false;
   function upd() {
+    if (!document.getElementById('ct') && !document.getElementById('hd')) return;
     const n = new Date();
     const h = String(n.getHours()).padStart(2, '0'), m = String(n.getMinutes()).padStart(2, '0'), s = String(n.getSeconds()).padStart(2, '0');
     set('ct', `${h}:${m}:${s}`);
-    set('cd', `${D[n.getDay()]}, ${M[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`);
-    const hj = toHijri(n);
-    set('ch', `${hj.day} ${HM[hj.month]} ${hj.year} AH`);
-    set('hd', hj.day); set('hm', `${HM[hj.month]} ${hj.year} AH`); set('ha', HMA[hj.month]);
+    const dayKey = `${n.getFullYear()}-${n.getMonth()}-${n.getDate()}`;
+    if (dayKey !== lastDayKey) {
+      lastDayKey = dayKey;
+      set('cd', `${D[n.getDay()]}, ${M[n.getMonth()]} ${n.getDate()}, ${n.getFullYear()}`);
+      const hj = toHijri(n);
+      set('ch', `${hj.day} ${HM[hj.month]} ${hj.year} AH`);
+      set('hd', hj.day); set('hm', `${HM[hj.month]} ${hj.year} AH`); set('ha', HMA[hj.month]);
+    }
   }
-  setInterval(upd, 1000); upd();
+  function startClock() {
+    if (_timerStarted) return;
+    _timerStarted = true;
+    upd();
+    setInterval(upd, 1000);
+  }
+  if (typeof requestAnimationFrame === 'function') {
+    requestAnimationFrame(function () { setTimeout(startClock, 80); });
+  } else {
+    setTimeout(startClock, 80);
+  }
 })();
 
 // ── DOM HELPER ──
@@ -478,12 +581,18 @@ function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
 
   var methodId = options.method || 3;
   var method = methods[methodId] || methods[3];
-  var asrHanafi = !!options.hanafi;
+  var asrHanafi = options.hanafi !== undefined
+    ? !!options.hanafi
+    : (options.school === 1 || options.school === 'Hanafi');
+  var highLatMethod = options.highLatitude || 'AngleBased';
 
   var year = date.getFullYear();
   var month = date.getMonth() + 1;
   var day = date.getDate();
-  var D = (367 * year) - Math.floor((7 * (year + Math.floor((month + 9) / 12))) / 4) + Math.floor((275 * month) / 9) + day - 730531.5;
+  var timezone = typeof options.timezone === 'number' ? options.timezone : -date.getTimezoneOffset() / 60;
+  // Julian Day at local noon (~12h - timezone/24) improves accuracy across longitude/timezone boundaries
+  var D = (367 * year) - Math.floor((7 * (year + Math.floor((month + 9) / 12))) / 4)
+    + Math.floor((275 * month) / 9) + day - 730531.5 + (0.5 - timezone / 24);
 
   var L = fixAngle(280.461 + 0.9856474 * D);
   var M = fixAngle(357.528 + 0.9856003 * D);
@@ -492,8 +601,9 @@ function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
   var alpha = deg(Math.atan2(Math.cos(rad(obliq)) * Math.sin(rad(Lambda)), Math.cos(rad(Lambda)))) / 15;
   var delta = deg(Math.asin(Math.sin(rad(obliq)) * Math.sin(rad(Lambda))));
   var equationOfTime = (L / 15) - fixHour(alpha);
+  if (equationOfTime > 12) equationOfTime -= 24;
+  if (equationOfTime < -12) equationOfTime += 24;
 
-  var timezone = typeof options.timezone === 'number' ? options.timezone : -date.getTimezoneOffset() / 60;
   var noon = fixHour(12 + timezone - (longitude / 15) - equationOfTime);
 
   var sunAngleTime = function(angle, direction) {
@@ -518,17 +628,27 @@ function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
   var sunriseFloat = sunAngleTime(0.833, -1);
   var maghribFloat = sunAngleTime(0.833, 1);
   var fajrFloat = sunAngleTime(method.fajr, -1);
-  var ishaFloat = method.ishaInterval ? fixHour(maghribFloat + method.ishaInterval / 60) : sunAngleTime(method.isha, 1);
+  var ishaFloat = method.ishaInterval
+    ? (maghribFloat !== null ? fixHour(maghribFloat + method.ishaInterval / 60) : null)
+    : sunAngleTime(method.isha, 1);
 
-  if (sunriseFloat !== null && maghribFloat !== null) {
+  if (sunriseFloat !== null && maghribFloat !== null && highLatMethod !== 'None') {
     var nightPortion = fixHour(24 - maghribFloat + sunriseFloat);
-    if (fajrFloat === null || Math.abs(latitude) > 55) {
-      var fajrPortion = (method.fajr / 60) * (nightPortion / 2);
-      fajrFloat = fixHour(sunriseFloat - Math.min(nightPortion / 7, fajrPortion));
+    if (fajrFloat === null) {
+      var fajrDiff = highLatMethod === 'NightMiddle'
+        ? nightPortion / 2
+        : highLatMethod === 'OneSeventh'
+          ? nightPortion / 7
+          : (method.fajr / 60) * nightPortion;
+      fajrFloat = fixHour(sunriseFloat - fajrDiff);
     }
-    if (ishaFloat === null || (Math.abs(latitude) > 55 && !method.ishaInterval)) {
-      var ishaPortion = (method.isha / 60) * (nightPortion / 2);
-      ishaFloat = fixHour(maghribFloat + Math.min(nightPortion / 7, ishaPortion));
+    if (ishaFloat === null && !method.ishaInterval) {
+      var ishaDiff = highLatMethod === 'NightMiddle'
+        ? nightPortion / 2
+        : highLatMethod === 'OneSeventh'
+          ? nightPortion / 7
+          : (method.isha / 60) * nightPortion;
+      ishaFloat = fixHour(maghribFloat + ishaDiff);
     }
   }
 
@@ -549,7 +669,36 @@ function calculateOfflinePrayerTimes(latitude, longitude, date, options) {
     Isha: toHHMM(ishaFloat)
   };
 }
-window.calculateOfflinePrayerTimes = calculateOfflinePrayerTimes;
+
+function calculateQiblaBearing(latitude, longitude) {
+  var mLat = 21.4225 * Math.PI / 180;
+  var mLon = 39.8262 * Math.PI / 180;
+  var lat = latitude * Math.PI / 180;
+  var lon = longitude * Math.PI / 180;
+  var dLon = mLon - lon;
+  var y = Math.sin(dLon) * Math.cos(mLat);
+  var x = Math.cos(lat) * Math.sin(mLat) - Math.sin(lat) * Math.cos(mLat) * Math.cos(dLon);
+  return (Math.atan2(y, x) * 180 / Math.PI + 360) % 360;
+}
+
+function calculateQiblaDistanceKm(latitude, longitude) {
+  var R = 6371;
+  var mLat = 21.4225 * Math.PI / 180;
+  var mLon = 39.8262 * Math.PI / 180;
+  var lat = latitude * Math.PI / 180;
+  var lon = longitude * Math.PI / 180;
+  var dLat = mLat - lat;
+  var dLon = mLon - lon;
+  var a = Math.sin(dLat / 2) * Math.sin(dLat / 2)
+    + Math.cos(lat) * Math.cos(mLat) * Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  return Math.round(R * 2 * Math.asin(Math.sqrt(a)));
+}
+
+if (typeof window !== 'undefined') {
+  window.calculateOfflinePrayerTimes = calculateOfflinePrayerTimes;
+  window.calculateQiblaBearing = calculateQiblaBearing;
+  window.calculateQiblaDistanceKm = calculateQiblaDistanceKm;
+}
 
 // ── PRAYER SETTINGS & OFFLINE ENGINE ──
 function getPrayerSettings() {
@@ -569,13 +718,13 @@ function getPrayerSettings() {
   }
   return { method: method, school: school, hanafi: school === 1 };
 }
-window.getPrayerSettings = getPrayerSettings;
+if (typeof window !== 'undefined') window.getPrayerSettings = getPrayerSettings;
 
 // ── PRAYER TIMES ──
-function loadPrayer() {
+function loadPrayer(userInitiated) {
   var settings = getPrayerSettings();
   var cacheKey = 'prayer_cache_' + settings.method + '_' + settings.school;
-  var PRAYER_CACHE_TTL = 30 * 60 * 1000; // 30 minutes in ms
+  var PRAYER_CACHE_TTL = 30 * 60 * 1000;
   var cached = null;
   try {
     var raw = localStorage.getItem(cacheKey);
@@ -586,7 +735,7 @@ function loadPrayer() {
   } catch(e) {
     console.warn('Error reading prayer cache:', e);
   }
-  if (cached) {
+  if (cached && !userInitiated) {
     var t = cached;
     set('ft', t.Fajr); set('srt', t.Sunrise); set('dt', t.Dhuhr);
     set('at', t.Asr); set('mt', t.Maghrib); set('it', t.Isha);
@@ -619,7 +768,6 @@ function loadPrayer() {
       .then(r => r.json()).then(d => {
         if (!d || !d.data || !d.data.timings) throw new Error('Invalid prayer data response');
         const t = d.data.timings;
-        // Cache the result with key matching method and school
         try { localStorage.setItem(cacheKey, JSON.stringify({ts: Date.now(), data: t})); } catch(e) {
           console.warn('Error saving prayer cache:', e);
         }
@@ -632,28 +780,33 @@ function loadPrayer() {
   };
   var fb = async function () {
     try {
-      let r = await fetch('https://ipapi.co/json/');
-      let d = await r.json();
-      if (d && d.latitude && d.longitude) return fetchPrayer(d.latitude, d.longitude);
-    } catch(e) {
-      console.warn('ipapi lookup failed:', e);
-    }
-    try {
-      let r2 = await fetch('https://get.geojs.io/v1/ip/geo.json');
-      let d2 = await r2.json();
-      if (d2 && d2.latitude && d2.longitude) return fetchPrayer(d2.latitude, d2.longitude);
-    } catch(e) {
-      console.warn('geojs lookup failed:', e);
-    }
+      var lastRaw = localStorage.getItem('last_coords');
+      if (lastRaw && !userInitiated) {
+        var c = JSON.parse(lastRaw);
+        if (c && typeof c.lat === 'number' && typeof c.lng === 'number') {
+          return fetchPrayer(c.lat, c.lng);
+        }
+      }
+    } catch (e) { /* ignore */ }
     err();
   };
-  if (!navigator.geolocation) return fb();
+  if (!userInitiated || typeof navigator === 'undefined' || !navigator.geolocation) {
+    return fb();
+  }
   navigator.geolocation.getCurrentPosition(
     function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); },
-    fb,
+    async function () {
+      try {
+        let r = await fetch('https://ipapi.co/json/');
+        let d = await r.json();
+        if (d && d.latitude && d.longitude) return fetchPrayer(d.latitude, d.longitude);
+      } catch(e) { console.warn('ipapi lookup failed:', e); }
+      fb();
+    },
     { timeout: 7000 }
   );
 }
+if (typeof window !== 'undefined') window.loadPrayer = loadPrayer;
 
 function hlPrayer(t) {
   const cur = new Date().getHours() * 60 + new Date().getMinutes();
@@ -709,24 +862,28 @@ function closeAdhan() {
 }
 
 function changeAdhanReciter(val) {
-  storageSet('adhan_reciter', val);
+  NoorStorage.set('adhan_reciter', val);
   var sel = document.getElementById('adhanReciterSel');
   if (sel && sel.value !== val) sel.value = val;
+  if (typeof NoorAuth !== 'undefined' && NoorAuth.isAuthenticated() && typeof window !== 'undefined' && typeof window.authFetch === 'function') {
+    window.authFetch(`${API_BASE}/notifications/`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ prayer_name: 'fajr', adhan_reciter: val, is_enabled: true }),
+    }).catch(function () { /* ignore offline notification sync error */ });
+  }
 }
 
 // ── QIBLA ──
 function getQibla() {
-  if (!navigator.geolocation) return;
+  if (typeof navigator === 'undefined' || !navigator.geolocation) return;
   navigator.geolocation.getCurrentPosition(function (pos) {
-    const la = pos.coords.latitude * Math.PI / 180, lo = pos.coords.longitude * Math.PI / 180;
-    const mla = 21.3891 * Math.PI / 180, mlo = 39.8579 * Math.PI / 180, dl = mlo - lo;
-    const xx = Math.sin(dl) * Math.cos(mla), yy = Math.cos(la) * Math.sin(mla) - Math.sin(la) * Math.cos(mla) * Math.cos(dl);
-    const b = (Math.atan2(xx, yy) * 180 / Math.PI + 360) % 360;
+    const b = calculateQiblaBearing(pos.coords.latitude, pos.coords.longitude);
     const qa = document.getElementById('qa'); if (qa) qa.style.transform = `translateX(-50%) translateY(-100%) rotate(${b}deg)`;
     set('qt', `Qibla: ${Math.round(b)}° from North`);
   });
 }
-if (window.DeviceOrientationEvent) {
+if (typeof window !== 'undefined' && window.DeviceOrientationEvent) {
   window.addEventListener('deviceorientation', function (e) {
     const cn = document.getElementById('cn'); if (cn) cn.style.transform = `translateX(-50%) translateY(-100%) rotate(${e.alpha || 0}deg)`;
   });
@@ -753,7 +910,7 @@ function nextDua() { DI = (DI + 1) % DUAS.length; updD(); }
 function updD() { var d = DUAS[DI]; set('dua', d.ar); set('dut', d.en); set('dutr', d.ru || ''); }
 
 // ── SCROLL ANIMATION ──
-(function () {
+if (typeof window !== 'undefined' && typeof document !== 'undefined' && typeof IntersectionObserver !== 'undefined') (function () {
   var obs = new IntersectionObserver(function (entries) {
     entries.forEach(function (e) { if (e.isIntersecting) e.target.classList.add('vis'); });
   }, { threshold: 0.08 });
@@ -771,21 +928,31 @@ function setLang(l, btn) {
 
 // ── ONLINE / OFFLINE STATUS TRACKER ──
 function initNetworkTracker() {
-  var banner = document.getElementById('noor-offline-banner');
-  if (!banner) {
-    banner = document.createElement('div');
+  if (typeof document === 'undefined' || !document.body) return;
+  function getBanner() {
+    var existing = document.getElementById('noor-offline-banner');
+    if (existing) return existing;
+    var banner = document.createElement('div');
     banner.id = 'noor-offline-banner';
     banner.className = 'noor-offline-banner';
     var text = (window.LANG === 'ru' ? 'Нет подключения к сети' : (window.LANG === 'uz' ? "Internetga ulanish yo'q" : 'No internet connection'));
-    banner.innerHTML = '<span>⚡</span> <span>' + text + '</span>';
+    var icSpan = document.createElement('span');
+    icSpan.textContent = '⚡';
+    var txtSpan = document.createElement('span');
+    txtSpan.textContent = text;
+    banner.appendChild(icSpan);
+    banner.appendChild(document.createTextNode(' '));
+    banner.appendChild(txtSpan);
     document.body.prepend(banner);
+    return banner;
   }
 
   function updateStatus() {
     if (!navigator.onLine) {
-      banner.classList.add('show');
+      getBanner().classList.add('show');
     } else {
-      if (banner.classList.contains('show')) {
+      var banner = document.getElementById('noor-offline-banner');
+      if (banner && banner.classList.contains('show')) {
         banner.classList.remove('show');
         var backText = (window.LANG === 'ru' ? 'Подключение к сети восстановлено' : (window.LANG === 'uz' ? 'Internetga ulanish tiklandi' : 'Back online'));
         showToast(backText, 'success', 3000);
@@ -795,106 +962,308 @@ function initNetworkTracker() {
 
   window.addEventListener('online', updateStatus);
   window.addEventListener('offline', updateStatus);
-  if (!navigator.onLine) banner.classList.add('show');
+  if (!navigator.onLine) getBanner().classList.add('show');
 }
-window.initNetworkTracker = initNetworkTracker;
+if (typeof window !== 'undefined') window.initNetworkTracker = initNetworkTracker;
 
-// ── SERVICE WORKER REGISTRATION ──
-const isLocal = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || isLocal)) {
-  window.addEventListener('load', function() {
-    var swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
-    navigator.serviceWorker.register(swPath).catch(function(err) {
-      console.warn('Service worker registration error:', err);
-    });
-  });
-}
-
-document.addEventListener('DOMContentLoaded', function () {
-  // Global init
-  checkAuthVisibility();
-  initNetworkTracker();
-  applyReadingSettings();
-
-  // Mobile navigation haptic feedback
-  document.querySelectorAll('.mob-nav a').forEach(function(el) {
-    el.addEventListener('click', function() {
-      if (navigator.vibrate) navigator.vibrate(12);
-    });
-  });
-
-  var savedAdhan = localStorage.getItem('adhan_reciter');
-  var adhanSel = document.getElementById('adhanReciterSel');
-  if (adhanSel && savedAdhan) adhanSel.value = savedAdhan;
-  
-  document.addEventListener('click', function (e) {
-    var dropLink = e.target.closest('.dropdown > a');
-    if (dropLink) {
-      e.preventDefault(); e.stopPropagation();
-      var parent = dropLink.parentElement;
-      var wasActive = parent.classList.contains('active');
-      document.querySelectorAll('.dropdown.active').forEach(function (d) { d.classList.remove('active'); });
-      if (!wasActive) parent.classList.add('active');
-    } else if (!e.target.closest('.dropdown')) {
-      document.querySelectorAll('.dropdown.active').forEach(function (d) { d.classList.remove('active'); });
+// ── RUNTIME CONFIG (AUDIO CDN) ──
+async function _loadRuntimeConfig() {
+  if (typeof window === 'undefined' || typeof fetch !== 'function') return;
+  if (window.NQ_AUDIO_CDN_BASE !== undefined) return;
+  try {
+    var res = await fetch(`${API_BASE}/config/`);
+    if (res.ok) {
+      var cfg = await res.json();
+      if (cfg && cfg.audioCdnBase) {
+        window.NQ_AUDIO_CDN_BASE = String(cfg.audioCdnBase).replace(/\/+$/, '') + '/';
+      }
     }
-  });
+  } catch (e) { /* Static/offline deployments operate without backend config */ }
+}
 
-  // Page-specific init
-  // if (document.getElementById('grid')) loadSurahs(); // Handled by window.SURAHS in quran.html
-  if (document.getElementById('rg')) loadReciters();
-  if (document.getElementById('pbgrid')) loadPrayerBig();
-  if (document.getElementById('ng')) loadNames();
-});
+// ── IN-MEMORY ACCESS TOKEN + HTTPONLY COOKIE AUTH MANAGER ──
+const NoorAuth = (function () {
+  var _accessToken = null;
+  var _username = null;
+  var _refreshPromise = null;
 
-window.doLogout = function() {
-  const refresh = localStorage.getItem('refresh_token');
-  if (refresh) {
-    try {
-      fetch(`${API_BASE}/auth/logout/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh: refresh })
-      }).catch(function(err) {
-        console.warn('Backend logout failed or was offline:', err);
-      });
-    } catch (e) {
-      console.warn('Logout exception:', e);
+  function _syncUIState() {
+    if (typeof document === 'undefined' || !document.body) return;
+    var hasSession = !!(_accessToken && isTokenValid(_accessToken, 5)) || isHintActive();
+    if (hasSession) {
+      document.body.classList.add('is-logged-in');
+      var uname = _username || getUsername();
+      if (uname) {
+        document.querySelectorAll('[data-username]').forEach(function (el) { el.textContent = uname; });
+      }
+    } else {
+      document.body.classList.remove('is-logged-in');
     }
   }
-  localStorage.removeItem('access_token');
-  localStorage.removeItem('refresh_token');
-  localStorage.removeItem('username');
-  localStorage.removeItem('prayer_cache');
-  // Smart redirect: detect if we're inside /pages/ subdirectory
-  const isInPages = window.location.pathname.includes('/pages/');
-  window.location.href = isInPages ? 'login.html' : 'pages/login.html';
-};
 
-// ── LANGUAGE MENU ──
-window.toggleLanguageMenu = function() {
-  var existing = document.getElementById('lang-panel');
-  if (existing) { existing.remove(); return; }
-  var panel = document.createElement('div');
-  panel.id = 'lang-panel';
-  panel.style.cssText = 'position:fixed;bottom:80px;right:16px;background:rgba(15,20,40,.97);border:1px solid rgba(168,192,232,.25);border-radius:14px;padding:16px 20px;z-index:10000;backdrop-filter:blur(16px);min-width:160px;box-shadow:0 8px 32px rgba(0,0,0,.5)';
-  var langs = [{code:'en',label:'English 🇬🇧'},{code:'ru',label:'Русский 🇷🇺'},{code:'uz',label:"O'zbek 🇺🇿"}];
-  var saved = localStorage.getItem('lang') || 'en';
-  panel.innerHTML = '<div style="color:var(--gold,#d4a017);font-size:.75rem;font-weight:700;letter-spacing:1px;margin-bottom:12px;text-transform:uppercase">Language</div>' +
-    langs.map(l => '<button onclick="window.setLanguage(\''+l.code+'\');document.getElementById(\'lang-panel\')?.remove()" style="display:block;width:100%;text-align:left;background:'+(saved===l.code?'rgba(168,192,232,.15)':'none')+';border:none;color:'+(saved===l.code?'#a8c0e8':'#ccc')+';padding:8px 4px;border-radius:8px;cursor:pointer;font-size:.88rem;font-weight:'+(saved===l.code?'700':'400')+'">'+l.label+'</button>').join('');
-  document.body.appendChild(panel);
-  setTimeout(function() { document.addEventListener('click', function handler(e) { if (!panel.contains(e.target)) { panel.remove(); document.removeEventListener('click', handler); } }); }, 10);
-};
+  function isHintActive() {
+    try { return localStorage.getItem('nq_session_hint') === '1'; } catch (e) { return false; }
+  }
 
+  function setSession(data) {
+    if (data && data.access) _accessToken = data.access;
+    if (data && data.username) {
+      _username = data.username;
+      try { localStorage.setItem('nq_username_hint', data.username); } catch (e) { /* ignore */ }
+    }
+    try { localStorage.setItem('nq_session_hint', '1'); } catch (e) { /* ignore */ }
+    _syncUIState();
+  }
 
-// ── JWT SESSION & SEAMLESS TOKEN ROTATION ──
+  function clearSession() {
+    _accessToken = null;
+    _username = null;
+    try {
+      ['nq_session_hint', 'nq_username_hint', 'username', 'access_token', 'refresh_token', 'nq_access_token', 'nq_refresh_token', 'prayer_cache'].forEach(function (k) {
+        localStorage.removeItem(k);
+      });
+    } catch (e) { /* ignore */ }
+    _syncUIState();
+  }
+
+  function getAccessToken() { return _accessToken; }
+
+  function getUsername() {
+    if (_username) return _username;
+    try { return localStorage.getItem('nq_username_hint') || ''; } catch (e) { return ''; }
+  }
+
+  function isAuthenticated() {
+    return !!(_accessToken && isTokenValid(_accessToken, 5)) || isHintActive();
+  }
+
+  async function refreshAccessToken() {
+    if (_refreshPromise) return _refreshPromise;
+    _refreshPromise = (async function () {
+      var res = await fetch(`${API_BASE}/auth/refresh/`, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      if (!res.ok) {
+        clearSession();
+        throw new Error('Refresh rejected');
+      }
+      var data = await res.json();
+      if (!data || !data.access) {
+        clearSession();
+        throw new Error('Invalid refresh response');
+      }
+      setSession({ access: data.access, username: data.username || getUsername() });
+      return data.access;
+    })().finally(function () {
+      _refreshPromise = null;
+    });
+    return _refreshPromise;
+  }
+
+  async function restoreSession() {
+    if (_accessToken && isTokenValid(_accessToken, 30)) {
+      _syncUIState();
+      return _accessToken;
+    }
+    if (!isHintActive()) {
+      _syncUIState();
+      return null;
+    }
+    try {
+      return await refreshAccessToken();
+    } catch (e) {
+      return null;
+    }
+  }
+
+  return {
+    setSession: setSession,
+    clearSession: clearSession,
+    getAccessToken: getAccessToken,
+    getUsername: getUsername,
+    isAuthenticated: isAuthenticated,
+    refreshAccessToken: refreshAccessToken,
+    restoreSession: restoreSession,
+    syncUIState: _syncUIState,
+  };
+})();
+if (typeof window !== 'undefined') window.NoorAuth = NoorAuth;
+
+// ── SERVICE WORKER REGISTRATION & GLOBAL DELEGATION ──
+if (typeof window !== 'undefined' && typeof document !== 'undefined') {
+  var _isLocalHost = window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+  if ('serviceWorker' in navigator && (window.location.protocol === 'https:' || _isLocalHost)) {
+    window.addEventListener('load', function () {
+      var swPath = window.location.pathname.includes('/pages/') ? '../sw.js' : 'sw.js';
+      navigator.serviceWorker.register(swPath).catch(function (err) {
+        console.warn('Service worker registration error:', err);
+      });
+    });
+  }
+
+  function _activateAsyncFonts() {
+    var gf = document.getElementById('noorFonts');
+    if (gf && gf.media === 'print') gf.media = 'all';
+  }
+
+  document.addEventListener('DOMContentLoaded', function () {
+    _activateAsyncFonts();
+    initNetworkTracker();
+    applyReadingSettings();
+
+    setTimeout(function () {
+      _loadRuntimeConfig();
+      NoorAuth.restoreSession();
+    }, 60);
+
+    document.querySelectorAll('.mob-nav a, .mob-nav button').forEach(function (el) {
+      el.addEventListener('click', function () {
+        if (navigator.vibrate) navigator.vibrate(12);
+      });
+    });
+
+    var savedAdhan = null;
+    try { savedAdhan = localStorage.getItem('adhan_reciter'); } catch (e) { /* ignore */ }
+    var adhanSel = document.getElementById('adhanReciterSel');
+    if (adhanSel) {
+      if (savedAdhan) adhanSel.value = savedAdhan;
+      adhanSel.addEventListener('change', function () { changeAdhanReciter(this.value); });
+    }
+
+    document.addEventListener('click', function (e) {
+      var trigger = e.target.closest('.dropdown > a, .dropdown > .nav-trigger');
+      if (trigger) {
+        e.preventDefault();
+        e.stopPropagation();
+        var parent = trigger.parentElement;
+        var wasActive = parent.classList.contains('active');
+        document.querySelectorAll('.dropdown.active').forEach(function (d) {
+          d.classList.remove('active');
+          var t = d.querySelector('.nav-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+        if (!wasActive) {
+          parent.classList.add('active');
+          trigger.setAttribute('aria-expanded', 'true');
+        }
+        return;
+      }
+      if (!e.target.closest('.dropdown')) {
+        document.querySelectorAll('.dropdown.active').forEach(function (d) {
+          d.classList.remove('active');
+          var t = d.querySelector('.nav-trigger');
+          if (t) t.setAttribute('aria-expanded', 'false');
+        });
+      }
+
+      var actEl = e.target.closest('[data-action]');
+      if (!actEl) return;
+      var action = actEl.getAttribute('data-action');
+      if (action === 'toggle-mobile-account') {
+        window.toggleMobileAccount();
+      } else if (action === 'toggle-lang') {
+        window.toggleLanguageMenu();
+      } else if (action === 'logout') {
+        window.doLogout();
+      } else if (action === 'load-prayer') {
+        loadPrayer(true);
+      } else if (action === 'close-adhan') {
+        closeAdhan();
+      } else if (action === 'reload') {
+        window.location.reload();
+      } else if (action === 'load-surahs') {
+        loadSurahs();
+      } else if (action === 'go-quran') {
+        window.location.href = 'quran.html';
+      } else if (action === 'filter-reset' && typeof window.filterS === 'function') {
+        window.filterS('');
+      } else if (action === 'open-surah' && typeof window.openS === 'function') {
+        var sn = parseInt(actEl.getAttribute('data-surah'), 10);
+        if (sn) window.openS(sn);
+      } else if (action === 'set-lang' && typeof window.setLanguage === 'function') {
+        var lang = actEl.getAttribute('data-lang');
+        if (lang) window.setLanguage(lang);
+        var panel = document.getElementById('lang-panel');
+        if (panel) panel.remove();
+      }
+    });
+
+    setTimeout(function () {
+      if (document.getElementById('ft')) loadPrayer(false);
+      if (document.getElementById('pbgrid')) loadPrayerBig(false);
+    }, 0);
+    setTimeout(function () {
+      if (document.getElementById('rg')) loadReciters();
+      if (document.getElementById('ng')) loadNames();
+    }, 24);
+  });
+}
+
+if (typeof window !== 'undefined') {
+  window.doLogout = function () {
+    fetch(`${API_BASE}/auth/logout/`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+    }).catch(function (err) {
+      console.warn('Backend logout failed or was offline:', err);
+    });
+    NoorAuth.clearSession();
+    var isInPages = window.location.pathname.includes('/pages/');
+    window.location.href = isInPages ? 'login.html' : 'pages/login.html';
+  };
+
+  // ── LANGUAGE MENU (CSP-safe class styling) ──
+  window.toggleLanguageMenu = function () {
+    var existing = document.getElementById('lang-panel');
+    if (existing) { existing.remove(); return; }
+    var panel = document.createElement('div');
+    panel.id = 'lang-panel';
+    panel.className = 'lang-panel';
+    var title = document.createElement('div');
+    title.className = 'lang-panel-title';
+    title.textContent = 'Language';
+    panel.appendChild(title);
+
+    var langs = [
+      { code: 'en', label: 'English 🇬🇧' },
+      { code: 'ru', label: 'Русский 🇷🇺' },
+      { code: 'uz', label: "O'zbek 🇺🇿" }
+    ];
+    var saved = 'en';
+    try { saved = localStorage.getItem('lang') || 'en'; } catch (e) { /* ignore */ }
+    langs.forEach(function (l) {
+      var btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'lang-option' + (saved === l.code ? ' is-active' : '');
+      btn.setAttribute('data-action', 'set-lang');
+      btn.setAttribute('data-lang', l.code);
+      btn.textContent = l.label;
+      panel.appendChild(btn);
+    });
+    document.body.appendChild(panel);
+    setTimeout(function () {
+      document.addEventListener('click', function handler(e) {
+        if (!panel.contains(e.target) && !e.target.closest('[data-action="toggle-lang"]')) {
+          panel.remove();
+          document.removeEventListener('click', handler);
+        }
+      });
+    }, 10);
+  };
+}
+
+// ── JWT HELPERS & AUTHENTICATED FETCH (RAM TOKEN + HTTPONLY COOKIE) ──
 function parseJwt(token) {
   if (!token || typeof token !== 'string') return null;
   try {
-    const base64Url = token.split('.')[1];
+    var base64Url = token.split('.')[1];
     if (!base64Url) return null;
-    const base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
-    const jsonPayload = decodeURIComponent(atob(base64).split('').map(function(c) {
+    var base64 = base64Url.replace(/-/g, '+').replace(/_/g, '/');
+    while (base64.length % 4) base64 += '=';
+    var jsonPayload = decodeURIComponent(atob(base64).split('').map(function (c) {
       return '%' + ('00' + c.charCodeAt(0).toString(16)).slice(-2);
     }).join(''));
     return JSON.parse(jsonPayload);
@@ -902,103 +1271,61 @@ function parseJwt(token) {
     return null;
   }
 }
-window.parseJwt = parseJwt;
 
 function isTokenValid(token, bufferSeconds) {
   if (!token) return false;
   bufferSeconds = bufferSeconds !== undefined ? bufferSeconds : 30;
-  const payload = parseJwt(token);
+  var payload = parseJwt(token);
   if (!payload || !payload.exp) return false;
-  const now = Math.floor(Date.now() / 1000);
+  var now = Math.floor(Date.now() / 1000);
   return payload.exp > (now + bufferSeconds);
 }
-window.isTokenValid = isTokenValid;
 
-let _refreshPromise = null;
 async function refreshAccessToken() {
-  if (_refreshPromise) return _refreshPromise;
-
-  _refreshPromise = (async function() {
-    const refresh = localStorage.getItem('refresh_token');
-    if (!refresh) throw new Error('No refresh token available');
-
-    if (!isTokenValid(refresh, 5)) {
-      window.doLogout();
-      throw new Error('Refresh token expired');
-    }
-
-    let res;
-    try {
-      res = await fetch(`${API_BASE}/token/refresh/`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ refresh: refresh })
-      });
-      if (!res.ok) {
-        res = await fetch(`${API_BASE}/auth/refresh/`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ refresh: refresh })
-        });
-      }
-    } catch (netErr) {
-      throw netErr;
-    }
-
-    if (res.ok) {
-      const data = await res.json();
-      if (data.access) storageSet('access_token', data.access);
-      if (data.refresh) storageSet('refresh_token', data.refresh);
-      return data.access;
-    } else {
-      window.doLogout();
-      throw new Error('Refresh rejected');
-    }
-  })().finally(function() {
-    _refreshPromise = null;
-  });
-
-  return _refreshPromise;
+  return NoorAuth.refreshAccessToken();
 }
-window.refreshAccessToken = refreshAccessToken;
 
-window.authFetch = async function(url, options) {
-  options = options || {};
-  let token = localStorage.getItem('access_token');
+if (typeof window !== 'undefined') {
+  window.parseJwt = parseJwt;
+  window.isTokenValid = isTokenValid;
+  window.refreshAccessToken = refreshAccessToken;
 
-  // Preemptive validation: if access token expired or expiring soon, refresh before request
-  if (token && !isTokenValid(token, 30)) {
-    try {
-      token = await refreshAccessToken();
-    } catch (e) {
-      token = null;
-    }
-  }
+  window.authFetch = async function (url, options) {
+    options = options || {};
+    var token = NoorAuth.getAccessToken();
 
-  if (!options.headers) options.headers = {};
-  if (token) options.headers['Authorization'] = `Bearer ${token}`;
-
-  let res;
-  try {
-    res = await fetch(url, options);
-  } catch (err) {
-    throw err;
-  }
-
-  // Intercept 401: seamless Token Rotation and automatic retry
-  if (res.status === 401) {
-    try {
-      const newToken = await refreshAccessToken();
-      if (newToken) {
-        options.headers['Authorization'] = `Bearer ${newToken}`;
-        res = await fetch(url, options);
+    if ((!token || !isTokenValid(token, 30)) && NoorAuth.isAuthenticated()) {
+      try {
+        token = await NoorAuth.refreshAccessToken();
+      } catch (e) {
+        token = null;
       }
-    } catch (e) {
-      window.doLogout();
     }
-  }
-  return res;
-};
+
+    var headers = Object.assign({}, options.headers || {});
+    if (token) headers['Authorization'] = `Bearer ${token}`;
+
+    var fetchOpts = Object.assign({}, options, {
+      headers: headers,
+      credentials: options.credentials || 'include',
+    });
+
+    var res = await fetch(url, fetchOpts);
+
+    if (res.status === 401 && NoorAuth.isAuthenticated()) {
+      try {
+        var newToken = await NoorAuth.refreshAccessToken();
+        if (newToken) {
+          headers['Authorization'] = `Bearer ${newToken}`;
+          res = await fetch(url, Object.assign({}, fetchOpts, { headers: headers }));
+        }
+      } catch (e) {
+        NoorAuth.clearSession();
+      }
+    }
+    return res;
+  };
+}
 
 // ── SKELETON / SHIMMER LOADERS ──
 function getSurahSkeletons(count) {
@@ -1006,9 +1333,9 @@ function getSurahSkeletons(count) {
   var html = '<div class="skeleton-grid">';
   for (var i = 0; i < count; i++) {
     html += '<div class="skeleton-card">' +
-              '<div style="display:flex;align-items:center;gap:12px;margin-bottom:12px">' +
+              '<div class="skel-row">' +
                 '<div class="skeleton skeleton-circle"></div>' +
-                '<div style="flex:1">' +
+                '<div class="skel-flex1">' +
                   '<div class="skeleton skeleton-line h-title"></div>' +
                   '<div class="skeleton skeleton-line short"></div>' +
                 '</div>' +
@@ -1019,75 +1346,80 @@ function getSurahSkeletons(count) {
   html += '</div>';
   return html;
 }
-window.getSurahSkeletons = getSurahSkeletons;
 
 function getAyahSkeletons(count) {
   count = count || 6;
   var html = '';
   for (var i = 0; i < count; i++) {
-    html += '<div class="ac card skeleton-card" style="margin-bottom:14px">' +
-              '<div class="at" style="margin-bottom:16px">' +
-                '<div class="skeleton" style="width:28px;height:22px;border-radius:12px"></div>' +
-                '<div class="skeleton" style="width:60px;height:24px;border-radius:6px"></div>' +
+    html += '<div class="ac card skeleton-card ac-skel">' +
+              '<div class="at at-skel">' +
+                '<div class="skeleton skel-num"></div>' +
+                '<div class="skeleton skel-act"></div>' +
               '</div>' +
-              '<div class="skeleton skeleton-line long" style="height:26px;margin-bottom:12px"></div>' +
-              '<div class="skeleton skeleton-line mid" style="height:24px;margin-bottom:16px"></div>' +
-              '<div class="skeleton skeleton-line long" style="height:14px"></div>' +
-              '<div class="skeleton skeleton-line short" style="height:14px"></div>' +
+              '<div class="skeleton skeleton-line long skel-line-lg"></div>' +
+              '<div class="skeleton skeleton-line mid skel-line-md"></div>' +
+              '<div class="skeleton skeleton-line long skel-line-sm"></div>' +
+              '<div class="skeleton skeleton-line short skel-line-sm"></div>' +
             '</div>';
   }
   return html;
 }
-window.getAyahSkeletons = getAyahSkeletons;
 
 function getNamesSkeletons(count) {
   count = count || 16;
   var html = '<div class="skeleton-names-grid">';
   for (var i = 0; i < count; i++) {
-    html += '<div class="nc card skeleton-card" style="padding:24px 16px;text-align:center">' +
-              '<div class="skeleton" style="width:24px;height:16px;margin:0 auto 12px;border-radius:10px"></div>' +
-              '<div class="skeleton" style="width:70%;height:32px;margin:0 auto 10px;border-radius:8px"></div>' +
-              '<div class="skeleton skeleton-line short" style="margin:0 auto 6px"></div>' +
-              '<div class="skeleton skeleton-line mid" style="margin:0 auto"></div>' +
+    html += '<div class="nc card skeleton-card nc-skel">' +
+              '<div class="skeleton skel-nidx"></div>' +
+              '<div class="skeleton skel-nar"></div>' +
+              '<div class="skeleton skeleton-line short skel-ntrn"></div>' +
+              '<div class="skeleton skeleton-line mid skel-nmn"></div>' +
             '</div>';
   }
   html += '</div>';
   return html;
 }
-window.getNamesSkeletons = getNamesSkeletons;
 
-// ── EMPTY & ERROR STATE GENERATORS ──
+// ── EMPTY & ERROR STATE GENERATORS (CSP safe: uses data-action, no onclick/style) ──
 function getEmptyStateHTML(opts) {
   opts = opts || {};
   var icon = opts.icon || '📖';
   var title = opts.title || 'No Items Found';
   var desc = opts.description || '';
   var actText = opts.actionText || '';
-  var actFn = opts.actionFn || '';
+  var actData = opts.actionName || '';
   return '<div class="state-card">' +
-           '<div class="state-icon">' + icon + '</div>' +
+           '<div class="state-icon">' + safeHTML(icon) + '</div>' +
            '<h3 class="state-title">' + safeHTML(title) + '</h3>' +
            (desc ? '<p class="state-desc">' + safeHTML(desc) + '</p>' : '') +
-           (actText && actFn ? '<button class="state-btn" onclick="' + actFn + '">' + safeHTML(actText) + '</button>' : '') +
+           (actText && actData ? '<button type="button" class="state-btn" data-action="' + safeHTML(actData) + '">' + safeHTML(actText) + '</button>' : '') +
          '</div>';
 }
-window.getEmptyStateHTML = getEmptyStateHTML;
 
 function getErrorStateHTML(opts) {
   opts = opts || {};
   var title = opts.title || 'Something went wrong';
   var desc = opts.description || 'Unable to load content. Please check your network connection.';
-  var onRetry = opts.onRetry || 'location.reload()';
-  return '<div class="state-card" style="border-color:rgba(231,76,60,0.3)">' +
+  var actData = opts.actionName || 'reload';
+  var surahAttr = opts.surahNum ? ' data-surah="' + Number(opts.surahNum) + '"' : '';
+  return '<div class="state-card state-card--error">' +
            '<div class="state-icon">⚠️</div>' +
            '<h3 class="state-title">' + safeHTML(title) + '</h3>' +
            '<p class="state-desc">' + safeHTML(desc) + '</p>' +
-           '<button class="state-btn" onclick="' + onRetry + '">↻ Retry</button>' +
+           '<button type="button" class="state-btn" data-action="' + safeHTML(actData) + '"' + surahAttr + '>↻ Retry</button>' +
          '</div>';
 }
-window.getErrorStateHTML = getErrorStateHTML;
+
+if (typeof window !== 'undefined') {
+  window.getSurahSkeletons = getSurahSkeletons;
+  window.getAyahSkeletons = getAyahSkeletons;
+  window.getNamesSkeletons = getNamesSkeletons;
+  window.getEmptyStateHTML = getEmptyStateHTML;
+  window.getErrorStateHTML = getErrorStateHTML;
+}
 
 // ── AYAH SHARING HELPER ──
+if (typeof window !== 'undefined') {
 window.shareAyah = async function(surahNum, ayahNum, arText, trText) {
   if (!arText) {
     var ayahEl = document.getElementById('ay' + ayahNum) || document.getElementById('ayah-' + surahNum + '-' + ayahNum);
@@ -1133,35 +1465,47 @@ window.shareAyah = async function(surahNum, ayahNum, arText, trText) {
     showToast('Ayah copied to clipboard! 📋', 'success');
   }
 };
+}
 
 // ── READING CONTROLS ──
-var _currentFontSize = parseFloat(localStorage.getItem('quran_font_size')) || 1.7;
-var _currentViewMode = localStorage.getItem('quran_view_mode') || 'both';
+var _currentFontSize = (typeof localStorage !== 'undefined' ? parseFloat(localStorage.getItem('quran_font_size')) : 0) || 1.8;
+var _currentViewMode = (typeof localStorage !== 'undefined' && localStorage.getItem('quran_view_mode')) || 'both';
 
 function applyReadingSettings() {
-  document.documentElement.style.setProperty('--ayah-font-size', _currentFontSize + 'rem');
+  if (typeof document === 'undefined') return;
   var alist = document.getElementById('alist');
+  var hasReader = !!alist || !!document.querySelector('.player-wrap');
+  if (hasReader && _currentFontSize !== 1.8) {
+    document.documentElement.style.setProperty('--ayah-font-size', _currentFontSize + 'rem');
+  } else if (hasReader) {
+    document.documentElement.style.removeProperty('--ayah-font-size');
+  }
   if (alist) {
     alist.classList.remove('view-both', 'view-arabic-only', 'view-translit');
     alist.classList.add('view-' + _currentViewMode);
   }
-  document.querySelectorAll('[data-view-mode]').forEach(function(btn) {
-    btn.classList.toggle('active', btn.getAttribute('data-view-mode') === _currentViewMode);
-  });
+  var modeBtns = document.querySelectorAll('[data-view-mode]');
+  if (modeBtns.length) {
+    modeBtns.forEach(function(btn) {
+      btn.classList.toggle('active', btn.getAttribute('data-view-mode') === _currentViewMode);
+    });
+  }
 }
-window.applyReadingSettings = applyReadingSettings;
+if (typeof window !== 'undefined') {
+  window.applyReadingSettings = applyReadingSettings;
 
-window.changeAyahFontSize = function(delta) {
-  _currentFontSize = Math.min(2.8, Math.max(1.2, _currentFontSize + delta));
-  storageSet('quran_font_size', _currentFontSize.toFixed(2));
-  applyReadingSettings();
-};
+  window.changeAyahFontSize = function(delta) {
+    _currentFontSize = Math.min(2.8, Math.max(1.2, _currentFontSize + delta));
+    NoorStorage.set('quran_font_size', _currentFontSize.toFixed(2));
+    applyReadingSettings();
+  };
 
-window.setQuranViewMode = function(mode) {
-  _currentViewMode = mode;
-  storageSet('quran_view_mode', mode);
-  applyReadingSettings();
-};
+  window.setQuranViewMode = function(mode) {
+    _currentViewMode = mode;
+    NoorStorage.set('quran_view_mode', mode);
+    applyReadingSettings();
+  };
+}
 
 // ── ADVANCED AUDIO PLAYER ENGINE (ARCH-01, FUNC-06, PERF-05) ──
 var NoorAudioManager = (function() {
@@ -1302,8 +1646,8 @@ var NoorAudioManager = (function() {
         urls.push('https://everyayah.com/data/Alafasy_128kbps/' + sPadded + aPadded + '.mp3');
         urls.push('https://everyayah.com/data/Alafasy_64kbps/' + sPadded + aPadded + '.mp3');
       } else if (reciterId === 'abdulbasit') {
-        urls.push('https://cdn.islamic.network/quran/audio/128/ar.abdulbasitmurattal/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Abdul_Basit_Murattal_192kbps/' + sPadded + aPadded + '.mp3');
+        urls.push('https://cdn.islamic.network/quran/audio/64/ar.abdulbasitmurattal/' + globalNum + '.mp3');
         urls.push('https://everyayah.com/data/Abdul_Basit_Murattal_64kbps/' + sPadded + aPadded + '.mp3');
       } else if (reciterId === 'ghamdi') {
         urls.push('https://everyayah.com/data/Ghamadi_40kbps/' + sPadded + aPadded + '.mp3');
@@ -1322,6 +1666,7 @@ var NoorAudioManager = (function() {
     } else {
       var recObj = (window.RECITERS || []).find(function(r) { return r.id === reciterId; });
       var baseServer = recObj ? recObj.server : 'https://server8.mp3quran.net/afs/';
+      var cdnBase = (typeof window !== 'undefined' && window.NQ_AUDIO_CDN_BASE) ? window.NQ_AUDIO_CDN_BASE : '';
       var CDN_MAP = {
         abdulbasit: 'https://cdn.mp3quran.net/audio/abdulbasit-abdulsamad/r3/',
         ghamdi: 'https://cdn.mp3quran.net/audio/saad-ghamdi/r1/',
@@ -1333,20 +1678,17 @@ var NoorAudioManager = (function() {
         raad_kurdi: 'https://cdn.mp3quran.net/audio/raad-kurdi/r1/'
       };
 
+      if (cdnBase) {
+        urls.push(cdnBase + reciterId + '/' + sPadded + '.mp3');
+      }
       if (CDN_MAP[reciterId]) {
         urls.push(CDN_MAP[reciterId] + sPadded + '.mp3');
       }
 
-      var audioDirPrefix = (typeof window !== 'undefined' && window.location && window.location.pathname.includes('/pages/')) ? '../audio/' : 'audio/';
-
       if (reciterId === 'sherif_mostafa') {
-        urls.push(audioDirPrefix + 'sherif_mostafa/' + sPadded + '.mp3');
-        urls.push('/audio/sherif_mostafa/' + sPadded + '.mp3');
         urls.push('https://server6.mp3quran.net/shrf/' + sPadded + '.mp3');
         urls.push('https://download.quranplayermp3.com/quran/mix/Sherif-Mostafa/' + sPadded + '.mp3');
       } else if (reciterId === 'abdurrahman_mossad') {
-        urls.push(audioDirPrefix + 'abdurrahman_mossad/' + sPadded + '.mp3');
-        urls.push('/audio/abdurrahman_mossad/' + sPadded + '.mp3');
         urls.push('https://server16.mp3quran.net/mossad/' + sPadded + '.mp3');
         urls.push('https://download.quranplayermp3.com/quran/mix/Abdul-Rahman-Mosad/' + sPadded + '.mp3');
       } else if (reciterId === 'islam_sobhi') {
@@ -1372,6 +1714,10 @@ var NoorAudioManager = (function() {
       if (baseServer) {
         var baseFullUrl = baseServer + sPadded + '.mp3';
         if (!urls.includes(baseFullUrl)) urls.push(baseFullUrl);
+      }
+      if (reciterId === 'sherif_mostafa' || reciterId === 'abdurrahman_mossad') {
+        var audioDirPrefix = (typeof window !== 'undefined' && window.location && window.location.pathname.includes('/pages/')) ? '../audio/' : 'audio/';
+        urls.push(audioDirPrefix + reciterId + '/' + sPadded + '.mp3');
       }
     }
     return urls;
@@ -1552,8 +1898,8 @@ var NoorAudioManager = (function() {
       if (state.ayahNum < maxV) {
         playAyah(state.surahNum, state.ayahNum + 1, state.reciterId);
       } else if (state.surahNum < 114) {
-        if (typeof openS === 'function') {
-          openS(state.surahNum + 1).then(function() {
+        if (typeof window !== 'undefined' && typeof window.openS === 'function') {
+          window.openS(state.surahNum + 1).then(function() {
             playAyah(state.surahNum + 1, 1, state.reciterId);
           }).catch(function() {
             playAyah(state.surahNum + 1, 1, state.reciterId);
@@ -1646,24 +1992,26 @@ var NoorAudioManager = (function() {
     init: function() { _getAudio(); }
   };
 })();
-window.NoorAudioManager = NoorAudioManager;
+if (typeof window !== 'undefined') {
+  window.NoorAudioManager = NoorAudioManager;
+
+  window.cycleAudioSpeed = function() {
+    var idx = AUDIO_SPEEDS.indexOf(NoorAudioManager.state.speed);
+    var nextSpeed = AUDIO_SPEEDS[(idx + 1) % AUDIO_SPEEDS.length];
+    NoorAudioManager.setSpeed(nextSpeed);
+  };
+
+  window.cycleAudioLoop = function() {
+    var modes = ['off', '1x', '3x', 'inf'];
+    var idx = modes.indexOf(NoorAudioManager.state.loopMode);
+    var nextLoop = modes[(idx + 1) % modes.length];
+    NoorAudioManager.setLoop(nextLoop);
+  };
+}
 
 var _audioSpeed = 1;
 var AUDIO_SPEEDS = [0.75, 1, 1.25, 1.5];
 var _audioLoopMode = 'off';
-
-window.cycleAudioSpeed = function() {
-  var idx = AUDIO_SPEEDS.indexOf(NoorAudioManager.state.speed);
-  var nextSpeed = AUDIO_SPEEDS[(idx + 1) % AUDIO_SPEEDS.length];
-  NoorAudioManager.setSpeed(nextSpeed);
-};
-
-window.cycleAudioLoop = function() {
-  var modes = ['off', '1x', '3x', 'inf'];
-  var idx = modes.indexOf(NoorAudioManager.state.loopMode);
-  var nextLoop = modes[(idx + 1) % modes.length];
-  NoorAudioManager.setLoop(nextLoop);
-};
 
 function updateMediaSession(surahTitle, ayahNum, reciterName) {
   if ('mediaSession' in navigator && window.MediaMetadata) {
@@ -1673,14 +2021,14 @@ function updateMediaSession(surahTitle, ayahNum, reciterName) {
         artist: reciterName || 'Noor Al-Quran',
         album: 'The Holy Quran · القرآن الكريم',
         artwork: [
-          { src: '../assets/images/logo.png', sizes: '192x192', type: 'image/png' },
-          { src: '../assets/images/logo.png', sizes: '512x512', type: 'image/png' }
+          { src: '/assets/images/icon-192.png', sizes: '192x192', type: 'image/png' },
+          { src: '/assets/images/icon-512.png', sizes: '512x512', type: 'image/png' }
         ]
       });
-      navigator.mediaSession.setActionHandler('play', function() { if (typeof togPlay === 'function') togPlay(); });
-      navigator.mediaSession.setActionHandler('pause', function() { if (typeof togPlay === 'function') togPlay(); });
-      navigator.mediaSession.setActionHandler('previoustrack', function() { if (typeof prevA === 'function') prevA(); });
-      navigator.mediaSession.setActionHandler('nexttrack', function() { if (typeof nextA === 'function') nextA(); });
+      navigator.mediaSession.setActionHandler('play', function() { if (typeof window.togPlay === 'function') window.togPlay(); else NoorAudioManager.togglePlay(); });
+      navigator.mediaSession.setActionHandler('pause', function() { if (typeof window.togPlay === 'function') window.togPlay(); else NoorAudioManager.togglePlay(); });
+      navigator.mediaSession.setActionHandler('previoustrack', function() { if (typeof window.prevA === 'function') window.prevA(); else NoorAudioManager.prev(); });
+      navigator.mediaSession.setActionHandler('nexttrack', function() { if (typeof window.nextA === 'function') window.nextA(); else NoorAudioManager.next(); });
       navigator.mediaSession.setActionHandler('seekto', function(details) {
         var aud = document.getElementById('aud');
         if (aud && details.seekTime) aud.currentTime = details.seekTime;
@@ -1690,7 +2038,7 @@ function updateMediaSession(surahTitle, ayahNum, reciterName) {
     }
   }
 }
-window.updateMediaSession = updateMediaSession;
+if (typeof window !== 'undefined') window.updateMediaSession = updateMediaSession;
 
 function highlightPlayingAyah(ayahNum) {
   document.querySelectorAll('.ac.playing').forEach(function(el) { el.classList.remove('playing'); });
@@ -1700,7 +2048,7 @@ function highlightPlayingAyah(ayahNum) {
     target.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
 }
-window.highlightPlayingAyah = highlightPlayingAyah;
+if (typeof window !== 'undefined') window.highlightPlayingAyah = highlightPlayingAyah;
 
 // ── QURAN PAGE ──
 function loadSurahs() {
@@ -1735,12 +2083,12 @@ function loadSurahs() {
           }, 1000);
         }
       }
-    }).catch(function (e) {
+    }).catch(function () {
       if (grid) {
         grid.innerHTML = getErrorStateHTML({
           title: 'Failed to load Surahs',
           description: 'Could not fetch surah list. Please check your network connection.',
-          onRetry: 'loadSurahs()'
+          actionName: 'load-surahs'
         });
       }
     });
@@ -1750,7 +2098,7 @@ function openSurah(n, ar, en) {
   var r = document.getElementById('reader'); if (!r) return;
   set('rn', `SURAH ${n}`); set('rar', ar); set('ren', en);
   var rbis = document.getElementById('rbis');
-  if (rbis) rbis.style.display = (n === 1 || n === 9) ? 'none' : 'block';
+  if (rbis) rbis.classList.toggle('hidden', n === 1 || n === 9);
   var listEl = document.getElementById('alist');
   if (listEl) listEl.innerHTML = getAyahSkeletons(6);
   r.classList.add('open');
@@ -1774,7 +2122,30 @@ function openSurah(n, ar, en) {
         if (n !== 1 && a.numberInSurah === 1) {
           arText = arText.replace(bismillahRegex, '');
         }
-        c.innerHTML = `<div class="at"><span class="anum">${safeHTML(String(a.numberInSurah))}</span><div class="aact"><button class="abtn" onclick="playAyahQuran(${n},${a.numberInSurah})" title="Play" aria-label="Play ayah">🔊</button><button class="abtn" onclick="addBM(${n},${a.numberInSurah})" title="Bookmark" aria-label="Bookmark ayah">📌</button><button class="abtn" onclick="shareAyah(${n},${a.numberInSurah})" title="Share" aria-label="Share ayah">📤</button></div></div><div class="aarb">${safeHTML(arText)}</div><div class="aen">${safeHTML(trText)}</div><div class="atrn">${safeHTML(trText)}</div>`;
+        var at = document.createElement('div'); at.className = 'at';
+        var anum = document.createElement('span'); anum.className = 'anum'; anum.textContent = String(a.numberInSurah);
+        var aact = document.createElement('div'); aact.className = 'aact';
+
+        var bPlay = document.createElement('button'); bPlay.type = 'button'; bPlay.className = 'abtn';
+        bPlay.title = 'Play'; bPlay.setAttribute('aria-label', 'Play ayah'); bPlay.textContent = '🔊';
+        bPlay.addEventListener('click', function () { playAyahQuran(n, a.numberInSurah); });
+
+        var bBm = document.createElement('button'); bBm.type = 'button'; bBm.className = 'abtn';
+        bBm.title = 'Bookmark'; bBm.setAttribute('aria-label', 'Bookmark ayah'); bBm.textContent = '📌';
+        bBm.addEventListener('click', function () { addBM(n, a.numberInSurah); });
+
+        var bSh = document.createElement('button'); bSh.type = 'button'; bSh.className = 'abtn';
+        bSh.title = 'Share'; bSh.setAttribute('aria-label', 'Share ayah'); bSh.textContent = '📤';
+        bSh.addEventListener('click', function () { window.shareAyah(n, a.numberInSurah); });
+
+        aact.append(bPlay, bBm, bSh);
+        at.append(anum, aact);
+
+        var dAr = document.createElement('div'); dAr.className = 'aarb'; dAr.textContent = arText;
+        var dEn = document.createElement('div'); dEn.className = 'aen'; dEn.textContent = trText;
+        var dTrn = document.createElement('div'); dTrn.className = 'atrn'; dTrn.textContent = trText;
+
+        c.append(at, dAr, dEn, dTrn);
         listEl.appendChild(c);
       });
       applyReadingSettings();
@@ -1783,7 +2154,8 @@ function openSurah(n, ar, en) {
         listEl.innerHTML = getErrorStateHTML({
           title: 'Surah Unavailable',
           description: 'Could not load verses for this surah. Please check your connection.',
-          onRetry: `openSurah(${n}, "${ar}", "${en}")`
+          actionName: 'open-surah',
+          surahNum: n
         });
       }
     });
@@ -1808,7 +2180,7 @@ function filterS(q) {
 
 function addBM(s, a) {
   // Сохраняем локально в localStorage всегда!
-  var localBMs = [];
+  var localBMs;
   try {
     localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
   } catch (e) { localBMs = []; }
@@ -1829,16 +2201,15 @@ function addBM(s, a) {
   }
 
   // Если пользователь авторизован на бэкенде — синхронизируем
-  var token = localStorage.getItem('access_token');
-  if (token) {
-    authFetch(`${API_BASE}/bookmarks/`, {
+  if (typeof NoorAuth !== 'undefined' && NoorAuth.isAuthenticated() && typeof window !== 'undefined' && typeof window.authFetch === 'function') {
+    window.authFetch(`${API_BASE}/bookmarks/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ surah_number: s, ayah_number: a }),
     }).then(function (r) {
       if (r.status === 201) showToast('Bookmark saved! 🔖', 'success');
       else if (r.status === 400) showToast('Already bookmarked ✓', 'info');
-    }).catch(function() {
+    }).catch(function () {
       showToast('Bookmark saved to device 📱', 'success');
     });
   } else {
@@ -1889,23 +2260,34 @@ function showToast(msg, type, duration) {
     setTimeout(dismiss, duration);
   }
 }
-window.showToast = showToast;
+if (typeof window !== 'undefined') window.showToast = showToast;
 
 // ── RECITERS PAGE ──
 function loadReciters() {
   var rg = document.getElementById('rg'); if (!rg) return;
   rg.innerHTML = '';
   RECITERS.forEach(function (r) {
-    var div = document.createElement('div'); div.className = 'rc card'; div.style.cursor = 'pointer';
-    div.innerHTML = `
-      <div class="rav" style="background:url('${encodeURI(r.photo || '')}');background-size:cover;background-position:center;color:transparent;"></div>
-      <div class="rna">${safeHTML(r.ar)}</div>
-      <div class="rne">${safeHTML(r.en)}</div>
-      <div class="rb">${safeHTML(r.style)}</div>
-      <p style="font-size:.7rem;color:var(--soft);margin:8px 0">${safeHTML(r.country)}</p>
-      <div style="margin-top:12px;font-size:.75rem;color:var(--gold);text-transform:uppercase;letter-spacing:1px">View Full Page →</div>`;
-    div.addEventListener('click', function () { window.location.href = r.page; });
-    rg.appendChild(div);
+    var link = document.createElement('a');
+    link.href = r.page;
+    link.className = 'rc card';
+    link.style.textDecoration = 'none';
+
+    var img = document.createElement('img');
+    img.className = 'rav-img';
+    img.src = r.photo || '/assets/images/icon-192.png';
+    img.alt = r.en;
+    img.width = 80;
+    img.height = 80;
+    img.loading = 'lazy';
+
+    var ar = document.createElement('div'); ar.className = 'rna'; ar.textContent = r.ar;
+    var en = document.createElement('div'); en.className = 'rne'; en.textContent = r.en;
+    var badge = document.createElement('div'); badge.className = 'rb'; badge.textContent = r.style;
+    var country = document.createElement('p'); country.className = 'rc-country'; country.textContent = r.country;
+    var cta = document.createElement('div'); cta.className = 'rc-cta'; cta.textContent = 'View Full Page →';
+
+    link.append(img, ar, en, badge, country, cta);
+    rg.appendChild(link);
   });
 
   // Quick-play selects
@@ -1920,24 +2302,14 @@ function loadReciters() {
 
     function updateSurahSel() {
       surahSel.innerHTML = '';
-      let displaySurahs = SURAHS;
-      if (recSel.value === 'sherif_mostafa') {
-        const valid = [65, 66, 67, 71, 75, 76, 77, 89];
-        displaySurahs = SURAHS.filter(s => valid.includes(s.n));
-      } else if (recSel.value === 'abdurrahman_mossad') {
-        const valid = [1, 29];
-        displaySurahs = SURAHS.filter(s => valid.includes(s.n));
-      } else if (recSel.value === 'islam_sobhi') {
-        const invalid = [36, 45];
-        displaySurahs = SURAHS.filter(s => !invalid.includes(s.n));
-      }
+      var displaySurahs = getReciterAvailableSurahs(recSel.value);
       displaySurahs.forEach(function (s) {
         surahSel.add(new Option(s.n + '. ' + s.en + ' — ' + s.ar, String(s.n)));
       });
     }
 
     recSel.addEventListener('change', updateSurahSel);
-    updateSurahSel(); // init
+    updateSurahSel();
   }
 }
 
@@ -1985,7 +2357,7 @@ function onEnd() {
 }
 
 // ── PRAYER PAGE ──
-function loadPrayerBig() {
+function loadPrayerBig(userInitiated) {
   var settings = getPrayerSettings();
   var cacheKey = 'prayer_cache_' + settings.method + '_' + settings.school;
   var err = function() {
@@ -2051,13 +2423,25 @@ function loadPrayerBig() {
     }
     err();
   };
-  if (!navigator.geolocation) return fb();
+  if (!userInitiated || typeof navigator === 'undefined' || !navigator.geolocation) {
+    try {
+      var lastRaw = localStorage.getItem('last_coords');
+      if (lastRaw) {
+        var lc = JSON.parse(lastRaw);
+        if (lc && typeof lc.lat === 'number' && typeof lc.lng === 'number') {
+          return fetchPrayer(lc.lat, lc.lng);
+        }
+      }
+    } catch (e) { /* ignore */ }
+    return err();
+  }
   navigator.geolocation.getCurrentPosition(
     function (pos) { fetchPrayer(pos.coords.latitude, pos.coords.longitude); },
     fb,
     { timeout: 7000 }
   );
 }
+if (typeof window !== 'undefined') window.loadPrayerBig = loadPrayerBig;
 
 function updatePrayerCards(t) {
   var now = new Date();
@@ -2079,712 +2463,14 @@ function updatePrayerCards(t) {
   });
 }
 
-// ── NAMES PAGE — надежные данные без сбоев ──
-
-// ── 99 NAMES OF ALLAH STATIC FALLBACK ──
-const NAMES_OF_ALLAH_DATA = [
-  {
-    "num": 1,
-    "arabic": "الرَّحْمَن",
-    "transliteration": "Ar-Rahman",
-    "meaning_en": "The Most Gracious",
-    "meaning_ru": "Милостивый"
-  },
-  {
-    "num": 2,
-    "arabic": "الرَّحِيم",
-    "transliteration": "Ar-Rahim",
-    "meaning_en": "The Most Merciful",
-    "meaning_ru": "Милосердный"
-  },
-  {
-    "num": 3,
-    "arabic": "الْمَلِك",
-    "transliteration": "Al-Malik",
-    "meaning_en": "The King",
-    "meaning_ru": "Царь"
-  },
-  {
-    "num": 4,
-    "arabic": "الْقُدُّوس",
-    "transliteration": "Al-Quddus",
-    "meaning_en": "The Most Holy",
-    "meaning_ru": "Пресвятой"
-  },
-  {
-    "num": 5,
-    "arabic": "السَّلَام",
-    "transliteration": "As-Salam",
-    "meaning_en": "The Source of Peace",
-    "meaning_ru": "Мир"
-  },
-  {
-    "num": 6,
-    "arabic": "الْمُؤْمِن",
-    "transliteration": "Al-Mu'min",
-    "meaning_en": "The Guardian of Faith",
-    "meaning_ru": "Дарующий безопасность"
-  },
-  {
-    "num": 7,
-    "arabic": "الْمُهَيْمِن",
-    "transliteration": "Al-Muhaymin",
-    "meaning_en": "The Protector",
-    "meaning_ru": "Хранитель"
-  },
-  {
-    "num": 8,
-    "arabic": "الْعَزِيز",
-    "transliteration": "Al-Aziz",
-    "meaning_en": "The Mighty",
-    "meaning_ru": "Могущественный"
-  },
-  {
-    "num": 9,
-    "arabic": "الْجَبَّار",
-    "transliteration": "Al-Jabbar",
-    "meaning_en": "The Compeller",
-    "meaning_ru": "Принуждающий"
-  },
-  {
-    "num": 10,
-    "arabic": "الْمُتَكَبِّر",
-    "transliteration": "Al-Mutakabbir",
-    "meaning_en": "The Majestic",
-    "meaning_ru": "Величественный"
-  },
-  {
-    "num": 11,
-    "arabic": "الْخَالِق",
-    "transliteration": "Al-Khaliq",
-    "meaning_en": "The Creator",
-    "meaning_ru": "Творец"
-  },
-  {
-    "num": 12,
-    "arabic": "الْبَارِئ",
-    "transliteration": "Al-Bari'",
-    "meaning_en": "The Evolver",
-    "meaning_ru": "Создатель"
-  },
-  {
-    "num": 13,
-    "arabic": "الْمُصَوِّر",
-    "transliteration": "Al-Musawwir",
-    "meaning_en": "The Fashioner",
-    "meaning_ru": "Придающий форму"
-  },
-  {
-    "num": 14,
-    "arabic": "الْغَفَّار",
-    "transliteration": "Al-Ghaffar",
-    "meaning_en": "The Forgiver",
-    "meaning_ru": "Всепрощающий"
-  },
-  {
-    "num": 15,
-    "arabic": "الْقَهَّار",
-    "transliteration": "Al-Qahhar",
-    "meaning_en": "The Subduer",
-    "meaning_ru": "Всепобеждающий"
-  },
-  {
-    "num": 16,
-    "arabic": "الْوَهَّاب",
-    "transliteration": "Al-Wahhab",
-    "meaning_en": "The Bestower",
-    "meaning_ru": "Дарующий"
-  },
-  {
-    "num": 17,
-    "arabic": "الرَّزَّاق",
-    "transliteration": "Ar-Razzaq",
-    "meaning_en": "The Provider",
-    "meaning_ru": "Кормилец"
-  },
-  {
-    "num": 18,
-    "arabic": "الْفَتَّاح",
-    "transliteration": "Al-Fattah",
-    "meaning_en": "The Opener",
-    "meaning_ru": "Открывающий"
-  },
-  {
-    "num": 19,
-    "arabic": "الْعَلِيم",
-    "transliteration": "Al-Alim",
-    "meaning_en": "The All-Knowing",
-    "meaning_ru": "Всезнающий"
-  },
-  {
-    "num": 20,
-    "arabic": "الْقَابِض",
-    "transliteration": "Al-Qabid",
-    "meaning_en": "The Constrictor",
-    "meaning_ru": "Сжимающий"
-  },
-  {
-    "num": 21,
-    "arabic": "الْبَاسِط",
-    "transliteration": "Al-Basit",
-    "meaning_en": "The Expander",
-    "meaning_ru": "Расширяющий"
-  },
-  {
-    "num": 22,
-    "arabic": "الْخَافِض",
-    "transliteration": "Al-Khafid",
-    "meaning_en": "The Abaser",
-    "meaning_ru": "Унижающий"
-  },
-  {
-    "num": 23,
-    "arabic": "الرَّافِع",
-    "transliteration": "Ar-Rafi'",
-    "meaning_en": "The Exalter",
-    "meaning_ru": "Возвышающий"
-  },
-  {
-    "num": 24,
-    "arabic": "الْمُعِز",
-    "transliteration": "Al-Mu'izz",
-    "meaning_en": "The Bestower of Honor",
-    "meaning_ru": "Чествующий"
-  },
-  {
-    "num": 25,
-    "arabic": "الْمُذِل",
-    "transliteration": "Al-Mudhill",
-    "meaning_en": "The Humiliator",
-    "meaning_ru": "Унижающий"
-  },
-  {
-    "num": 26,
-    "arabic": "السَّمِيع",
-    "transliteration": "As-Sami'",
-    "meaning_en": "The All-Hearing",
-    "meaning_ru": "Всеслышащий"
-  },
-  {
-    "num": 27,
-    "arabic": "الْبَصِير",
-    "transliteration": "Al-Basir",
-    "meaning_en": "The All-Seeing",
-    "meaning_ru": "Всевидящий"
-  },
-  {
-    "num": 28,
-    "arabic": "الْحَكَم",
-    "transliteration": "Al-Hakam",
-    "meaning_en": "The Judge",
-    "meaning_ru": "Судья"
-  },
-  {
-    "num": 29,
-    "arabic": "الْعَدْل",
-    "transliteration": "Al-Adl",
-    "meaning_en": "The Just",
-    "meaning_ru": "Справедливый"
-  },
-  {
-    "num": 30,
-    "arabic": "اللَّطِيف",
-    "transliteration": "Al-Latif",
-    "meaning_en": "The Subtle One",
-    "meaning_ru": "Тонкий"
-  },
-  {
-    "num": 31,
-    "arabic": "الْخَبِير",
-    "transliteration": "Al-Khabir",
-    "meaning_en": "The All-Aware",
-    "meaning_ru": "Осведомлённый"
-  },
-  {
-    "num": 32,
-    "arabic": "الْحَلِيم",
-    "transliteration": "Al-Halim",
-    "meaning_en": "The Forbearing",
-    "meaning_ru": "Терпеливый"
-  },
-  {
-    "num": 33,
-    "arabic": "الْعَظِيم",
-    "transliteration": "Al-Azim",
-    "meaning_en": "The Magnificent",
-    "meaning_ru": "Величайший"
-  },
-  {
-    "num": 34,
-    "arabic": "الْغَفُور",
-    "transliteration": "Al-Ghafur",
-    "meaning_en": "The Forgiving",
-    "meaning_ru": "Прощающий"
-  },
-  {
-    "num": 35,
-    "arabic": "الشَّكُور",
-    "transliteration": "Ash-Shakur",
-    "meaning_en": "The Appreciative",
-    "meaning_ru": "Благодарный"
-  },
-  {
-    "num": 36,
-    "arabic": "الْعَلِيّ",
-    "transliteration": "Al-Ali'",
-    "meaning_en": "The Most High",
-    "meaning_ru": "Высочайший"
-  },
-  {
-    "num": 37,
-    "arabic": "الْكَبِير",
-    "transliteration": "Al-Kabir",
-    "meaning_en": "The Most Great",
-    "meaning_ru": "Великий"
-  },
-  {
-    "num": 38,
-    "arabic": "الْحَفِيظ",
-    "transliteration": "Al-Hafiz",
-    "meaning_en": "The Preserver",
-    "meaning_ru": "Хранящий"
-  },
-  {
-    "num": 39,
-    "arabic": "الْمُقِيت",
-    "transliteration": "Al-Muqit",
-    "meaning_en": "The Nourisher",
-    "meaning_ru": "Питающий"
-  },
-  {
-    "num": 40,
-    "arabic": "الْحَسِيب",
-    "transliteration": "Al-Hasib",
-    "meaning_en": "The Reckoner",
-    "meaning_ru": "Считающий"
-  },
-  {
-    "num": 41,
-    "arabic": "الْجَلِيل",
-    "transliteration": "Al-Jalil",
-    "meaning_en": "The Majestic",
-    "meaning_ru": "Величественный"
-  },
-  {
-    "num": 42,
-    "arabic": "الْكَرِيم",
-    "transliteration": "Al-Karim",
-    "meaning_en": "The Generous",
-    "meaning_ru": "Щедрый"
-  },
-  {
-    "num": 43,
-    "arabic": "الرَّقِيب",
-    "transliteration": "Ar-Raqib",
-    "meaning_en": "The Watchful",
-    "meaning_ru": "Наблюдающий"
-  },
-  {
-    "num": 44,
-    "arabic": "الْمُجِيب",
-    "transliteration": "Al-Mujib",
-    "meaning_en": "The Responsive",
-    "meaning_ru": "Отвечающий"
-  },
-  {
-    "num": 45,
-    "arabic": "الْوَاسِع",
-    "transliteration": "Al-Wasi'",
-    "meaning_en": "The All-Encompassing",
-    "meaning_ru": "Необъятный"
-  },
-  {
-    "num": 46,
-    "arabic": "الْحَكِيم",
-    "transliteration": "Al-Hakim",
-    "meaning_en": "The Wise",
-    "meaning_ru": "Мудрый"
-  },
-  {
-    "num": 47,
-    "arabic": "الْوَدُود",
-    "transliteration": "Al-Wadud",
-    "meaning_en": "The Loving",
-    "meaning_ru": "Любящий"
-  },
-  {
-    "num": 48,
-    "arabic": "الْمَجِيد",
-    "transliteration": "Al-Majid",
-    "meaning_en": "The Most Glorious",
-    "meaning_ru": "Славный"
-  },
-  {
-    "num": 49,
-    "arabic": "الْبَاعِث",
-    "transliteration": "Al-Ba'ith",
-    "meaning_en": "The Resurrector",
-    "meaning_ru": "Воскрешающий"
-  },
-  {
-    "num": 50,
-    "arabic": "الشَّهِيد",
-    "transliteration": "Ash-Shahid",
-    "meaning_en": "The Witness",
-    "meaning_ru": "Свидетель"
-  },
-  {
-    "num": 51,
-    "arabic": "الْحَقّ",
-    "transliteration": "Al-Haqq",
-    "meaning_en": "The Truth",
-    "meaning_ru": "Истина"
-  },
-  {
-    "num": 52,
-    "arabic": "الْوَكِيل",
-    "transliteration": "Al-Wakil",
-    "meaning_en": "The Trustee",
-    "meaning_ru": "Попечитель"
-  },
-  {
-    "num": 53,
-    "arabic": "الْقَوِيّ",
-    "transliteration": "Al-Qawi",
-    "meaning_en": "The Most Strong",
-    "meaning_ru": "Сильный"
-  },
-  {
-    "num": 54,
-    "arabic": "الْمَتِين",
-    "transliteration": "Al-Matin",
-    "meaning_en": "The Firm",
-    "meaning_ru": "Твёрдый"
-  },
-  {
-    "num": 55,
-    "arabic": "الْوَلِيّ",
-    "transliteration": "Al-Wali",
-    "meaning_en": "The Protecting Friend",
-    "meaning_ru": "Покровитель"
-  },
-  {
-    "num": 56,
-    "arabic": "الْحَمِيد",
-    "transliteration": "Al-Hamid",
-    "meaning_en": "The Praiseworthy",
-    "meaning_ru": "Достохвальный"
-  },
-  {
-    "num": 57,
-    "arabic": "الْمُحْصِي",
-    "transliteration": "Al-Muhsi",
-    "meaning_en": "The Counter",
-    "meaning_ru": "Исчисляющий"
-  },
-  {
-    "num": 58,
-    "arabic": "الْمُبْدِئ",
-    "transliteration": "Al-Mubdi'",
-    "meaning_en": "The Originator",
-    "meaning_ru": "Начинающий"
-  },
-  {
-    "num": 59,
-    "arabic": "الْمُعِيد",
-    "transliteration": "Al-Mu'id",
-    "meaning_en": "The Restorer",
-    "meaning_ru": "Возобновляющий"
-  },
-  {
-    "num": 60,
-    "arabic": "الْمُحْيِي",
-    "transliteration": "Al-Muhyi",
-    "meaning_en": "The Giver of Life",
-    "meaning_ru": "Дающий жизнь"
-  },
-  {
-    "num": 61,
-    "arabic": "الْمُمِيت",
-    "transliteration": "Al-Mumit",
-    "meaning_en": "The Taker of Life",
-    "meaning_ru": "Умерщвляющий"
-  },
-  {
-    "num": 62,
-    "arabic": "الْحَيّ",
-    "transliteration": "Al-Hayy",
-    "meaning_en": "The Ever-Living",
-    "meaning_ru": "Вечно живой"
-  },
-  {
-    "num": 63,
-    "arabic": "الْقَيُّوم",
-    "transliteration": "Al-Qayyum",
-    "meaning_en": "The Self-Subsisting",
-    "meaning_ru": "Самодостаточный"
-  },
-  {
-    "num": 64,
-    "arabic": "الْوَاجِد",
-    "transliteration": "Al-Wajid",
-    "meaning_en": "The Finder",
-    "meaning_ru": "Находящий"
-  },
-  {
-    "num": 65,
-    "arabic": "الْمَاجِد",
-    "transliteration": "Al-Majid",
-    "meaning_en": "The Noble",
-    "meaning_ru": "Благородный"
-  },
-  {
-    "num": 66,
-    "arabic": "الْوَاحِد",
-    "transliteration": "Al-Wahid",
-    "meaning_en": "The One",
-    "meaning_ru": "Единый"
-  },
-  {
-    "num": 67,
-    "arabic": "الأَحَد",
-    "transliteration": "Al-Ahad",
-    "meaning_en": "The Unique",
-    "meaning_ru": "Единственный"
-  },
-  {
-    "num": 68,
-    "arabic": "الصَّمَد",
-    "transliteration": "As-Samad",
-    "meaning_en": "The Eternal",
-    "meaning_ru": "Вечный"
-  },
-  {
-    "num": 69,
-    "arabic": "الْقَادِر",
-    "transliteration": "Al-Qadir",
-    "meaning_en": "The Capable",
-    "meaning_ru": "Могущий"
-  },
-  {
-    "num": 70,
-    "arabic": "الْمُقْتَدِر",
-    "transliteration": "Al-Muqtadir",
-    "meaning_en": "The Powerful",
-    "meaning_ru": "Всесильный"
-  },
-  {
-    "num": 71,
-    "arabic": "الْمُقَدِّم",
-    "transliteration": "Al-Muqaddim",
-    "meaning_en": "The Expediter",
-    "meaning_ru": "Выдвигающий вперёд"
-  },
-  {
-    "num": 72,
-    "arabic": "الْمُؤَخِّر",
-    "transliteration": "Al-Mu'akhkhir",
-    "meaning_en": "The Delayer",
-    "meaning_ru": "Откладывающий"
-  },
-  {
-    "num": 73,
-    "arabic": "الأَوَّل",
-    "transliteration": "Al-Awwal",
-    "meaning_en": "The First",
-    "meaning_ru": "Первый"
-  },
-  {
-    "num": 74,
-    "arabic": "الآخِر",
-    "transliteration": "Al-Akhir",
-    "meaning_en": "The Last",
-    "meaning_ru": "Последний"
-  },
-  {
-    "num": 75,
-    "arabic": "الظَّاهِر",
-    "transliteration": "Az-Zahir",
-    "meaning_en": "The Manifest",
-    "meaning_ru": "Явный"
-  },
-  {
-    "num": 76,
-    "arabic": "الْبَاطِن",
-    "transliteration": "Al-Batin",
-    "meaning_en": "The Hidden",
-    "meaning_ru": "Скрытый"
-  },
-  {
-    "num": 77,
-    "arabic": "الْوَالِي",
-    "transliteration": "Al-Wali",
-    "meaning_en": "The Governor",
-    "meaning_ru": "Правитель"
-  },
-  {
-    "num": 78,
-    "arabic": "الْمُتَعَالِي",
-    "transliteration": "Al-Muta'ali",
-    "meaning_en": "The Most Exalted",
-    "meaning_ru": "Превознесённый"
-  },
-  {
-    "num": 79,
-    "arabic": "الْبَرّ",
-    "transliteration": "Al-Barr",
-    "meaning_en": "The Source of Goodness",
-    "meaning_ru": "Благой"
-  },
-  {
-    "num": 80,
-    "arabic": "التَّوَّاب",
-    "transliteration": "At-Tawwab",
-    "meaning_en": "The Ever-Returning",
-    "meaning_ru": "Принимающий покаяние"
-  },
-  {
-    "num": 81,
-    "arabic": "الْمُنْتَقِم",
-    "transliteration": "Al-Muntaqim",
-    "meaning_en": "The Avenger",
-    "meaning_ru": "Мститель"
-  },
-  {
-    "num": 82,
-    "arabic": "الْعَفُوّ",
-    "transliteration": "Al-Afuww",
-    "meaning_en": "The Pardoner",
-    "meaning_ru": "Прощающий"
-  },
-  {
-    "num": 83,
-    "arabic": "الرَّؤُوف",
-    "transliteration": "Ar-Ra'uf",
-    "meaning_en": "The Compassionate",
-    "meaning_ru": "Сострадательный"
-  },
-  {
-    "num": 84,
-    "arabic": "مَالِكُ الْمُلْك",
-    "transliteration": "Malik-ul-Mulk",
-    "meaning_en": "Owner of All Sovereignty",
-    "meaning_ru": "Владыка царства"
-  },
-  {
-    "num": 85,
-    "arabic": "ذُو الْجَلَالِ وَالإِكْرَام",
-    "transliteration": "Dhul-Jalali-wal-Ikram",
-    "meaning_en": "Lord of Majesty and Generosity",
-    "meaning_ru": "Обладатель величия и щедрости"
-  },
-  {
-    "num": 86,
-    "arabic": "الْمُقْسِط",
-    "transliteration": "Al-Muqsit",
-    "meaning_en": "The Equitable",
-    "meaning_ru": "Справедливый"
-  },
-  {
-    "num": 87,
-    "arabic": "الْجَامِع",
-    "transliteration": "Al-Jami'",
-    "meaning_en": "The Gatherer",
-    "meaning_ru": "Собирающий"
-  },
-  {
-    "num": 88,
-    "arabic": "الْغَنِيّ",
-    "transliteration": "Al-Ghani",
-    "meaning_en": "The Self-Sufficient",
-    "meaning_ru": "Богатый"
-  },
-  {
-    "num": 89,
-    "arabic": "الْمُغْنِي",
-    "transliteration": "Al-Mughni",
-    "meaning_en": "The Enricher",
-    "meaning_ru": "Обогащающий"
-  },
-  {
-    "num": 90,
-    "arabic": "الْمَانِع",
-    "transliteration": "Al-Mani'",
-    "meaning_en": "The Preventer",
-    "meaning_ru": "Удерживающий"
-  },
-  {
-    "num": 91,
-    "arabic": "الضَّارّ",
-    "transliteration": "Ad-Darr",
-    "meaning_en": "The Distresser",
-    "meaning_ru": "Причиняющий вред"
-  },
-  {
-    "num": 92,
-    "arabic": "النَّافِع",
-    "transliteration": "An-Nafi'",
-    "meaning_en": "The Benefiter",
-    "meaning_ru": "Приносящий пользу"
-  },
-  {
-    "num": 93,
-    "arabic": "النُّور",
-    "transliteration": "An-Nur",
-    "meaning_en": "The Light",
-    "meaning_ru": "Свет"
-  },
-  {
-    "num": 94,
-    "arabic": "الْهَادِي",
-    "transliteration": "Al-Hadi",
-    "meaning_en": "The Guide",
-    "meaning_ru": "Ведущий правым путём"
-  },
-  {
-    "num": 95,
-    "arabic": "الْبَدِيع",
-    "transliteration": "Al-Badi'",
-    "meaning_en": "The Incomparable",
-    "meaning_ru": "Несравненный"
-  },
-  {
-    "num": 96,
-    "arabic": "الْبَاقِي",
-    "transliteration": "Al-Baqi",
-    "meaning_en": "The Everlasting",
-    "meaning_ru": "Вечный"
-  },
-  {
-    "num": 97,
-    "arabic": "الْوَارِث",
-    "transliteration": "Al-Warith",
-    "meaning_en": "The Inheritor",
-    "meaning_ru": "Наследующий"
-  },
-  {
-    "num": 98,
-    "arabic": "الرَّشِيد",
-    "transliteration": "Ar-Rashid",
-    "meaning_en": "The Rightly Guided",
-    "meaning_ru": "Ведущий истинным путём"
-  },
-  {
-    "num": 99,
-    "arabic": "الصَّبُور",
-    "transliteration": "As-Sabur",
-    "meaning_en": "The Patient",
-    "meaning_ru": "Терпеливый"
-  }
-];
-window.NAMES_OF_ALLAH_DATA = NAMES_OF_ALLAH_DATA;
-
 function loadNames() {
   var ng = document.getElementById('ng'); if (!ng) return;
-  // Рендерим СРАЗУ из встроенных данных — 0 миллисекунд ожидания и никаких ошибок!
-  renderNames(NAMES_OF_ALLAH_DATA);
+  if (Array.isArray(window.NAMES_OF_ALLAH_DATA) && window.NAMES_OF_ALLAH_DATA.length) {
+    renderNames(window.NAMES_OF_ALLAH_DATA);
+  } else {
+    ng.innerHTML = getNamesSkeletons(16);
+  }
 
-  // Фоновая сверка с бэкендом
   fetch(API_BASE + '/names/')
     .then(function (r) { return r.ok ? r.json() : null; })
     .then(function (d) {
@@ -2798,37 +2484,46 @@ function loadNames() {
 function renderNames(names) {
   var ng = document.getElementById('ng'); if (!ng) return;
   ng.innerHTML = '';
-  var isRu = window.LANG === 'ru' || (localStorage.getItem('lang') === 'ru');
+  var isRu = (typeof window !== 'undefined' && window.LANG === 'ru') || (localStorage.getItem('lang') === 'ru');
+  var frag = document.createDocumentFragment();
   names.forEach(function (n) {
     var div = document.createElement('div'); div.className = 'nc card';
     var meaning = (isRu && n.meaning_ru) ? n.meaning_ru : (n.meaning_en || '');
-    div.innerHTML = '<div class="nn2">' + safeHTML(String(n.num)) + '</div>' +
-                    '<div class="na">' + safeHTML(n.arabic) + '</div>' +
-                    '<div class="nt">' + safeHTML(n.transliteration) + '</div>' +
-                    '<div class="nm">' + safeHTML(meaning) + '</div>';
-    ng.appendChild(div);
+    var nNum = document.createElement('div'); nNum.className = 'nn2'; nNum.textContent = String(n.num);
+    var nAr = document.createElement('div'); nAr.className = 'na'; nAr.textContent = n.arabic || '';
+    var nTr = document.createElement('div'); nTr.className = 'nt'; nTr.textContent = n.transliteration || '';
+    var nMn = document.createElement('div'); nMn.className = 'nm'; nMn.textContent = meaning;
+    div.append(nNum, nAr, nTr, nMn);
+    frag.appendChild(div);
   });
+  ng.appendChild(frag);
 }
 
-// ── PRAYER BAR (background, runs on all pages) ──
-loadPrayer();
-
-window.toggleMobileAccount = function() {
-  var sheet = document.getElementById('mobAccountSheet');
-  var overlay = document.getElementById('sheetOverlay');
-  if (sheet) sheet.classList.toggle('open');
-  if (overlay) overlay.classList.toggle('open');
-};
+if (typeof window !== 'undefined') {
+  window.toggleMobileAccount = function() {
+    var sheet = document.getElementById('mobAccountSheet');
+    var overlay = document.getElementById('sheetOverlay');
+    if (sheet) sheet.classList.toggle('open');
+    if (overlay) overlay.classList.toggle('open');
+  };
+}
 
 function checkAuthVisibility() {
-  var token = localStorage.getItem('access_token');
-  if (token) {
-    document.body.classList.add('is-logged-in');
-    var username = localStorage.getItem('username');
-    if (username) {
-      document.querySelectorAll('[data-username]').forEach(function(el) { el.textContent = username; });
-    }
-  } else {
-    document.body.classList.remove('is-logged-in');
+  if (typeof NoorAuth !== 'undefined' && typeof NoorAuth.syncUIState === 'function') {
+    NoorAuth.syncUIState();
   }
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = {
+    calculateOfflinePrayerTimes,
+    calculateQiblaBearing,
+    calculateQiblaDistanceKm,
+    toHijri,
+    SURAHS,
+    RECITERS,
+    getReciterAvailableSurahs,
+    parseJwt,
+    isTokenValid,
+  };
 }

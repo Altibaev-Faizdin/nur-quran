@@ -4,51 +4,41 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>My Bookmarks — Noor Al-Quran</title>
-  <meta name="description" content="Noor Al-Quran - Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta name="description" content="Manage your saved Quran bookmarks and account settings in Noor Al-Quran.">
   <meta property="og:title" content="Noor Al-Quran — نور القرآن">
-  <meta property="og:description" content="Read and listen to the Holy Quran, get accurate prayer times, find Qibla direction, and read Hadiths.">
+  <meta property="og:description" content="Saved Quran verses and synced account bookmarks.">
   <meta property="og:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <meta property="og:image:width" content="1200">
   <meta property="og:image:height" content="630">
   <meta property="og:image:type" content="image/png">
+  <meta property="og:type" content="website">
   <meta name="twitter:card" content="summary_large_image">
   <meta name="twitter:image" content="https://noor-al-quran.netlify.app/assets/images/og-preview.png">
   <link rel="apple-touch-icon" href="/assets/images/apple-touch-icon.png">
   <link rel="icon" type="image/png" sizes="32x32" href="/assets/images/favicon-32x32.png">
   <link rel="icon" type="image/png" sizes="16x16" href="/assets/images/favicon-16x16.png">
   <link rel="shortcut icon" href="/favicon.ico">
-  
-  <meta property="og:type" content="website">
-  
   <link rel="manifest" href="/manifest.json">
-
-  <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=Lato:wght@300;400;700&family=Cinzel:wght@500;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="../shared.css?v=f84e13dd">
-  <style>
-    .bm-container { max-width: 800px; margin: 0 auto; padding: 20px; }
-    .bm-card { background: var(--surface); border: 1px solid rgba(212,160,23,0.15); border-radius: 12px; padding: 20px; margin-bottom: 15px; display: flex; justify-content: space-between; align-items: center; transition: var(--r); }
-    .bm-card:hover { border-color: rgba(212,160,23,0.4); transform: translateY(-2px); }
-    .bm-info { flex: 1; }
-    .bm-title { font-family: 'Cinzel', serif; font-size: 1.2rem; color: var(--gold); margin-bottom: 5px; }
-    .bm-meta { font-size: 0.85rem; color: var(--soft); }
-    .bm-actions { display: flex; gap: 10px; }
-    .bm-btn { background: transparent; border: 1px solid var(--gold); color: var(--gold); padding: 8px 15px; border-radius: 6px; cursor: pointer; transition: var(--r); font-family: 'Lato', sans-serif; }
-    .bm-btn:hover { background: var(--gold); color: var(--bg); }
-    .bm-btn.del { border-color: #e05050; color: #e05050; }
-    .bm-btn.del:hover { background: #e05050; color: var(--bg); }
-    .bm-empty { text-align: center; padding: 50px 20px; color: var(--soft); font-family: 'Cinzel', serif; font-size: 1.2rem; }
-  </style>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link id="noorFonts" rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Amiri+Quran&family=Amiri:ital,wght@0,400;0,700;1,400&family=Cinzel+Decorative:wght@400;700&family=Cinzel:wght@500;700&family=Lato:wght@300;400;700&family=Scheherazade+New:wght@400;700&display=swap" media="print">
+  <link rel="stylesheet" href="../shared.css?v=ead49ea1">
+  <link rel="stylesheet" href="../css/pages.css?v=42ffd8db">
 </head>
 <body>
+  <div class="cur" id="cur"></div><div class="cur-t" id="cur-t"></div>
+  <div class="nebula"></div><canvas id="sc"></canvas>
+  <div class="moon"><div class="mc"><div class="mcr"></div></div></div>
+
   <!-- HEADER -->
-    <nav>
+  <nav>
     <a href="../index.html" class="logo">Noor Al-Quran<span>نور القرآن</span></a>
     <ul class="nav-links">
       <li><a href="../pages/quran.html" data-i18n="nav_quran">Quran</a></li>
       <li><a href="../pages/reciters.html" data-i18n="nav_reciters">Reciters</a></li>
       <li><a href="../pages/prayer.html" data-i18n="nav_prayer">Prayer Times</a></li>
       <li class="dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_tools">Tools ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_tools">Tools ▾</button>
         <div class="dropdown-content">
           <a href="../pages/dua.html" data-i18n="nav_dua">Daily Dua</a>
           <a href="../pages/tasbih.html" data-i18n="nav_tasbih">Tasbih Counter</a>
@@ -59,192 +49,116 @@
       </li>
       <li><a href="../pages/names.html" data-i18n="nav_names">99 Names</a></li>
       <li class="dropdown account-dropdown">
-        <a href="javascript:void(0)" style="cursor:default" data-i18n="nav_account">Account ▾</a>
+        <button type="button" class="nav-trigger" aria-haspopup="true" aria-expanded="false" data-i18n="nav_account">Account ▾</button>
         <div class="dropdown-content">
           <a href="../pages/login.html" data-i18n="auth_login_btn" data-auth="out">Login</a>
           <a href="../pages/register.html" data-i18n="auth_register_btn" data-auth="out">Register</a>
-          <a href="../pages/bookmarks.html" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
-          <a href="javascript:void(0)" onclick="toggleLanguageMenu()" data-i18n="settings_lang">Language</a>
-          <a href="javascript:void(0)" onclick="window.doLogout()" data-i18n="auth_logout_btn" data-auth="in">Logout</a>
+          <a href="../pages/bookmarks.html" class="on" data-i18n="nav_bookmarks" data-auth="in">Bookmarks</a>
+          <button type="button" class="dropdown-item" data-action="toggle-lang" data-i18n="settings_lang">Language</button>
+          <button type="button" class="dropdown-item" data-action="logout" data-i18n="auth_logout_btn" data-auth="in">Logout</button>
         </div>
       </li>
     </ul>
   </nav>
 
   <!-- CONTENT -->
-  <div class="pg-hdr">
-    <div class="pg-t">My Bookmarks</div>
-    <div class="pg-s">Saved verses and surahs</div>
-  </div>
+  <main id="main-content" class="wrap">
+    <div class="pg-hdr">
+      <h1 class="pg-t">My Bookmarks</h1>
+      <div class="pg-s">Saved verses and surahs <span data-username></span></div>
+    </div>
 
-  <div class="bm-container" id="bm-list">
-    <div class="rload">Loading bookmarks... 🌙</div>
-  </div>
+    <div class="bm-container" id="bm-list">
+      <div class="rload">Loading bookmarks... 🌙</div>
+    </div>
 
-  <script src="../shared.js?v=d40d020c"></script>
-  <script>
-    document.addEventListener('DOMContentLoaded', () => {
-      loadBookmarks();
-    });
-
-    async function loadBookmarks() {
-      const container = document.getElementById('bm-list');
-      let localBMs = [];
-      try {
-        localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
-      } catch (e) { localBMs = []; }
-
-      const token = localStorage.getItem('access_token');
-      let combined = [...localBMs];
-
-      if (token) {
-        try {
-          const res = await authFetch(`${API_BASE}/bookmarks/`);
-          if (res.ok) {
-            const data = await res.json();
-            if (data && data.results) {
-              data.results.forEach(bm => {
-                if (!combined.some(c => c.surah_number === bm.surah_number && c.ayah_number === bm.ayah_number)) {
-                  combined.push(bm);
-                }
-              });
-            }
-          }
-        } catch (e) {
-          // Fall back to local bookmarks silently
-        }
-      }
-
-      if (combined.length === 0) {
-        container.innerHTML = getEmptyStateHTML({
-          icon: '🔖',
-          title: 'No Bookmarks Yet',
-          description: 'Save your favorite verses while reading to revisit them anytime.',
-          actionText: 'Explore Quran',
-          actionFn: "window.location.href='quran.html'"
-        });
-        return;
-      }
-
-      container.innerHTML = combined.map(bm => {
-        const isLocal = String(bm.id).startsWith('local_');
-        return `
-        <div class="bm-card" id="bm-${safeHTML(String(bm.id))}">
-          <div class="bm-info">
-            <div class="bm-title">
-              Surah ${safeHTML(String(bm.surah_number))}, Ayah ${safeHTML(String(bm.ayah_number))}
-              <span style="font-size:0.72rem;padding:2px 8px;border-radius:10px;margin-left:8px;background:${isLocal ? 'rgba(212,175,55,0.15)' : 'rgba(30,144,255,0.15)'};color:${isLocal ? 'var(--gold)' : 'var(--blue)'};border:1px solid ${isLocal ? 'rgba(212,175,55,0.3)' : 'rgba(30,144,255,0.3)'}">
-                ${isLocal ? '📱 Local' : '☁ Synced'}
-              </span>
+    <section class="account-panel" data-auth="in" aria-label="Account Security">
+      <div class="account-card">
+        <h2 data-i18n="auth_change_pw_title">Change Password</h2>
+        <p>Update your password across all sessions.</p>
+        <form id="changePasswordForm" novalidate>
+          <div class="account-grid">
+            <div>
+              <label for="oldPassword" class="sr-only">Current Password</label>
+              <input id="oldPassword" type="password" class="account-input" placeholder="Current password" autocomplete="current-password" required>
             </div>
-            <div class="bm-meta">Saved on: ${safeHTML(new Date(bm.created_at || Date.now()).toLocaleDateString())}</div>
+            <div>
+              <label for="newPassword" class="sr-only">New Password</label>
+              <input id="newPassword" type="password" class="account-input" placeholder="New password (min 8 chars)" autocomplete="new-password" required minlength="8">
+            </div>
           </div>
-          <div class="bm-actions">
-            <button class="bm-btn" type="button" data-s="${safeHTML(String(bm.surah_number))}" data-a="${safeHTML(String(bm.ayah_number))}" aria-label="Read ayah">Read</button>
-            <button class="bm-btn del" type="button" data-id="${safeHTML(String(bm.id))}" data-s="${safeHTML(String(bm.surah_number))}" data-a="${safeHTML(String(bm.ayah_number))}" aria-label="Delete bookmark">Delete</button>
+          <button type="submit" class="bm-btn">Update Password</button>
+          <div id="pwMsg" class="auth-error" role="status"></div>
+        </form>
+      </div>
+
+      <div class="account-card account-card--danger">
+        <h2 data-i18n="auth_delete_acct_title">Delete Account</h2>
+        <p>Permanently remove your cloud account and synced bookmarks. This action cannot be undone.</p>
+        <form id="deleteAccountForm" novalidate>
+          <div class="account-grid">
+            <div>
+              <label for="deletePassword" class="sr-only">Confirm Password</label>
+              <input id="deletePassword" type="password" class="account-input" placeholder="Enter your password to confirm" autocomplete="current-password" required>
+            </div>
           </div>
-        </div>
-      `;}).join('');
+          <button type="submit" class="btn-danger">Delete My Account</button>
+          <div id="deleteMsg" class="auth-error" role="alert"></div>
+        </form>
+      </div>
+    </section>
+  </main>
 
-      if (!container.dataset.hasListener) {
-        container.dataset.hasListener = 'true';
-        container.addEventListener('click', (e) => {
-          const readBtn = e.target.closest('.bm-btn:not(.del)');
-          if (readBtn) {
-            const s = readBtn.getAttribute('data-s');
-            const a = readBtn.getAttribute('data-a');
-            if (s && a) goToAyah(s, a);
-            return;
-          }
-          const delBtn = e.target.closest('.bm-btn.del');
-          if (delBtn) {
-            const id = delBtn.getAttribute('data-id');
-            const s = parseInt(delBtn.getAttribute('data-s'), 10);
-            const a = parseInt(delBtn.getAttribute('data-a'), 10);
-            if (id) deleteBM(id, s, a);
-          }
-        });
-      }
-    }
+  <footer>
+    <div class="fl">Noor Al-Quran · نور القرآن</div>
+    <div class="fc" data-i18n="footer_text">Free Forever · No Ads · Made with ❤️ for the Ummah</div>
+    <div class="fc fc-links">
+      <a href="privacy.html" data-i18n="footer_privacy">Privacy &amp; Sources</a>
+      <a href="terms.html" data-i18n="footer_terms">Terms of Service</a>
+    </div>
+  </footer>
 
-    async function deleteBM(id, s, a) {
-      let localBMs = [];
-      try {
-        localBMs = JSON.parse(localStorage.getItem('nq_local_bookmarks') || '[]');
-        localBMs = localBMs.filter(b => !(b.id === id || (b.surah_number === s && b.ayah_number === a)));
-        localStorage.setItem('nq_local_bookmarks', JSON.stringify(localBMs));
-      } catch (e) {
-        console.warn('Failed to update local bookmarks after deletion:', e);
-      }
+  <div class="mob-nav">
+    <a href="../index.html">
+      <div class="mn-ic">🏠</div>
+      <div data-i18n="mn_home">Home</div>
+    </a>
+    <a href="../pages/quran.html">
+      <div class="mn-ic">📖</div>
+      <div data-i18n="mn_quran">Quran</div>
+    </a>
+    <a href="../pages/reciters.html">
+      <div class="mn-ic">🎙️</div>
+      <div data-i18n="mn_reciters">Audio</div>
+    </a>
+    <a href="../pages/prayer.html">
+      <div class="mn-ic">🕐</div>
+      <div data-i18n="mn_prayer">Prayer</div>
+    </a>
+    <button type="button" class="mob-nav-btn" data-action="toggle-mobile-account" aria-label="Account menu">
+      <div class="mn-ic">👤</div>
+      <div data-i18n="mn_account">Account</div>
+    </button>
+  </div>
 
-      const token = localStorage.getItem('access_token');
-      if (token && !String(id).startsWith('local_')) {
-        try {
-          await authFetch(`${API_BASE}/bookmarks/${id}/`, { method: 'DELETE' });
-        } catch (e) {
-          console.warn('Failed to delete bookmark on server:', e);
-        }
-      }
-
-      const item = document.getElementById(`bm-${id}`);
-      if (item) item.remove();
-      showToast('Bookmark deleted', 'info');
-
-      if (document.querySelectorAll('.bm-card').length === 0) {
-        document.getElementById('bm-list').innerHTML = getEmptyStateHTML({
-          icon: '🔖',
-          title: 'No Bookmarks Left',
-          description: 'Save verses while reading to revisit them anytime.',
-          actionText: 'Explore Quran',
-          actionFn: "window.location.href='quran.html'"
-        });
-      }
-    }
-
-    function goToAyah(surah, ayah) {
-      window.location.href = `quran.html?surah=${surah}#ay${ayah}`;
-    }
-  </script>
-
-
-<div class="mob-nav">
-  <a href="../index.html">
-    <div class="mn-ic">🏠</div>
-    <div data-i18n="mn_home">Home</div>
-  </a>
-  <a href="../pages/quran.html">
-    <div class="mn-ic">📖</div>
-    <div data-i18n="mn_quran">Quran</div>
-  </a>
-  <a href="../pages/reciters.html">
-    <div class="mn-ic">🎙️</div>
-    <div data-i18n="mn_reciters">Audio</div>
-  </a>
-  <a href="../pages/prayer.html">
-    <div class="mn-ic">🕐</div>
-    <div data-i18n="mn_prayer">Prayer</div>
-  </a>
-  <a href="javascript:void(0)" onclick="toggleMobileAccount()">
-    <div class="mn-ic">👤</div>
-    <div data-i18n="mn_account">Account</div>
-  </a>
-</div>
-
-<!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
-<div id="mobAccountSheet" class="bottom-sheet">
-  <div class="sheet-content">
-    <div class="sheet-handle"></div>
-    <h3 data-i18n="mn_account_title">My Account</h3>
-    <div class="sheet-links">
-      <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
-      <a href="../pages/register.html" class="btn bf" data-i18n="auth_register_btn" style="margin-bottom:15px" data-auth="out">Register</a>
-      <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="toggleLanguageMenu()"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></a>
-      <a href="javascript:void(0)" class="sheet-item" onclick="window.doLogout()" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></a>
+  <!-- BOTTOM SHEET FOR ACCOUNT (Mobile) -->
+  <div id="mobAccountSheet" class="bottom-sheet">
+    <div class="sheet-content">
+      <div class="sheet-handle"></div>
+      <h2 class="sheet-title" data-i18n="mn_account_title">My Account</h2>
+      <div class="sheet-links">
+        <a href="../pages/login.html" class="btn bo" data-i18n="auth_login_btn" data-auth="out">Login</a>
+        <a href="../pages/register.html" class="btn bp mb-15" data-i18n="auth_register_btn" data-auth="out">Register</a>
+        <a href="../pages/bookmarks.html" class="sheet-item" data-auth="in"><span class="ic">🔖</span> <span data-i18n="nav_bookmarks">Bookmarks</span></a>
+        <button type="button" class="sheet-item" data-action="toggle-lang"><span class="ic">🌍</span> <span data-i18n="settings_lang">Language</span></button>
+        <button type="button" class="sheet-item" data-action="logout" data-auth="in"><span class="ic">🚪</span> <span data-i18n="auth_logout_btn">Logout</span></button>
+      </div>
     </div>
   </div>
-</div>
-<div id="sheetOverlay" class="sheet-overlay" onclick="toggleMobileAccount()"></div>
-<script src="../i18n.js?v=fd6a6e40"></script>
+  <div id="sheetOverlay" class="sheet-overlay" data-action="toggle-mobile-account"></div>
+
+  <script defer src="../shared.js?v=0adcc7b2"></script>
+  <script defer src="../js/pages/bookmarks.js?v=e1a1f838"></script>
+  <script defer src="../i18n.js?v=08602333"></script>
 </body>
 </html>
