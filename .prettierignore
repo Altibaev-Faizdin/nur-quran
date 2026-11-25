@@ -2,9 +2,8 @@ node_modules
 coverage
 playwright-report
 test-results
-frontend/audio
+package-lock.json
 frontend/data/names-data.js
 frontend/shared.js
 *.sqlite3*
-AUDIT
 

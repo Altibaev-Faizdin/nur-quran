@@ -17,14 +17,6 @@
     "version-assets": "node scripts/version-assets.mjs",
     "serve": "python3 backend/manage.py runserver 0.0.0.0:8000"
   },
-  "lint-staged": {
-    "{scripts/**/*.mjs,tests/**/*.mjs,frontend/js/pages/*.js}": [
-      "eslint --max-warnings=0"
-    ],
-    "frontend/*.js": [
-      "eslint"
-    ]
-  },
   "keywords": [
     "quran",
     "islamic",
@@ -40,8 +32,6 @@
     "@playwright/test": "^1.65.1",
     "eslint": "^10.15.0",
     "globals": "^17.14.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^17.6.2",
     "prettier": "^3.10.1"
   }
 }

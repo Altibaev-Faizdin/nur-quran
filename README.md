@@ -45,7 +45,13 @@ npm run test:audio
 
 ---
 
-## 🚀 Deployment
+## 🚀 Deployment (Render + Netlify)
 
-See [docs/DEPLOY.md](docs/DEPLOY.md) for Render + Netlify environment variables and build configuration.
+- **Backend (Render / Gunicorn + PostgreSQL):**
+  - Build: `pip install -r backend/requirements.txt && python backend/manage.py collectstatic --noinput && python backend/manage.py migrate`
+  - Start (`Procfile`): `cd backend && gunicorn config.wsgi:application --worker-class gthread --workers 2 --threads 4 --timeout 30 --max-requests 1000 --max-requests-jitter 100 --bind 0.0.0.0:$PORT`
+  - Health check: `GET /api/health/` -> `{"status": "ok", "app": "Noor Al-Quran", "db": "connected"}`
+  - Required env vars (see [`.env.example`](.env.example)): `DEBUG=False`, `SECRET_KEY` (>= 50 chars), `ALLOWED_HOSTS`, `CORS_ALLOWED_ORIGINS`, `DATABASE_URL` (optional: `COOKIE_SECURE`, `COOKIE_SAMESITE`, `NUM_PROXIES=1`, `AUDIO_CDN_BASE`, `REDIS_URL`).
+- **Frontend (Netlify):** publish directory `frontend`; root [`netlify.toml`](netlify.toml) enforces strict CSP (zero `'unsafe-inline'`), HSTS, cache headers, 301 legacy reciter redirects, and `/api/*` proxy to backend. Keep hashes synced with `npm run version-assets`.
+
 Licensed under the [MIT License](LICENSE). Free Forever · No Ads.
