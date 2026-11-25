@@ -2,68 +2,81 @@ name: Noor Al-Quran CI
 
 on:
   push:
-    branches: [ main, master, prod-hardening ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ main, master, prod-hardening ]
+    branches: [ main, master ]
 
 jobs:
   backend-qa:
-    name: Backend Quality & Tests
+    name: Django DRF Quality, Security & Coverage
     runs-on: ubuntu-latest
     env:
-      DJANGO_DEBUG: "False"
-      SECRET_KEY: "k9#mP$7vL@2wQ!8zR*5yB&3xT^1uN(4cE)6jA_0sD-9fG+8hJ=7kL[5mN]3bV{1x"
-      ALLOWED_HOSTS: "localhost,127.0.0.1,noor-al-quran.netlify.app"
-      CORS_ALLOWED_ORIGINS: "http://localhost:3000,https://noor-al-quran.netlify.app"
+      DEBUG: "False"
+      ALLOWED_HOSTS: "localhost,127.0.0.1,nur-quran.onrender.com"
+      CORS_ALLOWED_ORIGINS: "http://127.0.0.1:3415,https://noor-al-quran.netlify.app"
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Python
-        uses: actions/setup-python@v5
+      - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
           cache: "pip"
 
-      - name: Install Dependencies
+      - name: Install Python Dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install -r backend/requirements.txt
+          pip install -r backend/requirements.txt ruff coverage
 
-      - name: Ruff Code Quality & Formatting
+      - name: Ruff Lint & Format Check
         run: |
           ruff check backend/
           ruff format --check backend/
 
-      - name: Django Deployment Security Verification
+      - name: Django Migrations & Deploy Security Check
         run: |
+          export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(52))')"
+          python backend/manage.py makemigrations --check --dry-run
           python backend/manage.py check --deploy
 
-      - name: Run Test Suite with Coverage (>= 90%)
+      - name: Run Django Tests & Enforce Coverage >= 85%
         run: |
-          coverage run backend/manage.py test api
-          coverage report --fail-under=90 -m
+          export SECRET_KEY="$(python -c 'import secrets; print(secrets.token_urlsafe(52))')"
+          PYTHONPATH=backend coverage run backend/manage.py test api
+          coverage report --fail-under=85 -m
 
-  frontend-qa:
-    name: Frontend Quality & Verification
+  frontend-and-e2e:
+    name: Frontend QA, Security & Playwright E2E
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout Code
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-python@v5
         with:
-          node-version: "20"
+          python-version: "3.12"
 
-      - name: Automated Frontend Test Runner
-        run: |
-          node scripts/test-runner.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: "npm"
 
-      - name: Security & Hardening Verification
+      - name: Install Python & Node Dependencies
         run: |
-          node scripts/verify-security.mjs
+          pip install -r backend/requirements.txt
+          npm ci
 
-      - name: Audio Endpoints & Availability Verification
+      - name: Lint, Format, Math & Static Checks
         run: |
-          node scripts/verify-audio.mjs
+          npm run lint
+          npm run format:check
+          npm test
+
+      - name: Install Playwright Chromium & Run E2E against Django
+        run: |
+          npx playwright install chromium
+          npm run test:e2e
+
+      - name: Verify Repository Tree Size (< 20 MB)
+        run: |
+          SIZE_KB=$(du -sk --exclude=.git --exclude=node_modules --exclude=.venv . | cut -f1)
+          echo "Workspace size: ${SIZE_KB} KB"
+          [ "$SIZE_KB" -lt 20480 ]

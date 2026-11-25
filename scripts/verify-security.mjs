@@ -1,36 +1,49 @@
 #!/usr/bin/env node
 import fs from 'node:fs';
 import path from 'node:path';
+import { execSync } from 'node:child_process';
 
 const rootDir = process.cwd();
 const frontendDir = path.join(rootDir, 'frontend');
 
 console.log('🔒 Starting Security & Hardening Verification...\n');
 
-let errors = [];
+const errors = [];
 
-function checkFileContent(filePath) {
+function checkFrontendFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const relPath = path.relative(rootDir, filePath);
 
-  // 1. Check for hardcoded localhost:8000 (except legitimate dev-fallback in shared.js)
-  if (content.includes('http://localhost:8000')) {
-    if (relPath !== 'frontend/shared.js') {
-      errors.push(`[SEC-01] Hardcoded http://localhost:8000 found in ${relPath}`);
+  if (content.includes('http://localhost:8000') || content.includes('demo-session-token')) {
+    errors.push(`[SEC-01] Legacy dev host or token found in ${relPath}`);
+  }
+  if (/\beval\s*\(/.test(content) || /document\.write\s*\(/.test(content)) {
+    errors.push(`[SEC-03] Dangerous eval() or document.write() found in ${relPath}`);
+  }
+  if (
+    filePath.endsWith('.js') &&
+    /localStorage\.(get|set)Item\(\s*['"](?:access_token|refresh_token|nq_access_token|nq_refresh_token)['"]/.test(
+      content
+    )
+  ) {
+    errors.push(`[SEC-TOKEN] JWT token read/write in localStorage found in ${relPath}`);
+  }
+  if (filePath.endsWith('.html')) {
+    if (/<style[\s>]/i.test(content)) {
+      errors.push(`[CSP] Inline <style> block found in ${relPath}`);
     }
-  }
-
-  // 2. Check for demo-session-token
-  if (content.includes('demo-session-token')) {
-    errors.push(`[SEC-01] Insecure demo-session-token found in ${relPath}`);
-  }
-
-  // 3. Check for eval() or document.write()
-  if (/\beval\s*\(/.test(content)) {
-    errors.push(`[SEC-03] Dangerous eval() found in ${relPath}`);
-  }
-  if (/document\.write\s*\(/.test(content)) {
-    errors.push(`[SEC-03] Dangerous document.write() found in ${relPath}`);
+    if (/<script(?![^>]*\ssrc=)[^>]*>/i.test(content)) {
+      errors.push(`[CSP] Inline <script> block found in ${relPath}`);
+    }
+    if (/\sstyle\s*=/i.test(content)) {
+      errors.push(`[CSP] Inline style= attribute found in ${relPath}`);
+    }
+    if (/\son[a-z]+\s*=/i.test(content)) {
+      errors.push(`[CSP] Inline on*= event handler found in ${relPath}`);
+    }
+    if (/javascript:/i.test(content)) {
+      errors.push(`[A11Y/SEO] javascript: URI found in ${relPath}`);
+    }
   }
 }
 
@@ -43,61 +56,64 @@ function walkDir(dir) {
         walkDir(fullPath);
       }
     } else if (entry.isFile() && (entry.name.endsWith('.js') || entry.name.endsWith('.html'))) {
-      checkFileContent(fullPath);
+      checkFrontendFile(fullPath);
     }
   }
 }
 
 walkDir(frontendDir);
 
-// 4. Verify netlify.toml security headers
 const netlifyPath = path.join(rootDir, 'netlify.toml');
 if (!fs.existsSync(netlifyPath)) {
   errors.push('[SEC-02] netlify.toml is missing');
 } else {
   const netlifyContent = fs.readFileSync(netlifyPath, 'utf-8');
-  const requiredHeaders = [
+  for (const h of [
     'Content-Security-Policy',
     'X-Content-Type-Options',
     'X-Frame-Options',
     'Referrer-Policy',
     'Permissions-Policy',
-    'Strict-Transport-Security'
-  ];
-  for (const h of requiredHeaders) {
+    'Strict-Transport-Security',
+  ]) {
     if (!netlifyContent.includes(h)) {
       errors.push(`[SEC-02] Missing security header in netlify.toml: ${h}`);
     }
   }
+  if (netlifyContent.includes("'unsafe-inline'")) {
+    errors.push("[SEC-02] netlify.toml Content-Security-Policy must not contain 'unsafe-inline'");
+  }
   if (!netlifyContent.includes('for = "/*"')) {
-    errors.push('[SEC-02] netlify.toml must have global headers for /*');
+    errors.push('[SEC-02] netlify.toml must define headers for /*');
   }
 }
 
-// 5. Verify .env.example exists and doesn't contain real secrets
-const envExPath = path.join(rootDir, '.env.example');
-if (!fs.existsSync(envExPath)) {
+const secMiddlewarePath = path.join(rootDir, 'backend/api/middleware.py');
+if (fs.existsSync(secMiddlewarePath)) {
+  const secMiddleware = fs.readFileSync(secMiddlewarePath, 'utf-8');
+  const frontendCspSection = secMiddleware.split('else:')?.[1] || '';
+  if (frontendCspSection.includes("'unsafe-inline'")) {
+    errors.push("[SEC-02] backend/api/middleware.py must not allow 'unsafe-inline' on frontend/API routes");
+  }
+}
+
+if (!fs.existsSync(path.join(rootDir, '.env.example'))) {
   errors.push('[SEC-11] .env.example is missing');
 }
 
-// 6. Verify staticfiles is not tracked in git
-if (fs.existsSync(path.join(rootDir, 'backend/staticfiles/staticfiles.json'))) {
-  // Check if tracked by git
-  try {
-    const { execSync } = await import('node:child_process');
-    const tracked = execSync('git ls-files backend/staticfiles', { encoding: 'utf-8' }).trim();
-    if (tracked.length > 0) {
-      errors.push('[SEC-11] backend/staticfiles is tracked in git index');
-    }
-  } catch (e) {}
+try {
+  const trackedAudio = execSync('git ls-files frontend/audio', { encoding: 'utf-8' }).trim();
+  if (trackedAudio.length > 0) {
+    errors.push('[SIZE] Heavy audio MP3 files are still tracked in git index');
+  }
+} catch (_e) {
+  /* not fatal outside git */
 }
 
 if (errors.length > 0) {
   console.error('❌ Security verification failed:');
-  errors.forEach(err => console.error('  • ' + err));
+  errors.forEach((err) => console.error('  • ' + err));
   process.exit(1);
 } else {
   console.log('✅ All security and hardening verification checks PASSED!');
-  process.exit(0);
 }
-

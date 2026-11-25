@@ -7,18 +7,6 @@
   status = 200
   force = true
 
-[[redirects]]
-  from = "/admin/*"
-  to = "https://nur-quran.onrender.com/admin/:splat"
-  status = 200
-  force = true
-
-[[redirects]]
-  from = "/static/*"
-  to = "https://nur-quran.onrender.com/static/:splat"
-  status = 200
-  force = true
-
 # ── Old Reciter Pages Redirects to Unified Template ──
 [[redirects]]
   from = "/pages/reciter-alafasy.html"
@@ -79,7 +67,7 @@
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=(self)"
     Strict-Transport-Security = "max-age=31536000; includeSubDomains; preload"
-    Content-Security-Policy = "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; media-src 'self' https: blob: data:; connect-src 'self' https://api.alquran.cloud https://api.aladhan.com https://cdn.islamic.network https://everyayah.com https://*.mp3quran.net https://download.quranplayermp3.com https://ipapi.co https://get.geojs.io https://nur-quran.onrender.com https://nuur-quran.onrender.com https://*.netlify.app; frame-ancestors 'none'; object-src 'none'; base-uri 'self'"
+    Content-Security-Policy = "default-src 'self'; script-src 'self'; script-src-attr 'none'; style-src 'self' https://fonts.googleapis.com; style-src-attr 'none'; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https: blob:; media-src 'self' https: blob: data:; connect-src 'self' https://api.alquran.cloud https://api.aladhan.com https://cdn.jsdelivr.net https://cdn.islamic.network https://everyayah.com https://*.mp3quran.net https://download.quranplayermp3.com https://ipapi.co https://get.geojs.io https://nur-quran.onrender.com https://*.netlify.app; frame-ancestors 'none'; object-src 'none'; base-uri 'self'; form-action 'self'"
 
 # ── Cache Policies by File Type ──
 [[headers]]
@@ -108,14 +96,24 @@
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/assets/*"
+  for = "/css/*"
   [headers.values]
     Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
-  for = "/audio/*"
+  for = "/js/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+[[headers]]
+  for = "/data/*"
   [headers.values]
     Cache-Control = "public, max-age=86400"
+
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
 
 [[headers]]
   for = "/manifest.json"

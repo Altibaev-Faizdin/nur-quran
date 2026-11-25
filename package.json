@@ -1,18 +1,29 @@
 {
   "name": "nur-quran",
-  "version": "2.0.0",
-  "description": "Noor Al-Quran — Market-ready Islamic digital platform (Django REST Framework + Vanilla JS/HTML/CSS)",
+  "version": "2.1.0",
+  "description": "Noor Al-Quran — Islamic digital platform (Python Django REST Framework + Vanilla PWA frontend)",
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "node server.js",
-    "start": "node server.js",
-    "build": "node --check server.js && node scripts/test-runner.mjs && node scripts/verify-security.mjs",
-    "lint": "node --check server.js && node --check frontend/shared.js && node --check frontend/i18n.js && node --check frontend/idb-store.js && node --check frontend/reciter-player.js",
-    "test": "node scripts/test-runner.mjs && node scripts/verify-security.mjs",
+    "build": "npm run lint && npm run test",
+    "lint": "eslint scripts tests frontend/*.js frontend/js/pages/*.js",
+    "format": "prettier --write scripts tests frontend/css/pages.css frontend/js/pages/*.js",
+    "format:check": "prettier --check scripts tests frontend/css/pages.css frontend/js/pages/*.js",
+    "test:frontend": "node scripts/test-runner.mjs && node scripts/verify-security.mjs",
+    "test:math": "node --test tests/math.test.js",
+    "test:e2e": "npx playwright test",
     "test:audio": "node scripts/verify-audio.mjs",
+    "test": "npm run test:math && npm run test:frontend",
     "version-assets": "node scripts/version-assets.mjs",
-    "serve": "node server.js"
+    "serve": "python3 backend/manage.py runserver 0.0.0.0:8000"
+  },
+  "lint-staged": {
+    "{scripts/**/*.mjs,tests/**/*.mjs,frontend/js/pages/*.js}": [
+      "eslint --max-warnings=0"
+    ],
+    "frontend/*.js": [
+      "eslint"
+    ]
   },
   "keywords": [
     "quran",
@@ -24,7 +35,13 @@
   ],
   "author": "Noor Al-Quran Team",
   "license": "MIT",
-  "dependencies": {
-    "express": "^5.3.0"
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "@playwright/test": "^1.65.1",
+    "eslint": "^10.15.0",
+    "globals": "^17.14.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^17.6.2",
+    "prettier": "^3.10.1"
   }
 }

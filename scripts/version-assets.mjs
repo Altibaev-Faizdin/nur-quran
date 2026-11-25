@@ -12,32 +12,39 @@ function getFileHash(filePath) {
   return crypto.createHash('md5').update(buf).digest('hex').slice(0, 8);
 }
 
-const cssHash = getFileHash(path.join(frontendDir, 'shared.css'));
-const jsHash = getFileHash(path.join(frontendDir, 'shared.js'));
-const idbHash = getFileHash(path.join(frontendDir, 'idb-store.js'));
-const i18nHash = getFileHash(path.join(frontendDir, 'i18n.js'));
+const hashes = {
+  'shared.css': getFileHash(path.join(frontendDir, 'shared.css')),
+  'css/pages.css': getFileHash(path.join(frontendDir, 'css/pages.css')),
+  'shared.js': getFileHash(path.join(frontendDir, 'shared.js')),
+  'idb-store.js': getFileHash(path.join(frontendDir, 'idb-store.js')),
+  'i18n.js': getFileHash(path.join(frontendDir, 'i18n.js')),
+  'reciter-player.js': getFileHash(path.join(frontendDir, 'reciter-player.js')),
+  'data/names-data.js': getFileHash(path.join(frontendDir, 'data/names-data.js')),
+};
 
-console.log(`📦 Asset Hashes:`);
-console.log(`  shared.css:  ${cssHash}`);
-console.log(`  shared.js:   ${jsHash}`);
-console.log(`  idb-store.js: ${idbHash}`);
-console.log(`  i18n.js:     ${i18nHash}\n`);
+const pageJsDir = path.join(frontendDir, 'js/pages');
+if (fs.existsSync(pageJsDir)) {
+  for (const name of fs.readdirSync(pageJsDir)) {
+    if (name.endsWith('.js')) {
+      hashes[`js/pages/${name}`] = getFileHash(path.join(pageJsDir, name));
+    }
+  }
+}
+
+console.log('📦 Asset Hashes:');
+for (const [k, v] of Object.entries(hashes)) {
+  console.log(`  ${k}: ${v}`);
+}
 
 function updateHtmlFile(filePath) {
   let content = fs.readFileSync(filePath, 'utf-8');
-  let original = content;
+  const original = content;
 
-  // Replace shared.css?v=... or bare shared.css
-  content = content.replace(/(shared\.css)(\?v=[a-zA-Z0-9_-]+)?/g, `$1?v=${cssHash}`);
-
-  // Replace shared.js?v=... or bare shared.js
-  content = content.replace(/(shared\.js)(\?v=[a-zA-Z0-9_-]+)?/g, `$1?v=${jsHash}`);
-
-  // Replace idb-store.js
-  content = content.replace(/(idb-store\.js)(\?v=[a-zA-Z0-9_-]+)?/g, `$1?v=${idbHash}`);
-
-  // Replace i18n.js
-  content = content.replace(/(i18n\.js)(\?v=[a-zA-Z0-9_-]+)?/g, `$1?v=${i18nHash}`);
+  for (const [assetPath, hash] of Object.entries(hashes)) {
+    const escaped = assetPath.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const regex = new RegExp(`(["'/])(${escaped})(\\?v=[a-zA-Z0-9_-]+)?`, 'g');
+    content = content.replace(regex, `$1$2?v=${hash}`);
+  }
 
   if (content !== original) {
     fs.writeFileSync(filePath, content, 'utf-8');
@@ -61,4 +68,3 @@ function walkDir(dir) {
 
 walkDir(frontendDir);
 console.log('\n✅ Asset versioning completed successfully!');
-
